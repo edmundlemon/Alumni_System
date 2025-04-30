@@ -25,12 +25,12 @@ export default function AdminLogin() {
 
         if (!loginPost.email) inputError.email = "* Email is required";
         if (!loginPost.password) inputError.password = "* Password is required";
-        else if (loginPost.password.length < 6) inputError.password = "* Password must be at least 6 characters";
-        else if (!/[A-Z]/.test(loginPost.password)) inputError.password = "* Password must contain at least one uppercase letter";
-        else if (!/[0-9]/.test(loginPost.password)) inputError.password = "* Password must contain at least one number";
-        else if (!/[!@#$%^&*]/.test(loginPost.password)) inputError.password = "* Password must contain at least one special character";
-        else if (!/[a-z]/.test(loginPost.password)) inputError.password = "* Password must contain at least one lowercase letter";
-        else if (/\s/.test(loginPost.password)) {inputError.password = "* Password cannot contain spaces";}
+        // else if (loginPost.password.length < 6) inputError.password = "* Password must be at least 6 characters";
+        // else if (!/[A-Z]/.test(loginPost.password)) inputError.password = "* Password must contain at least one uppercase letter";
+        // else if (!/[0-9]/.test(loginPost.password)) inputError.password = "* Password must contain at least one number";
+        // else if (!/[!@#$%^&*]/.test(loginPost.password)) inputError.password = "* Password must contain at least one special character";
+        // else if (!/[a-z]/.test(loginPost.password)) inputError.password = "* Password must contain at least one lowercase letter";
+        // else if (/\s/.test(loginPost.password)) {inputError.password = "* Password cannot contain spaces";}
 
         if (inputError.email || inputError.password) {
             setFormError(inputError);
@@ -44,7 +44,7 @@ export default function AdminLogin() {
             .then((response) => {
                 const token = response.data.token;
                 Cookies.set("adminToken", token);
-                navigate("/userLogin");
+                navigate("/Sidebar"); // Navigate to the sidebar after successful login
             })
             .catch((error) => {
                 if (error.response?.status === 401) {
