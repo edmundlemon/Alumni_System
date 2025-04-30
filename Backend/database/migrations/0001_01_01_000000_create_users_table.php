@@ -13,15 +13,14 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->string('email')->unique();
             // $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->rememberToken();
-            $table->string('role');
+            $table->string('name');
+            $table->string('role')->default('student');
             $table->string('phone')->nullable();
             $table->string('faculty')->nullable();
-            $table->bigInteger('majorID')->nullable();
+            $table->foreign('majorID')->references('id')->on('majors')->onDelete('cascade')->nullable();
             $table->date('registration_date')->nullable();
             $table->bigInteger('enrollment_year')->nullable();
             $table->bigInteger('graduation_year')->nullable();
@@ -31,7 +30,8 @@ return new class extends Migration
             $table->string('company')->nullable();
             $table->string('position')->nullable();
             $table->string('home_country')->nullable();
-            $table->bigInteger('adminID')->nullable();
+            $table->foreign('adminID')->references('id')->on('admins')->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
 
