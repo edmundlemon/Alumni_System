@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('company')->nullable();
             $table->string('position')->nullable();
             $table->string('home_country')->nullable();
+            $table->string('bio')->nullable();
             $table->foreign('adminID')->references('id')->on('admins')->nullable();
             $table->rememberToken();
             $table->timestamps();

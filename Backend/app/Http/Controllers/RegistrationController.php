@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Registration;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RegistrationController extends Controller
 {
@@ -18,9 +19,42 @@ class RegistrationController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'faculty' => 'required|string|max:255',
+            'program' => 'required|string|max:255',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'role' => 'required|string|in:student,alumni',
+        ]);
+        $user = Auth::guard('sanctum')->user();
+        if (!$user->hasRole('admin')) {
+            return response()->json([
+                'error' => 'You are not authorized to perform this action',
+            ], 403);
+        }
+        $registration = new Registration();
+        $registration->name = $request->name;
+        $registration->email = $request->email;
+        $registration->password = bcrypt($request->password);
+        $registration->faculty = $request->faculty;
+        $registration->program = $request->program;
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('photos'), $filename);
+            $registration->photo = $filename;
+        }
+        $registration->save();
+        return response()->json([
+            'message' => 'Registration successful',
+            'registration' => $registration,
+        ], 201);
+
     }
 
     /**
