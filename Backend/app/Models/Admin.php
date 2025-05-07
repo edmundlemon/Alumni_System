@@ -22,6 +22,15 @@ class Admin extends Authenticatable
     ];
     
     protected $guard = 'admin';
+    protected $role = 'admin';
+
+    public function role(){
+        return $this->role;
+    }
+
+    public function hasRole(string $role) {
+        return $this->role == $role;
+    }
 
     protected $hidden = [
         'password',
