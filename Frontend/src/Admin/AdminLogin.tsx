@@ -39,21 +39,20 @@ export default function AdminLogin() {
 
         setFormError({ email: "", password: "" });
 
-        axios
-            .post("http://localhost:8000/api/admin_login", loginPost)
-            .then((response) => {
-                const token = response.data.token;
-                Cookies.set("adminToken", token);
-                navigate("/Sidebar"); // Navigate to the sidebar after successful login
-            })
-            .catch((error) => {
-                if (error.response?.status === 401) {
-                    setFormError({
-                        email: "Invalid email or password",
-                        password: "Invalid email or password",
-                    });
-                }
-            });
+        axios.post('http://localhost:8000/api/admin_login', loginPost)
+        .then(response => {
+            console.log(response);
+            const token = response.data.token; 
+                Cookies.set('adminToken', token); 
+                console.log(token);
+                navigate('/userManageTable');
+        })
+        .catch(error => {
+            console.log(error);
+            if (error.response.status === 401) {
+                setFormError({ email: 'Invalid email or password', password: 'Invalid email or password' });
+            }
+        });
     };
 
     return (

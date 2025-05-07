@@ -1,5 +1,5 @@
 import { useState } from "react";
-import MMULOGO from "./assets/MMULogo.png";
+import MMULOGO from "../assets/MMULogo.png";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
 export default function LoginPage() {
