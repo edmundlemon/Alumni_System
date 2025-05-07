@@ -1,4 +1,4 @@
-import MMULOGO from './assets/MMULOGO.png';
+import MMULOGO from '../assets/MMULOGO.png';
 
 function Header() {
     const navItems = [
