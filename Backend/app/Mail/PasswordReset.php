@@ -17,10 +17,13 @@ class PasswordReset extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+
+    public $token;
+    public function __construct($token)
     {
-        //
+        $this->token = $token;
     }
+
 
     /**
      * Get the message envelope.
@@ -57,9 +60,18 @@ class PasswordReset extends Mailable
         $url = config('app.frontend_url').'/reset-password?token='.$this->token.'&email='.$notifiable->email;
         
         return (new MailMessage)
-            ->subject('Reset Password Notification')
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->action('Reset Password', $url)
-            ->line('This password reset link will expire in '.config('auth.passwords.users.expire').' minutes.');
+            ->view('emails.reset-password',[
+                'url' => $url,
+                'token' => $this->token,
+                'email' => $notifiable->email,
+                'name' => $notifiable->name,
+                'subject' => 'Reset Password Notification',
+                'greeting' => 'Hello '.$notifiable->name,
+                'expires' => config('auth.passwords.users.expire'),
+            ]);
+            // ->subject('Reset Password Notification')
+            // ->line('You are receiving this email because we received a password reset request for your account.')
+            // ->action('Reset Password', $url)
+            // ->line('This password reset link will expire in '.config('auth.passwords.users.expire').' minutes.');
     }
 }
