@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Registration;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,7 +28,7 @@ class RegistrationController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'faculty' => 'required|string|max:255',
-            'program' => 'required|string|max:255',
+            'major' => 'required|string|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'role' => 'required|string|in:student,alumni',
         ]);
@@ -37,12 +38,12 @@ class RegistrationController extends Controller
                 'error' => 'You are not authorized to perform this action',
             ], 403);
         }
-        $registration = new Registration();
+        $registration = new User();
         $registration->name = $request->name;
         $registration->email = $request->email;
         $registration->password = bcrypt($request->password);
         $registration->faculty = $request->faculty;
-        $registration->program = $request->program;
+        // $registration->major = $request->major;
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = time() . '.' . $file->getClientOriginalExtension();

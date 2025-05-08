@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('role')->default('student');
             $table->string('phone')->nullable();
             $table->string('faculty')->nullable();
-            $table->foreign('majorID')->references('id')->on('majors')->onDelete('cascade')->nullable();
+            $table->unsignedBigInteger('major_id')->foreign('major_id')->references('id')->on('majors')->onDelete('cascade')->nullable();
             $table->date('registration_date')->nullable();
             $table->bigInteger('enrollment_year')->nullable();
             $table->bigInteger('graduation_year')->nullable();
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->string('position')->nullable();
             $table->string('home_country')->nullable();
             $table->string('bio')->nullable();
-            $table->foreign('adminID')->references('id')->on('admins')->nullable();
+            $table->unsignedBigInteger('admin_id')->foreign('admin_id')->references('id')->on('admins')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
