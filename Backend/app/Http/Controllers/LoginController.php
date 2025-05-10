@@ -19,12 +19,13 @@ class LoginController extends Controller
     {
         // Validate the request
         $request->validate([
-            'email' => 'required|email',
+            // 'email' => 'required|email',
+            'id' => 'required|integer',
             'password' => 'required|min:6',
         ]);
 
         // Attempt to log the admin in
-        if (Auth::guard('admin')->attempt($request->only('email', 'password'))) {
+        if (Auth::guard('admin')->attempt($request->only('id', 'password'))) {
             // Redirect to the intended page or dashboard
             
             Log::channel('auth_activity')->info('User Authenticated: ', $request->all());
@@ -59,12 +60,13 @@ class LoginController extends Controller
     {
         // Validate the request
         $request->validate([
-            'email' => 'required|email',
+            // 'email' => 'required|email',
+            'id' => 'required|integer',
             'password' => 'required|min:6',
         ]);
 
         // Attempt to log the user in
-        if (Auth::guard('user')->attempt($request->only('email', 'password'))) {
+        if (Auth::guard('user')->attempt($request->only('id', 'password'))) {
             // Redirect to the intended page or dashboard
             $user = Auth::guard('user')->user();
             $token = $user->createToken('userToken')->plainTextToken;
