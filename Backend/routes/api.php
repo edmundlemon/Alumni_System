@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/view_all_alumni', [UserController::clas
 Route::middleware('auth:sanctum')->get('/view_all_majors', [MajorController::class, 'index']);
 
 // User Routes
-Route::middleware('guest')->post('user_login', [LoginController::class, 'userLogin']);
-Route::middleware('auth:sanctum')->post('user_logout', [LoginController::class, 'userLogout']);
-Route::middleware('guest')->post('forgot_password', [LoginController::class, 'userForgotPassword']);
+Route::middleware('guest')->post('/user_login', [LoginController::class, 'userLogin']);
+Route::middleware('auth:sanctum')->post('/user_logout', [LoginController::class, 'userLogout']);
+Route::middleware('guest')->post('/forgot_password', [LoginController::class, 'userForgotPassword']);
+Route::middleware('guest')->post('/reset_password', [LoginController::class, 'userResetPassword']);
