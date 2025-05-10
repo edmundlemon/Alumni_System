@@ -14,11 +14,11 @@ export default function AdminLogin() {
         setPasswordVisible(!passwordVisible);
     };
 
-    const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInput = (event) => {
         setLoginPost({ ...loginPost, [event.target.name]: event.target.value });
     };
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
 
         let inputError = { email: "", password: "" };

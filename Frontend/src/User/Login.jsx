@@ -1,13 +1,15 @@
 import { useState } from "react";
 import MMULOGO from "../assets/MMULogo.png";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { useNavigate  } from "react-router-dom";
 
 export default function LoginPage() {
-  const [currentForm, setCurrentForm] = useState<"login" | "forgotPassword">(
-    "login"
-  );
+  const navigate = useNavigate();
+  const [currentForm, setCurrentForm] = useState('login');
   const [formError, setFormError] = useState({ studentID: "", password: "" });
-  const [loginPost, setLoginPost] = useState({ studentID: "", password: "" });
+  const [loginPost, setLoginPost] = useState({ email: "", password: "" });
   const [resetPassPost, setResetPassPost] = useState({
     email: "",
     token: "",
@@ -20,7 +22,7 @@ export default function LoginPage() {
     setPasswordVisible(!passwordVisible);
   };
 
-  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInput = (event) => {
     const { name, value } = event.target;
     if (currentForm === "login") {
       setLoginPost({ ...loginPost, [name]: value });
@@ -29,52 +31,76 @@ export default function LoginPage() {
     }
   };
 
-  const handleLoginSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLoginSubmit = (event) => {
     event.preventDefault();
 
-    let inputError = { studentID: "", password: "" };
+    // let inputError = { studentID: "", password: "" };
 
-    if (!loginPost.studentID) {
-      inputError.studentID = "* Student ID is required";
-    }
+    // if (!loginPost.studentID) {
+    //   inputError.studentID = "* Student ID is required";
+    // }
 
-    if (!loginPost.password) {
-      inputError.password = "* Password is required";
-    }
+    // if (!loginPost.password) {
+    //   inputError.password = "* Password is required";
+    // }
 
-    if (!loginPost.password) {
-      inputError.password = "* Password is required";
-    } else if (loginPost.password.length < 6) {
-      inputError.password = "* Password must be at least 6 characters";
-    } else if (!/[A-Z]/.test(loginPost.password)) {
-      inputError.password = "* Password must contain at least one uppercase letter";
-    } else if (!/[0-9]/.test(loginPost.password)) {
-      inputError.password = "* Password must contain at least one number";
-    } else if (!/[!@#$%^&*]/.test(loginPost.password)) {
-      inputError.password = "* Password must contain at least one special character";
-    } else if (!/[a-z]/.test(loginPost.password)) {
-      inputError.password = "* Password must contain at least one lowercase letter";
-    }
+    // if (!loginPost.password) {
+    //   inputError.password = "* Password is required";
+    // } else if (loginPost.password.length < 6) {
+    //   inputError.password = "* Password must be at least 6 characters";
+    // } else if (!/[A-Z]/.test(loginPost.password)) {
+    //   inputError.password = "* Password must contain at least one uppercase letter";
+    // } else if (!/[0-9]/.test(loginPost.password)) {
+    //   inputError.password = "* Password must contain at least one number";
+    // } else if (!/[!@#$%^&*]/.test(loginPost.password)) {
+    //   inputError.password = "* Password must contain at least one special character";
+    // } else if (!/[a-z]/.test(loginPost.password)) {
+    //   inputError.password = "* Password must contain at least one lowercase letter";
+    // }
 
-    if (inputError.studentID || inputError.password) {
-      setFormError(inputError);
-      return;
-    }
+    // if (inputError.studentID || inputError.password) {
+    //   setFormError(inputError);
+    //   return;
+    // }
 
-    setFormError({ studentID: "", password: "" });
+    // setFormError({ studentID: "", password: "" });
 
-    console.log("Logging in with", loginPost);
+    axios.post('http://localhost:8000/api/user_login', loginPost)
+            .then(response => {
+                console.log(response);
+                const token = response.data.token;
+                Cookies.set('token', token);
+                console.log(token);
+                navigate('/SearchJob');
+            })
+            .catch(error => {
+                console.log(error);
+                if (error.response.status === 401) {
+                    setFormError({ email: 'Invalid email or password', password: 'Invalid email or password' });
+                }
+            });
   };
 
-  const handleResetSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleResetSubmit = (event) => {
     event.preventDefault();
 
     if (!resetPassPost.email) {
       alert("Email is required to send OTP");
       return;
     }
-    console.log("Requesting OTP for", resetPassPost.email);
+    axios.post('http://localhost:8000/api/forgot_password', {email:resetPassPost.email})
+        .then(response => {
+            console.log('Response:', response.data);
+            setMessage('OTP sent to your email.');
+            setCurrentForm('resetPassword');
+        })
+        .catch(error => {
+            console.error('Error sending OTP:', error);
+            setMessage('Error sending OTP.');
+    });
   };
+
+  
 
   return (
     <div className="flex justify-center mt-10">
@@ -112,16 +138,16 @@ export default function LoginPage() {
             <form className="space-y-6" onSubmit={handleLoginSubmit}>
               <div>
                 <label
-                  htmlFor="studentID"
+                  htmlFor="email"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Student ID
+                  Email
                 </label>
                 <input
-                  name="studentID"
-                  type="text"
-                  placeholder="Enter your student ID"
-                  value={loginPost.studentID}
+                  name="email"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={loginPost.email}
                   onChange={handleInput}
                   className="h-11 w-full px-4 py-3 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                   style={{ border: formError.studentID ? "1px solid red" : "" }}

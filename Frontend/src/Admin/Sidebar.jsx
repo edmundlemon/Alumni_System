@@ -70,7 +70,7 @@ const Sidebar = () => {
         <div
             className={`bg-[#212F3C] flex flex-col justify-between transition-all duration-200 ease-linear ${
               open ? "w-64" : "w-16"
-            } text-gray-100 my-2 rounded-tr-xl rounded-br-xl shadow-xl overflow-hidden`}
+            } text-gray-100 my-3 rounded-tr-xl rounded-br-xl shadow-xl overflow-hidden`}
             aria-label="Main navigation"
           >
 
@@ -214,7 +214,7 @@ const Sidebar = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 bg-gray-100 m-4">
+      <div className="flex-1 bg-gray-100 m-4 ">
         <UserManageTable></UserManageTable>
       </div>
     </div>

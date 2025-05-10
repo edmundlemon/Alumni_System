@@ -2,12 +2,13 @@ import { FaUserCircle } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 import { useMemo } from 'react';
 
-export default function UserProfile() {
+export default function UserProfile({user,onClose}) {
     const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500'];
     const randomColor = useMemo(() => {
         const index = Math.floor(Math.random() * colors.length);
         return colors[index];
     }, []);
+
 
     // Mock data - replace with your actual data
     const careerHistory = [
@@ -47,14 +48,14 @@ export default function UserProfile() {
         { label: 'Phone Number', type: 'text', defaultValue: 'Admin User' },
         { label: 'Country', type: 'text', defaultValue: 'Admin User' },
         { label: 'Faculty', type: 'text', defaultValue: 'Admin User' },
-        {label: 'Email',type: 'email',defaultValue: 'admin@example.com',disabled: false},
+        {label: 'Email',type: 'email',defaultValue: user?.email || 'No email provided',disabled: false},
         { label: 'Major', type: 'text', defaultValue: 'Admin User' },
     ];
 
     return(
         <section className="flex h-screen w-full justify-end">
 
-                <div className="max-w-3xl py-6 w-full">
+                <div className="max-w-3xl  w-full">
                     {/* User Profile Section */}
                     <div className="bg-white rounded-tl-xl rounded-bl-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div className="flex flex-col lg:flex-row">
@@ -86,9 +87,9 @@ export default function UserProfile() {
                             <div className="w-3/4 p-6 ">
                                 <div className="flex items-center mb-4 justify-between pr-4">
                                     <h2 className="text-lg font-semibold text-gray-800">Profile Information</h2>
-                                    <MdClose className="text-xl"/>
+                                    <MdClose className="text-xl cursor-pointer" onClick={onClose}/>
                                 </div>
-                                <div className="space-y-6 pr-6 mr-[-24px] overflow-y-auto h-[550px] ">
+                                <div className="space-y-6 pr-6 mr-[-24px] overflow-y-auto h-[600px] ">
                                     <div className="grid grid-cols-2 gap-4">
                                         {profileFields.map((field, idx) => (
                                         <div key={idx}>
