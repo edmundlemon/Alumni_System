@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -54,5 +55,18 @@ class UserController extends Controller
         // Fetch all alumni
         $alumni = User::where('role', 'alumni')->get();
         return response()->json($alumni);
+    }
+
+    public function viewConnectedUsers()
+    {
+        $user = Auth::guard('sanctum')->user();
+        // Fetch all connections
+        $acceptedConnections = $user->acceptedConnections;
+        $requestedConnections = $user->requestedConnections;
+        $connectedUsers = $acceptedConnections->merge($requestedConnections);
+
+        return response()->json([
+            'connected_users' => $connectedUsers,
+        ], 200);
     }
 }

@@ -25,6 +25,7 @@ class User extends Authenticatable
 
     protected $guard = 'user';
     protected $role;
+    protected $appends = ['major_name'];
 
 
     /**
@@ -100,6 +101,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Feedback::class);
     }
+    public function getMajorNameAttribute()
+    {
+        return $this->major ? $this->major->name : null;
+    }
     public function major()
     {
         return $this->belongsTo(Major::class);
@@ -108,22 +113,31 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'connections', 'user_id', 'connection_id');
     }
-    public function connectedUsers()
+
+    public function pendingConnectionsRequests()
     {
-        return $this->belongsToMany(User::class, 'connections', 'connection_id', 'user_id');
+        return $this->belongstoMany(User::class, 'connections', 'requesting_user_id', 'pending_user_id')->wherePivot('status', 'pending');
+    }
+    public function requestedConnections()
+    {
+        return $this->belongsToMany(User::class, 'connections', 'requesting_user_id', 'accepting_user_id')
+                    ->wherePivot('status', 'accepted')->with('major');
+    }
+    public function acceptedConnections()
+    {
+        return $this->belongsToMany(User::class, 'connections', 'accepting_user_id', 'requesting_user_id')
+                    ->wherePivot('status', 'accepted')->with('major');
+    }
+    public function pendingReceivedRequests()
+    {
+        return $this->belongsToMany(User::class, 'connections', 'accepting_user_id', 'requesting_user_id')
+                    ->wherePivot('status', 'pending');
     }
     public function isConnected($userId)
     {
         return $this->connections()->where('connection_id', $userId)->exists();
     }
-    public function isConnectedTo($userId)
-    {
-        return $this->connectedUsers()->where('user_id', $userId)->exists();
-    }
-    public function isFriend($userId)
-    {
-        return $this->isConnected($userId) && $this->isConnectedTo($userId);
-    }
+    
     public function isFriendOf($userId)
     {
         return $this->isConnectedTo($userId) && $this->isConnected($userId);
@@ -132,6 +146,8 @@ class User extends Authenticatable
     {
         return $this->connections()->where('connection_id', $userId)->where('status', 'blocked')->exists();
     }
+
+
     public function isBlockedBy($userId)
     {
         return $this->connectedUsers()->where('user_id', $userId)->where('status', 'blocked')->exists();
