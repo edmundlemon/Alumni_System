@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Connection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ConnectionController extends Controller
 {
@@ -18,9 +20,22 @@ class ConnectionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         //
+        $user = Auth::guard('sanctum')->user();
+        $request->validate([
+            'user_id' => 'required|integer',
+        ]);
+        $connection = new Connection();
+        $connection->requesting_user_id = $user->id;
+        $connection->accepting_user_id = $request->user_id;
+        $connection->status = 'pending';
+        $connection->save();
+        return response()->json([
+            'message' => 'Connection request sent successfully',
+            'connection' => $connection,
+        ], 201);
     }
 
     /**
@@ -39,12 +54,43 @@ class ConnectionController extends Controller
         //
     }
 
+    public function viewConnectedUsers()
+    {
+        // Fetch connected users
+        $user = Auth::guard('sanctum')->user();
+        $connectedUsers = $user->connectedUsers();
+        return response()->json([
+            'connected_users' => $connectedUsers,
+        ],200);
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Connection $connection)
+    public function edit(Connection $connection, Request $request)
     {
         //
+        // Check if the user is authorized to accept/reject the connection
+        // Assuming you have a way to get the authenticated user
+        // and the connection belongs to that user
+        //
+        $user = Auth::guard('sanctum')->user();
+        if ($connection->accepting_user_id !== $user->id) {
+            return response()->json([
+                'error' => 'You are not authorized to perform this action',
+            ], 403);
+        }
+        return response()->json($connection);
+
+        $request->validate([
+            'status' => 'required|string|in:accepted,rejected',
+        ]);
+        $connection->status = $request->status;
+        $connection->save();
+        return response()->json([
+            'message' => 'Connection status updated successfully',
+            'connection' => $connection,
+        ], 200);
     }
 
     /**

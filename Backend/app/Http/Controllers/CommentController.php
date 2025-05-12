@@ -18,9 +18,23 @@ class CommentController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         //
+        $request->validate([
+            'discussion_id' => 'required|integer',
+            'comment_content' => 'required|string|max:255',
+        ]);
+        $user = Auth::guard('sanctum')->user();
+        $comment = new Comment();
+        $comment->user_id = $user->id;
+        $comment->discussion_id = $request->discussion_id;
+        $comment->comment_content = $request->comment_content;
+        $comment->save();
+        return response()->json([
+            'message' => 'Comment created successfully',
+            'comment' => $comment,
+        ], 201);
     }
 
     /**
