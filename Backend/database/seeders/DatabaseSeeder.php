@@ -16,20 +16,56 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
+
+        $predeterminedFaculties = [
+            ['faculty_name' => 'Faculty of Coputing and Informatics'],
+            ['faculty_name' => 'Faculty of Cinematic Arts'],
+            ['faculty_name' => 'Faculty of Business'],
+            ['faculty_name' => 'Faculty of Education'],
+            ['faculty_name' => 'Faculty of Law'],
+            ['faculty_name' => 'Faculty of Medicine'],
+            ['faculty_name' => 'Faculty of Social Sciences'],
+            ['faculty_name' => 'Faculty of Agriculture'],
+            ['faculty_name' => 'Faculty of Architecture'],
+        ];
+        // Insert the predetermined faculties into the database
+        foreach ($predeterminedFaculties as $faculty) {
+            \App\Models\Faculty::create($faculty);
+        }
+
         $predeterminedMajorNames = [
-        ['major_name' => 'Computer Science'],
-        ['major_name' => 'Information Technology'],
-        ['major_name' => 'Software Engineering'],
-        ['major_name' => 'Data Science'],
-        ['major_name' => 'Cybersecurity'],
-        ['major_name' => 'Network Engineering'],
-        ['major_name' => 'Web Development'],
-        ['major_name' => 'Mobile App Development'],
-        ['major_name' => 'Artificial Intelligence'],
-        ['major_name' => 'Machine Learning'],
+        ['major_name' => 'Computer Science', 'faculty_id' => 1],
+        ['major_name' => 'Information Systems', 'faculty_id' => 1],
+        ['major_name' => 'Computer Engineering', 'faculty_id' => 1],
+        ['major_name' => 'Software Engineering', 'faculty_id' => 1],
+        ['major_name' => 'Data Science', 'faculty_id' => 1],
+        ['major_name' => 'Cybersecurity', 'faculty_id' => 1],
+        ['major_name' => 'Network Engineering', 'faculty_id' => 1],
+        ['major_name' => 'Web Development', 'faculty_id' => 1],
+        ['major_name' => 'Mobile App Development', 'faculty_id' => 1],
+        ['major_name' => 'Artificial Intelligence', 'faculty_id' => 1],
+        ['major_name' => 'Machine Learning', 'faculty_id' => 1],
+        ['major_name' => 'Digital Media', 'faculty_id' => 2],
+        ['major_name' => 'Film Production', 'faculty_id' => 2],
+        ['major_name' => 'Business Administration', 'faculty_id' => 3],
+        ['major_name' => 'Marketing', 'faculty_id' => 3],
+        ['major_name' => 'Finance', 'faculty_id' => 3],
+        ['major_name' => 'Education Technology', 'faculty_id' => 4],
+        ['major_name' => 'Curriculum and Instruction', 'faculty_id' => 4],
+        ['major_name' => 'Law and Society', 'faculty_id' => 5],
+        ['major_name' => 'Criminal Justice', 'faculty_id' => 5],
+        ['major_name' => 'Medicine and Health Sciences', 'faculty_id' => 6],
+        ['major_name' => 'Public Health', 'faculty_id' => 6],
+        ['major_name' => 'Sociology', 'faculty_id' => 7],
+        ['major_name' => 'Psychology', 'faculty_id' => 7],
+        ['major_name' => 'Agricultural Science', 'faculty_id' => 8],
+        ['major_name' => 'Environmental Science', 'faculty_id' => 8],
+        ['major_name' => 'Architecture and Design', 'faculty_id' => 9],
+        ['major_name' => 'Urban Planning', 'faculty_id' => 9],
         ];
 
         Major::insert($predeterminedMajorNames);
+
 
         // Create a user with a specific name and email
         User::factory()->create([
@@ -41,8 +77,8 @@ class DatabaseSeeder extends Seeder
 
         Admin::create([
             'name' => 'Test Admin',
-            'email' => 'test123@gmail.com',
-            'password' => bcrypt('password123'),
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('password'),
             'phone' => '1234567890',
         ]);
 

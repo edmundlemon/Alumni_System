@@ -56,6 +56,10 @@ class LoginController extends Controller
         ], 200);
     }
 
+
+
+
+    // Please note that the below code is for the user (Student and Alumni) related login and logout
     public function userLogin(Request $request)
     {
         // Validate the request

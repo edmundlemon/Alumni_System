@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
+use App\Models\Discussion;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
@@ -48,9 +49,14 @@ class CommentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Comment $comment)
+    public function show(Discussion $discussion)
     {
         //
+        $comments = Comment::where('discussion_id', $discussion->id)->get();
+        return response()->json([
+            'message' => 'Comments retrieved successfully',
+            'comments' => $comments,
+        ], 200);
     }
 
     /**
