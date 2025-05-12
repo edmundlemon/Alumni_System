@@ -25,3 +25,4 @@ Route::middleware('guest')->post('/user_login', [LoginController::class, 'userLo
 Route::middleware('auth:sanctum')->post('/user_logout', [LoginController::class, 'userLogout']);
 Route::middleware('guest')->post('/forgot_password', [LoginController::class, 'userForgotPassword']);
 Route::middleware('guest')->post('/reset_password', [LoginController::class, 'userResetPassword']);
+Route::middleware('auth:sanctum')->get('/connected_users', [UserController::class, 'viewConnectedUsers']);

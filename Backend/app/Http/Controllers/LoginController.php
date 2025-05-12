@@ -19,22 +19,23 @@ class LoginController extends Controller
     {
         // Validate the request
         $request->validate([
-            'email' => 'required|email',
+            // 'email' => 'required|email',
+            'id' => 'required|integer',
             'password' => 'required|min:6',
         ]);
 
         // Attempt to log the admin in
-        if (Auth::guard('admin')->attempt($request->only('email', 'password'))) {
+        if (Auth::guard('admin')->attempt($request->only('id', 'password'))) {
             // Redirect to the intended page or dashboard
             
             Log::channel('auth_activity')->info('User Authenticated: ', $request->all());
-                $token = $request->user()->createToken('userToken')->plainTextToken;
-                return response()->json([
-                    'message' => 'Login successful!',
-                    'token' => $token,
-                    'user' =>$request->user(),
-                    'role' => $request->user()->role()
-                ], 200);
+            $token = $request->user()->createToken('userToken')->plainTextToken;
+            return response()->json([
+                'message' => 'Login successful!',
+                'token' => $token,
+                'user' =>$request->user(),
+                'role' => $request->user()->role()
+            ], 200);
         }
 
         return response()->json([
@@ -59,12 +60,13 @@ class LoginController extends Controller
     {
         // Validate the request
         $request->validate([
-            'email' => 'required|email',
+            // 'email' => 'required|email',
+            'id' => 'required|integer',
             'password' => 'required|min:6',
         ]);
 
         // Attempt to log the user in
-        if (Auth::guard('user')->attempt($request->only('email', 'password'))) {
+        if (Auth::guard('user')->attempt($request->only('id', 'password'))) {
             // Redirect to the intended page or dashboard
             $user = Auth::guard('user')->user();
             $token = $user->createToken('userToken')->plainTextToken;
@@ -100,7 +102,7 @@ class LoginController extends Controller
         // Validate the request
         $request->validate([
             'current_password' => 'required',
-            'new_password' => 'required|min:8|confirmed',
+            'new_password' => 'required|min:8',
             'confirm_password' => 'required|same:new_password',
         ]);
 
@@ -162,8 +164,6 @@ class LoginController extends Controller
                 'message' => 'User not found'
             ], 404);
         }
-        Log::channel('auth_activity')->info('User Reset Password: ', $request->all());
-        Log::channel('auth_activity')->info('User Information: ', $user->toArray());
         // Check if the token is valid
         if (Password::tokenExists($user, $request->token)) {
             // Update the password

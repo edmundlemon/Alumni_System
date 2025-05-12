@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Discussion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DiscussionController extends Controller
 {
@@ -13,6 +14,23 @@ class DiscussionController extends Controller
     public function index()
     {
         //
+        // Fetch all discussions
+        $discussions = Discussion::latest()->paginate(10);
+        return response()->json([
+            'discussions' => $discussions,
+        ], 200);
+    }
+
+    public function viewConnectedUsersDiscussion()
+    {
+        // Fetch discussions for connected users
+        $user = Auth::guard('sanctum')->user();
+        $connectedUsers = $user->connectedUsers();
+        // $connectedUsers = $user->connections()->pluck('accepting_user_id');
+        $discussions = Discussion::whereIn('user_id', $connectedUsers)->latest()->paginate(10);
+        return response()->json([
+            'discussions' => $discussions,
+        ], 200);
     }
 
     /**

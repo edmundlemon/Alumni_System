@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Major;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MajorController extends Controller
 {
@@ -20,9 +21,24 @@ class MajorController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         //
+        $request->validate([
+            'major_name' => 'required|string|max:255',
+        ]);
+
+        $user = Auth::guard('sanctum')->user();
+        if(!$user->hasRole('admin')) {
+            return response()->json([
+                'error' => 'You are not authorized to perform this action',
+            ], 403);
+        }
+        $major = new Major();
+        $major->major_name = $request->major_name;
+        $major->save();
+
+        return response()->json($major, 201);
     }
 
     /**
