@@ -17,9 +17,9 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('name');
-            $table->string('role')->default('student');
+            $table->string('role')->default('alumni');
             $table->string('phone')->nullable();
-            $table->string('faculty')->nullable();
+            // $table->string('faculty')->nullable();
             $table->unsignedBigInteger('major_id')->foreign('major_id')->references('id')->on('majors')->onDelete('cascade')->nullable();
             $table->date('registration_date')->nullable();
             $table->bigInteger('enrollment_year')->nullable();

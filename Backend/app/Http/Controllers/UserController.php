@@ -24,23 +24,25 @@ class UserController extends Controller
         }
         return response()->json($user);
     }
-    public function update(Request $request, $id)
+    public function update(Request $request, User $userToBeEdited)
     {
         // Update user details
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+        $admin = Auth::guard('sanctum')->user();
+        if (!$admin || !$admin->hasRole('admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
-        $user->update($request->all());
-        return response()->json($user);
+        
+        $userToBeEdited->update($request->all());
+        return response()->json($userToBeEdited);
     }
-    public function destroy($id)
+    public function destroy(User $user)
     {
         // Delete a user
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+        $admin = Auth::guard('sanctum')->user();
+        if (!$admin || !$admin->hasRole('admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
+        
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }

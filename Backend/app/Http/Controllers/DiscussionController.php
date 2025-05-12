@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Discussion;
+use Dom\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +16,9 @@ class DiscussionController extends Controller
     {
         //
         // Fetch all discussions
-        $discussions = Discussion::latest()->paginate(10);
+        $discussions = Discussion::latest()->with('comment')->paginate(10);
+
+
         return response()->json([
             'discussions' => $discussions,
         ], 200);
