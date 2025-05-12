@@ -10,13 +10,13 @@ function Header() {
     ];
 
     return (
-        <nav className="flex items-center justify-between p-4 bg-slate-100 shadow-sm sticky top-0 z-50 px-14">
+        <nav className="flex items-center justify-between p-2 bg-slate-100 shadow-sm sticky top-0 z-50 px-14">
             {/* Logo and Branding Section */}
             <div className="flex items-center space-x-4">
-                <img className="h-[73px] w-[73px]" src={MMULOGO} alt="MMU Logo" />
+                <img className="h-[71px] w-[72px]" src={MMULOGO} alt="MMU Logo" />
                 <div className="bg-gradient-to-b from-gray-200 to-gray-300 w-px h-16"></div>
                 <div className="text-center transform hover:scale-105 transition-transform duration-200">
-                    <p className="text-2xl font-bold leading-tight tracking-tight">MMU</p>
+                    <p className="text-2xl font-semibold leading-tight tracking-tight">MMU</p>
                     <p className="text-2xl font-semibold text-gray-800 tracking-wider">ALUMNI</p>
                 </div>
             </div>

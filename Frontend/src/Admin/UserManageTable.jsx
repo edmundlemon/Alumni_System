@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import AddUser from './AddUser';
 
 export default function UserManageTable() {
     const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function UserManageTable() {
     const token = Cookies.get('adminToken');
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [showUserProfile, setShowUserProfile] = useState(false);
+    const [showAddUser, setShowAddUser] = useState(false);
     const printRef = useRef();
 
     useEffect(() => {
@@ -133,7 +135,7 @@ export default function UserManageTable() {
                         <BiExport size={16} />
                         Export
                     </button>
-                    <button className="flex items-center gap-1 bg-violet-600 text-white px-6 py-2 rounded text-xs">
+                    <button className="flex items-center gap-1 bg-violet-600 text-white px-6 py-2 rounded text-xs" onClick={() => setShowAddUser(true)}>
                         <FaPlus size={10} />
                         <span>Add User</span>
                     </button>
@@ -212,7 +214,7 @@ export default function UserManageTable() {
                         >
                             {i + 1}
                         </button>
-                    ))}
+                    ))}ee
                     <button
                         onClick={() => handleChangePage(currentPage + 1)}
                         disabled={currentPage === totalPages}
@@ -235,6 +237,11 @@ export default function UserManageTable() {
                         <UserProfile user={selectedUserId} onClose={() => setShowUserProfile(false)} />
                     </div>
                 </>
+            )}
+            {showAddUser && (
+                <div className='fixed z-50 top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50'>
+                    <AddUser onClose={() => setShowAddUser(false)} />
+                </div>
             )}
         </div>
     );

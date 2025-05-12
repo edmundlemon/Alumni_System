@@ -34,15 +34,15 @@ export default function LoginPage() {
   const handleLoginSubmit = (event) => {
     event.preventDefault();
 
-    // let inputError = { studentID: "", password: "" };
+    let inputError = { studentID: "", password: "" };
 
-    // if (!loginPost.studentID) {
-    //   inputError.studentID = "* Student ID is required";
-    // }
+    if (!loginPost.studentID) {
+      inputError.studentID = "* Student ID is required";
+    }
 
-    // if (!loginPost.password) {
-    //   inputError.password = "* Password is required";
-    // }
+    if (!loginPost.password) {
+      inputError.password = "* Password is required";
+    }
 
     // if (!loginPost.password) {
     //   inputError.password = "* Password is required";
@@ -58,12 +58,12 @@ export default function LoginPage() {
     //   inputError.password = "* Password must contain at least one lowercase letter";
     // }
 
-    // if (inputError.studentID || inputError.password) {
-    //   setFormError(inputError);
-    //   return;
-    // }
+    if (inputError.studentID || inputError.password) {
+      setFormError(inputError);
+      return;
+    }
 
-    // setFormError({ studentID: "", password: "" });
+    setFormError({ studentID: "", password: "" });
 
     axios.post('http://localhost:8000/api/user_login', loginPost)
             .then(response => {
@@ -88,7 +88,7 @@ export default function LoginPage() {
       alert("Email is required to send OTP");
       return;
     }
-    axios.post('http://localhost:8000/api/forgot_password', {email:resetPassPost.email})
+    axios.post('http://localhost:8000/api/reset_password', {email:resetPassPost.email})
         .then(response => {
             console.log('Response:', response.data);
             setMessage('OTP sent to your email.');
