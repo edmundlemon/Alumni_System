@@ -214,7 +214,7 @@ export default function UserManageTable() {
                         >
                             {i + 1}
                         </button>
-                    ))}ee
+                    ))}
                     <button
                         onClick={() => handleChangePage(currentPage + 1)}
                         disabled={currentPage === totalPages}
