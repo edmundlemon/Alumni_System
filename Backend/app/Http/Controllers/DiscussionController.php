@@ -28,14 +28,38 @@ class DiscussionController extends Controller
     {
         // Fetch discussions for connected users
         $user = Auth::guard('sanctum')->user();
-        $connectedUsers = $user->connectedUsers();
-        // $connectedUsers = $user->connections()->pluck('accepting_user_id');
+        // To find out the connected users
+        $acceptedConnections = $user->acceptedConnections
+        ->makeHidden(['pivot', 'major']);
+        $requestedConnections = $user->requestedConnections
+        ->makeHidden(['pivot', 'major']);
+        $connectedUsers = $acceptedConnections->merge($requestedConnections)->pluck('id');
+        // Fetch discussions for connected users
         $discussions = Discussion::whereIn('user_id', $connectedUsers)->with('comments')->latest()->paginate(10);
         return response()->json([
             'discussions' => $discussions,
         ], 200);
     }
 
+    public function viewMyOwnDiscussion()
+    {
+        // Fetch discussions for connected users
+        $user = Auth::guard('sanctum')->user();
+        // To find out the connected users
+        $discussions = Discussion::where('user_id', $user->id)->with('comments')->latest()->paginate(10);
+        return response()->json([
+            'discussions' => $discussions,
+        ], 200);
+    }
+
+    public function viewComments(Discussion $discussion)
+    {
+        // Fetch comments for a specific discussion
+        $comments = $discussion->comments()->latest()->paginate(10);
+        return response()->json([
+            'comments' => $comments,
+        ], 200);
+    }
     /**
      * Show the form for creating a new resource.
      */
