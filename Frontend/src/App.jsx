@@ -24,6 +24,7 @@ function AppRoutes() {
         <Route path="/userManageTable" element={<UserManageTable />} />
         <Route path="/addUser" element={<AddUser />} />
         <Route path="/mainPage" element={<MainPage />} />
+        <Route path="/reset-password" element={<Login initialForm="resetPassword" />} />
         <Route path="/403" element={
           <div className="flex justify-center items-center h-[100vh]">
             <h1 className="text-2xl">403 Forbidden</h1>
