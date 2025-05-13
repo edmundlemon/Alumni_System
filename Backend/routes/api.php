@@ -27,6 +27,8 @@ Route::middleware('auth:sanctum')->post('/user_logout', [LoginController::class,
 Route::middleware('guest')->post('/forgot_password', [LoginController::class, 'userForgotPassword']);
 Route::middleware('guest')->post('/reset_password', [LoginController::class, 'userResetPassword']);
 Route::middleware('auth:sanctum')->get('/connected_users', [UserController::class, 'viewConnectedUsers']);
+Route::middleware('auth:sanctum')->get('/view_connected_users_discussion', [DiscussionController::class, 'viewConnectedUsersDiscussion']);
+Route::middleware('auth:sanctum')->get('/view_all_discussions', [DiscussionController::class, 'index']);
 
 // Routes for logged in users
 Route::middleware('auth:sanctum')->get('/view_all_majors', [MajorController::class, 'index']);

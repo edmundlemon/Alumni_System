@@ -16,7 +16,7 @@ class DiscussionController extends Controller
     {
         //
         // Fetch all discussions
-        $discussions = Discussion::latest()->with('comment')->paginate(10);
+        $discussions = Discussion::latest()->with('comments')->paginate(10);
 
 
         return response()->json([
@@ -30,7 +30,7 @@ class DiscussionController extends Controller
         $user = Auth::guard('sanctum')->user();
         $connectedUsers = $user->connectedUsers();
         // $connectedUsers = $user->connections()->pluck('accepting_user_id');
-        $discussions = Discussion::whereIn('user_id', $connectedUsers)->latest()->paginate(10);
+        $discussions = Discussion::whereIn('user_id', $connectedUsers)->with('comments')->latest()->paginate(10);
         return response()->json([
             'discussions' => $discussions,
         ], 200);
