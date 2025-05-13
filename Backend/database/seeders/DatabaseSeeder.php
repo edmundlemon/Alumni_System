@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Admin;
+use App\Models\Discussion;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Major;
+use App\Models\Comment;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -88,6 +90,15 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => bcrypt('password'),
             'phone' => '1234567890',
+        ]);
+
+        Discussion::factory()->count(10)->create([
+            'user_id' => User::inRandomOrder()->first()->id,
+        ]);
+
+        Comment::factory()->count(25)->create([
+            'user_id' => User::inRandomOrder()->first()->id,
+            'discussion_id' => Discussion::inRandomOrder()->first()->id,
         ]);
 
 

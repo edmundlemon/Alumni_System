@@ -77,7 +77,7 @@ class LoginController extends Controller
             return response()->json([
                 'token' => $token,
                 'message' => 'Login successful!',
-                'user' => $user,
+                'user' => $user->makeHidden(['password', 'remember_token', 'major']),
                 // 'role' => Auth::user()->role()
             ], 200);
         }
