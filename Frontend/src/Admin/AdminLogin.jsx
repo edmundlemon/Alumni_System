@@ -7,8 +7,8 @@ import Cookies from "js-cookie";
 export default function AdminLogin() {
     const navigate = useNavigate ();
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [loginPost, setLoginPost] = useState({ email: "", password: "" });
-    const [formError, setFormError] = useState({ email: "", password: "" });
+    const [loginPost, setLoginPost] = useState({ id: "", password: "" });
+    const [formError, setFormError] = useState({ id: "", password: "" });
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
@@ -21,9 +21,9 @@ export default function AdminLogin() {
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        let inputError = { email: "", password: "" };
+        let inputError = { id: "", password: "" };
 
-        if (!loginPost.email) inputError.email = "* Email is required";
+        if (!loginPost.id) inputError.id = "* id is required";
         if (!loginPost.password) inputError.password = "* Password is required";
         // else if (loginPost.password.length < 6) inputError.password = "* Password must be at least 6 characters";
         // else if (!/[A-Z]/.test(loginPost.password)) inputError.password = "* Password must contain at least one uppercase letter";
@@ -32,12 +32,12 @@ export default function AdminLogin() {
         // else if (!/[a-z]/.test(loginPost.password)) inputError.password = "* Password must contain at least one lowercase letter";
         // else if (/\s/.test(loginPost.password)) {inputError.password = "* Password cannot contain spaces";}
 
-        if (inputError.email || inputError.password) {
+        if (inputError.id || inputError.password) {
             setFormError(inputError);
             return;
         }
 
-        setFormError({ email: "", password: "" });
+        setFormError({ id: "", password: "" });
 
         axios.post('http://localhost:8000/api/admin_login', loginPost)
         .then(response => {
@@ -62,18 +62,18 @@ export default function AdminLogin() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-1">
-                            Email Address
+                            Admin ID
                         </label>
                         <input
-                            type="email"
-                            name="email"
-                            value={loginPost.email}
+                            type="text"
+                            name="id"
+                            value={loginPost.id}
                             onChange={handleInput}
                             className={`w-full border ${
-                                formError.email ? "border-red-500" : "border-gray-300"
+                                formError.id ? "border-red-500" : "border-gray-300"
                             } rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                         />
-                        {formError.email && <p className="text-red-500 text-xs mt-1">{formError.email}</p>}
+                        {formError.id && <p className="text-red-500 text-xs mt-1">{formError.id}</p>}
                     </div>
 
                     <div>

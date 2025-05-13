@@ -8,8 +8,9 @@ export default function AddUser({onClose}) {
         email: "",
         role: "",
         name: "",
-        // major: "",
-        // faculty: "",
+        major: "",
+        major_id: "",
+        faculty: "",
     });
 
     const handleInput = (event) => {
@@ -66,6 +67,39 @@ export default function AddUser({onClose}) {
                             name="name" 
                             onChange={handleInput}
                             value={userData.name}
+                            required 
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">faculty</label>
+                        <input 
+                            type="text" 
+                            name="faculty" 
+                            onChange={handleInput}
+                            value={userData.faculty}
+                            required 
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="major" className="block text-sm font-medium text-gray-700">major</label>
+                        <input 
+                            type="text" 
+                            name="major" 
+                            onChange={handleInput}
+                            value={userData.major}
+                            required 
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="major_id" className="block text-sm font-medium text-gray-700">major_id</label>
+                        <input 
+                            type="text" 
+                            name="major_id" 
+                            onChange={handleInput}
+                            value={userData.major_id}
                             required 
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
                         />

@@ -3,12 +3,12 @@ import MMULOGO from "../assets/MMULogo.png";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useNavigate  } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [currentForm, setCurrentForm] = useState('login');
-  const [formError, setFormError] = useState({ studentID: "", password: "" });
+  const [currentForm, setCurrentForm] = useState("login");
+  const [formError, setFormError] = useState({ id: "", password: "" });
   const [loginPost, setLoginPost] = useState({ email: "", password: "" });
   const [resetPassPost, setResetPassPost] = useState({
     email: "",
@@ -34,10 +34,10 @@ export default function LoginPage() {
   const handleLoginSubmit = (event) => {
     event.preventDefault();
 
-    let inputError = { studentID: "", password: "" };
+    let inputError = { id: "", password: "" };
 
-    if (!loginPost.studentID) {
-      inputError.studentID = "* Student ID is required";
+    if (!loginPost.id) {
+      inputError.id = "* Student ID is required";
     }
 
     if (!loginPost.password) {
@@ -58,27 +58,31 @@ export default function LoginPage() {
     //   inputError.password = "* Password must contain at least one lowercase letter";
     // }
 
-    if (inputError.studentID || inputError.password) {
+    if (inputError.id || inputError.password) {
       setFormError(inputError);
       return;
     }
 
-    setFormError({ studentID: "", password: "" });
+    setFormError({ id: "", password: "" });
 
-    axios.post('http://localhost:8000/api/user_login', loginPost)
-            .then(response => {
-                console.log(response);
-                const token = response.data.token;
-                Cookies.set('token', token);
-                console.log(token);
-                navigate('/SearchJob');
-            })
-            .catch(error => {
-                console.log(error);
-                if (error.response.status === 401) {
-                    setFormError({ email: 'Invalid email or password', password: 'Invalid email or password' });
-                }
-            });
+    axios
+      .post("http://localhost:8000/api/user_login", loginPost)
+      .then((response) => {
+        console.log(response);
+        const token = response.data.token;
+        Cookies.set("token", token);
+        console.log(token);
+        navigate("/SearchJob");
+      })
+      .catch((error) => {
+        console.log(error);
+        if (error.response.status === 401) {
+          setFormError({
+            email: "Invalid email or password",
+            password: "Invalid email or password",
+          });
+        }
+      });
   };
 
   const handleResetSubmit = (event) => {
@@ -88,19 +92,24 @@ export default function LoginPage() {
       alert("Email is required to send OTP");
       return;
     }
-    axios.post('http://localhost:8000/api/reset_password', {email:resetPassPost.email})
-        .then(response => {
-            console.log('Response:', response.data);
-            setMessage('OTP sent to your email.');
-            setCurrentForm('resetPassword');
-        })
-        .catch(error => {
-            console.error('Error sending OTP:', error);
-            setMessage('Error sending OTP.');
-    });
+    axios
+      .post("http://localhost:8000/api/forgot_password", {
+        email: resetPassPost.email,
+      })
+      .then((response) => {
+        console.log("Response:", response.data);
+        setMessage("OTP sent to your email.");
+        setCurrentForm("resetPassword");
+      })
+      .catch((error) => {
+        console.error("Error sending OTP:", error);
+        if (error.response && error.response.status === 422) {
+          console.error("Validation errors:", error.response.data.errors);
+      } else {
+          console.error("There was an error adding the user!", error);
+      }
+      });
   };
-
-  
 
   return (
     <div className="flex justify-center mt-10">
@@ -138,21 +147,21 @@ export default function LoginPage() {
             <form className="space-y-6" onSubmit={handleLoginSubmit}>
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="id"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Email
+                  id
                 </label>
                 <input
-                  name="email"
-                  type="email"
-                  placeholder="Enter email address"
-                  value={loginPost.email}
+                  name="id"
+                  type="id"
+                  placeholder="Enter id address"
+                  value={loginPost.id}
                   onChange={handleInput}
                   className="h-11 w-full px-4 py-3 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                  style={{ border: formError.studentID ? "1px solid red" : "" }}
+                  style={{ border: formError.id ? "1px solid red" : "" }}
                 />
-                <p className="text-red-600 text-xs">{formError.studentID}</p>
+                <p className="text-red-600 text-xs">{formError.id}</p>
               </div>
 
               <div className="flex flex-col">
@@ -169,7 +178,7 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={loginPost.password}
                     onChange={handleInput}
-                    className="h-11 w-full px-4 py-3 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-10" 
+                    className="h-11 w-full px-4 py-3 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-10"
                     style={{
                       border: formError.password ? "1px solid red" : "",
                     }}
