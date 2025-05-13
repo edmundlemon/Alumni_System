@@ -25,7 +25,7 @@ class User extends Authenticatable
 
     protected $guard = 'user';
     protected $role;
-    protected $appends = ['major_name'];
+    protected $appends = ['major_name', 'faculty'];
 
 
     /**
@@ -103,7 +103,11 @@ class User extends Authenticatable
     }
     public function getMajorNameAttribute()
     {
-        return $this->major ? $this->major->name : null;
+        return $this->major->major_name ?? null;
+    }
+    public function getFacultyAttribute()
+    {
+        return $this->major->faculty->faculty_name ?? null;
     }
     public function major()
     {
@@ -121,12 +125,12 @@ class User extends Authenticatable
     public function requestedConnections()
     {
         return $this->belongsToMany(User::class, 'connections', 'requesting_user_id', 'accepting_user_id')
-                    ->wherePivot('status', 'accepted')->with('major');
+                    ->wherePivot('status', 'accepted');
     }
     public function acceptedConnections()
     {
         return $this->belongsToMany(User::class, 'connections', 'accepting_user_id', 'requesting_user_id')
-                    ->wherePivot('status', 'accepted')->with('major');
+                    ->wherePivot('status', 'accepted');
     }
     public function pendingReceivedRequests()
     {

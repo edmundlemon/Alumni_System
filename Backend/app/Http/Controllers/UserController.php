@@ -63,8 +63,10 @@ class UserController extends Controller
     {
         $user = Auth::guard('sanctum')->user();
         // Fetch all connections
-        $acceptedConnections = $user->acceptedConnections;
-        $requestedConnections = $user->requestedConnections;
+        $acceptedConnections = $user->acceptedConnections
+        ->makeHidden(['pivot', 'major']);
+        $requestedConnections = $user->requestedConnections
+        ->makeHidden(['pivot', 'major']);
         $connectedUsers = $acceptedConnections->merge($requestedConnections);
 
         return response()->json([
