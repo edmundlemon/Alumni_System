@@ -3,13 +3,17 @@ import MMULOGO from "../assets/MMULogo.png";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
-export default function LoginPage() {
+export default function LoginPage({ initialForm = "login" }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
-  const [currentForm, setCurrentForm] = useState("login");
+  const [currentForm, setCurrentForm] = useState(initialForm);
   const [formError, setFormError] = useState({ id: "", password: "" });
   const [loginPost, setLoginPost] = useState({ email: "", password: "" });
+  const [formResetError, setFormResetError] = useState({ password: "" , password_confirmation: ""});
   const [resetPassPost, setResetPassPost] = useState({
     email: "",
     token: "",
@@ -17,10 +21,21 @@ export default function LoginPage() {
     password_confirmation: "",
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [resetPassVisible, setResetPassVisible] = useState(false);
+  const [resetPassConfirmVisible, setResetPassConfirmVisible] = useState(false);
+
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
+
+  const toggleResetPassVisibility = () => {
+    setResetPassVisible(!resetPassVisible);
+};
+
+const toggleResetPassConfirmVisibility = () => {
+    setResetPassConfirmVisible(!resetPassConfirmVisible);
+};
 
   const handleInput = (event) => {
     const { name, value } = event.target;
@@ -43,20 +58,6 @@ export default function LoginPage() {
     if (!loginPost.password) {
       inputError.password = "* Password is required";
     }
-
-    // if (!loginPost.password) {
-    //   inputError.password = "* Password is required";
-    // } else if (loginPost.password.length < 6) {
-    //   inputError.password = "* Password must be at least 6 characters";
-    // } else if (!/[A-Z]/.test(loginPost.password)) {
-    //   inputError.password = "* Password must contain at least one uppercase letter";
-    // } else if (!/[0-9]/.test(loginPost.password)) {
-    //   inputError.password = "* Password must contain at least one number";
-    // } else if (!/[!@#$%^&*]/.test(loginPost.password)) {
-    //   inputError.password = "* Password must contain at least one special character";
-    // } else if (!/[a-z]/.test(loginPost.password)) {
-    //   inputError.password = "* Password must contain at least one lowercase letter";
-    // }
 
     if (inputError.id || inputError.password) {
       setFormError(inputError);
@@ -92,6 +93,7 @@ export default function LoginPage() {
       alert("Email is required to send OTP");
       return;
     }
+    
     axios
       .post("http://localhost:8000/api/forgot_password", {
         email: resetPassPost.email,
@@ -103,13 +105,75 @@ export default function LoginPage() {
       })
       .catch((error) => {
         console.error("Error sending OTP:", error);
-        if (error.response && error.response.status === 422) {
-          console.error("Validation errors:", error.response.data.errors);
-      } else {
-          console.error("There was an error adding the user!", error);
-      }
+        console.error("Validation errors:", error.response.data.errors);
       });
   };
+
+  const handleResetPasswordSubmit = (event) => {
+    event.preventDefault();
+    let inputError = { password: "", password_confirmation: "" };
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    const email = params.get("email");
+    console.log("Token:", token);
+    console.log("Email:", email);
+  
+    if (!resetPassPost.password) {
+      inputError.password = "* Password is required";
+    }
+  
+    if (!resetPassPost.password_confirmation) {
+      inputError.password_confirmation = "* Confirm Password is required";
+    }
+  
+    if (
+      resetPassPost.password &&
+      resetPassPost.password_confirmation &&
+      resetPassPost.password !== resetPassPost.password_confirmation
+    ) {
+      inputError.password = "* Passwords do not match";
+      inputError.password_confirmation = "* Passwords do not match";
+    }
+  
+    // If there are any errors, show them and stop submission
+    if (inputError.password || inputError.password_confirmation) {
+      setFormResetError(inputError);
+      return;
+    }
+  
+    // Clear previous errors
+    setFormResetError({ password: "", password_confirmation: "" });
+    setIsSubmitting(true);
+
+    // Make the API call to reset the password
+    axios
+      .post("http://localhost:8000/api/reset_password", {
+        email: email,
+        token: token,
+        password: resetPassPost.password,
+        password_confirmation: resetPassPost.password_confirmation,
+      })
+      .then((response) => {
+        console.log("Password reset response:", response.data);
+        alert("Password reset successfully");
+        navigate("/login");
+      })
+      .catch((error) => {
+        console.error("Error resetting password:", error);
+        if (error.response && error.response.status === 422) {
+          console.error("Validation errors:", error.response.data.errors);
+          setFormResetError(error.response.data.errors);
+        } else {
+          console.error("There was an error resetting the password!", error);
+        }
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+  
+    
+  };
+  
 
   return (
     <div className="flex justify-center mt-10">
@@ -257,6 +321,95 @@ export default function LoginPage() {
             </form>
           </div>
         )}
+
+{currentForm === "resetPassword" && (
+  <div className="w-[320px] p-10 flex flex-col justify-center">
+    <div className="mb-8">
+      <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        Reset Password
+      </h1>
+      <p className="text-gray-600">Enter your new password</p>
+    </div>
+
+    <form className="space-y-6" onSubmit={handleResetPasswordSubmit}>
+      {/* New Password Field */}
+      <div className="flex flex-col">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          New Password
+        </label>
+        <div className="relative">
+          <input
+            name="password"
+            type={resetPassVisible ? "text" : "password"}
+            placeholder="Enter new password"
+            value={resetPassPost.password}
+            onChange={handleInput}
+            className={`h-11 w-full px-4 py-3 border text-sm rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-10 ${
+              formResetError.password ? "border-red-500" : "border-gray-300"
+            }`}
+          />
+          <span
+            onClick={toggleResetPassVisibility}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+          >
+            {resetPassVisible ? <FaRegEye /> : <FaRegEyeSlash />}
+          </span>
+        </div>
+        {formResetError.password && (
+          <p className="text-red-600 text-xs mt-1">
+            {formResetError.password}
+          </p>
+        )}
+      </div>
+
+      {/* Confirm Password Field */}
+      <div className="flex flex-col">
+        <label
+          htmlFor="password_confirmation"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Confirm Password
+        </label>
+        <div className="relative">
+          <input
+            name="password_confirmation"
+            type={resetPassConfirmVisible ? "text" : "password"}
+            placeholder="Confirm new password"
+            value={resetPassPost.password_confirmation}
+            onChange={handleInput}
+            className={`h-11 w-full px-4 py-3 border text-sm rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-10 ${
+              formResetError.password_confirmation ? "border-red-500" : "border-gray-300"
+            }`}
+          />
+          <span
+            onClick={toggleResetPassConfirmVisibility}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600"
+          >
+            {resetPassConfirmVisible ? <FaRegEye /> : <FaRegEyeSlash />}
+          </span>
+        </div>
+        {formResetError.password_confirmation && (
+          <p className="text-red-600 text-xs mt-1">
+            {formResetError.password_confirmation}
+          </p>
+        )}
+      </div>
+
+      <button
+  type="submit"
+  disabled={isSubmitting}
+  className={`h-11 w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-3 px-4 rounded-md transition duration-200 transform hover:scale-[1.01] ${
+    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+  }`}
+>
+  {isSubmitting ? "Processing..." : "Reset Password"}
+</button>
+    </form>
+  </div>
+)}
       </div>
     </div>
   );
