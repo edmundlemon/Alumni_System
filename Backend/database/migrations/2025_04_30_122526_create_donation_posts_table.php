@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description');
             $table->float('target_amount');
             $table->date('end_date');
-            $table->string('status')->default('active'); // active, completed, cancelled
+            $table->string('status')->default('ongoing'); // ongoing, completed, cancelled
             $table->timestamps();
         });
     }

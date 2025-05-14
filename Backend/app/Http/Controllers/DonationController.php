@@ -13,6 +13,11 @@ class DonationController extends Controller
     public function index()
     {
         //
+        $donations = Donation::latest()->all()->get();
+        return response()->json([
+            // 'status' => 200,
+            'donations' => $donations
+        ], 200);
     }
 
     /**
