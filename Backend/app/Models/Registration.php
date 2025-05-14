@@ -9,6 +9,21 @@ class Registration extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'user_id',
+        'event_id',
+        'created_by',
+        'updated_by',
+    ];
+
+    protected $appends = [
+        'attendee_name',
+    ];
+
+    public function getAttendedNameAttribute()
+    {
+        return $this->user->name;
+    }
 
     public function user()
     {

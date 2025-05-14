@@ -11,13 +11,30 @@ class Donation extends Model
     protected $fillable = [
         'donation_post_id',
         'user_id',
-        'amount',
-        'status',
+        'donated_amount',
+        // 'status',
+    ];
+    protected $appends = [
+        'donor_name',
+        'donor_id',
     ];
     protected $casts = [
-        'amount' => 'float',
+        'donated_amount' => 'float',
     ];
-    protected $with = ['user', 'donationPost'];
+    protected $hidden = [
+        'donations_post',
+    ];
+    // protected $with = ['user', 'donationPost'];
+
+    public function getDonorNameAttribute()
+    {
+        return $this->user->name;
+    }
+    public function getDonorIdAttribute()
+    {
+        return $this->user->id;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
