@@ -49,7 +49,6 @@ class LoginController extends Controller
     {
         // Log the user out
         $user = Auth::guard('sanctum')->user();
-        // Log::channel('api_post_log')->error('User Logged Out: ', ['user' => $user]);
         $user->tokens()->delete();
         return response()->json([
             'message' => 'Logged out'
@@ -93,7 +92,6 @@ class LoginController extends Controller
     {
         // Log the user out
         $user = Auth::guard('sanctum')->user();
-        // Log::channel('api_post_log')->error('User Logged Out: ', ['user' => $user]);
         $user->tokens()->delete();
         return response()->json([
             'message' => 'Logged out'

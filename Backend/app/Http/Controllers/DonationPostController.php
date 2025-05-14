@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
-
+ini_set('memory_limit', '256M');
+use App\Models\Donation;
 use App\Models\DonationPost;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DonationPostController extends Controller
 {
@@ -13,6 +15,14 @@ class DonationPostController extends Controller
     public function index()
     {
         //
+        $donationPosts = DonationPost::get();
+        // dd($donationPosts);
+        // Log::channel('auth_activity')->info('Donation posts retrieved successfully.', [
+        //     'donationPosts' => $donationPosts,
+        // ]);
+        return response()->json([
+            'donationPosts' => $donationPosts,
+        ]);
     }
 
     /**

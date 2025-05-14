@@ -4,10 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Admin;
-use App\Models\Discussion;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Major;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Comment;
+use App\Models\Donation;
+use App\Models\Discussion;
+use App\Models\DonationPost;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -75,13 +77,13 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        User::create([
-            'name' => 'Test User',
-            'email' => 'edmundngxhunyan@gmail.com',
-            'password' => bcrypt('password'),
-            'phone' => '1234567890',
-            'major_id' => 1,
-        ]);
+        // User::create([
+        //     'name' => 'Test User',
+        //     'email' => 'edmundngxhunyan@gmail.com',
+        //     'password' => bcrypt('password'),
+        //     'phone' => '1234567890',
+        //     'major_id' => 1,
+        // ]);
 
         User::factory()->count(10)->withConnections(2)->create();
 
@@ -101,7 +103,8 @@ class DatabaseSeeder extends Seeder
             'discussion_id' => Discussion::inRandomOrder()->first()->id,
         ]);
 
-
+        DonationPost::factory()->count(2)->create();
+        Donation::factory()->count(5)->create();
         
     }
 }

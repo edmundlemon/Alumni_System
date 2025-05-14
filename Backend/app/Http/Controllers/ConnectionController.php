@@ -20,16 +20,35 @@ class ConnectionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create(Request $request, User $acceptingUser)
+    
     {
         //
         $user = Auth::guard('sanctum')->user();
-        $request->validate([
-            'user_id' => 'required|integer',
-        ]);
+        if($acceptingUser->id === $user->id) {
+            return response()->json([
+                'error' => 'You cannot send a connection request to yourself',
+            ], 400);
+        }
+        if ($user->isConnected($acceptingUser)) {
+            return response()->json([
+                'error' => 'You are already connected with this user',
+            ], 400);
+        }
+        // if ($user->hasPendingRequest($acceptingUser)) {
+        //     return response()->json([
+        //         'error' => 'You have already sent a connection request to this user',
+        //     ], 400);
+        // }
+        if (!$user)
+        {
+            return response()->json([
+                'error' => 'User not found',
+            ], 404);
+        }
         $connection = new Connection();
         $connection->requesting_user_id = $user->id;
-        $connection->accepting_user_id = $request->user_id;
+        $connection->accepting_user_id = $acceptingUser->id;
         $connection->status = 'pending';
         $connection->save();
         return response()->json([
