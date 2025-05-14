@@ -13,6 +13,19 @@ class EventController extends Controller
     public function index()
     {
         //
+        // $events = Event::with('organizer')->latest()->filter(request(['search']))->paginate(10);
+        // return view('admin.events.index', [
+        //     'events' => $events,
+        //     'title' => 'Events',
+        //     'active' => 'events',
+        // ]);
+        $events = Event::latest()->all();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Events fetched successfully',
+            'events' => $events,
+        ], 200);
     }
 
     /**

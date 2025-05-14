@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\DonationController;
@@ -37,6 +38,13 @@ Route::middleware('auth:sanctum')->get('/view_my_own_discussion', [DiscussionCon
 // Donation Routes
 Route::middleware('auth:sanctum')->get('/view_all_donation_posts', [DonationPostController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/view_all_donations', [DonationController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/view_donations_by_donation_post/{donationPost}', [DonationPostController::class, 'getDonationPostsByDonationId']);
+// Admin routes for Donation posts
+Route::middleware('auth:sanctum')->post('/create_donation_post', [DonationPostController::class, 'create']);
+Route::middleware('auth:sanctum')->put('/edit_donation_post/{donationPost}', [DonationPostController::class, 'update']);
+Route::middleware('auth:sanctum')->delete('/cancel_donation_post/{donationPost}', [DonationPostController::class, 'cancelDonationPost']);
+// Event Routes
+Route::middleware('auth:sanctum')->get('/view_all_events', [EventController::class, 'index']);
 
 // Routes for logged in users
 Route::middleware('auth:sanctum')->get('/view_all_majors', [MajorController::class, 'index']);

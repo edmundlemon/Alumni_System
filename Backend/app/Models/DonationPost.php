@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Admin;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DonationPost extends Model
 {
@@ -12,25 +13,25 @@ class DonationPost extends Model
         'donation_title',
         'description',
         'target_amount',
-        // 'current_amount',
-        'user_id',
+        'admin_id',
+        'end_date',
         'status',
     ];
-    protected $casts = [
-        'goal_amount' => 'float',
-        'current_amount' => 'float',
-    ];
-    protected $with = ['user', 'donations'];
+    // protected $with = ['user', 'donations'];
     protected $appends = [
         'current_amount',
         'donation_count',
         'donation_percentage',
-        'donation_status',
-        'donation_status_text',
+        // 'donation_status',
+        // 'donation_status_text',
+    ];
+    protected $casts = [
+        'target_amount' => 'float',
+        'current_amount' => 'float',
     ];
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Admin::class);
     }
     public function donations()
     {
@@ -38,22 +39,25 @@ class DonationPost extends Model
     }
     public function getCurrentAmountAttribute()
     {
-        return $this->donations->sum('amount');
+        return round($this->donations()->sum('donated_amount'),2);
     }
     public function getDonationCountAttribute()
     {
-        return $this->donations->count();
+        return $this->donations()->count();
     }
     public function getDonationPercentageAttribute()
     {
-        return ($this->current_amount / $this->goal_amount) * 100;
+        if ($this->target_amount == 0) {
+            return 0;
+        }
+        return round(($this->current_amount / $this->target_amount) * 100, 0);
     }
-    public function getDonationStatusAttribute()
-    {
-        return $this->current_amount >= $this->goal_amount ? 'completed' : 'ongoing';
-    }
-    public function getDonationStatusTextAttribute()
-    {
-        return $this->donation_status === 'completed' ? 'Completed' : 'Ongoing';
-    }
+    // public function getDonationStatusAttribute()
+    // {
+    //     return $this->current_amount >= $this->target_amount ? 'completed' : 'ongoing';
+    // }
+    // public function getDonationStatusTextAttribute()
+    // {
+    //     return $this->donation_status === 'completed' ? 'Completed' : 'Ongoing';
+    // }
 }
