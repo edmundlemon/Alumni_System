@@ -77,14 +77,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // User::create([
-        //     'name' => 'Test User',
-        //     'email' => 'edmundngxhunyan@gmail.com',
-        //     'password' => bcrypt('password'),
-        //     'phone' => '1234567890',
-        //     'major_id' => 1,
-        // ]);
-
         User::factory()->count(10)->withConnections(2)->create();
 
         Admin::create([
