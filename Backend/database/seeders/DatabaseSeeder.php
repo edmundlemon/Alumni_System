@@ -85,7 +85,11 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'phone' => '1234567890',
         ]);
-
+        Discussion::create([
+            'user_id' => 1221,
+            'subject' => 'Test Discussion',
+            'content' => 'This is a test discussion content.',
+        ]);
         Discussion::factory()->count(10)->create([
             'user_id' => User::inRandomOrder()->first()->id,
         ]);

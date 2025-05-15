@@ -18,7 +18,7 @@ class DonationPostController extends Controller
         //
         $donationPosts = DonationPost::get();
         return response()->json([
-            'donationPosts' => $donationPosts,
+            'donation_posts' => $donationPosts,
         ]);
     }
 
@@ -31,7 +31,7 @@ class DonationPostController extends Controller
         }
         $donationPost = DonationPost::where('id', $donationPost->id)->with('donations')->first();
         return response()->json([
-            'donationPosts' => $donationPost
+            'donation_post' => $donationPost
         ]);
     }
 
@@ -45,17 +45,31 @@ class DonationPostController extends Controller
             'donation_title' => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'target_amount' => 'required|numeric',
-            'end_date' => 'required|date',
+            'end_date' => 'required|date|after:today',
         ]);
+
+        $admin = Auth::guard('sanctum')->user();
+        if (!$admin->hasRole('admin')) {
+            return response()->json([
+                'message' => 'You are not authorized to create a donation post',
+            ], 403);
+        }
+        $donationPost = DonationPost::where('donation_title', $form_fields['donation_title'])->first();
+        if ($donationPost) {
+            return response()->json([
+                'message' => 'Donation post with this title already exists',
+            ], 409);
+        }
         $donationPost = DonationPost::create([
+            'admin_id' => $admin->id,
             'donation_title' => $form_fields['donation_title'],
             'description' => $form_fields['description'],
             'target_amount' => $form_fields['target_amount'],
             'end_date' => $form_fields['end_date'],
         ]);
         return response()->json([
-            'donationPost' => $donationPost
-        ]);
+            'donation_post' => $donationPost
+        ], 201);
     }
 
     /**
@@ -84,7 +98,7 @@ class DonationPostController extends Controller
             'donation_title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string|max:255',
             'target_amount' => 'sometimes|numeric',
-            'end_date' => 'sometimes|date',
+            'end_date' => 'sometimes|date|after:today',
         ]);
 
         $admin = Auth::guard('sanctum')->user();
@@ -96,7 +110,7 @@ class DonationPostController extends Controller
 
         $donationPost->update($form_fields);
         return response()->json([
-            'donationPost' => $donationPost
+            'donation_post' => $donationPost
         ]);
     }
 
