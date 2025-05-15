@@ -1,6 +1,6 @@
 import { MdClose } from "react-icons/md";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 
 export default function AddUser({onClose}) {
@@ -12,6 +12,7 @@ export default function AddUser({onClose}) {
         major_id: "",
         faculty: "",
     });
+    const [majors, setMajors] = useState([]);
 
     const handleInput = (event) => {
         const { name, value } = event.target;
@@ -19,6 +20,22 @@ export default function AddUser({onClose}) {
     }
 
     const token = Cookies.get("adminToken");
+
+    useEffect(() => {
+    axios.get('http://localhost:8000/api/view_all_majors', {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        }
+    })
+    .then(response => {
+        console.log(response.data);
+        setMajors(response.data);
+    })
+    .catch(error => {
+        console.error(error);
+    });
+    }, []);
+
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -32,12 +49,8 @@ export default function AddUser({onClose}) {
                 console.log(response.data);
             })
             .catch(error => {
-                console.error("There was an error adding the user!", error);
-                if (error.response && error.response.status === 422) {
-                    console.error("Validation errors:", error.response.data.errors);
-                } else {
-                    console.error("There was an error adding the user!", error);
-                }
+                console.error(error);
+                alert("An error occurred while adding the user.");
             });
     };
     return(
@@ -82,27 +95,30 @@ export default function AddUser({onClose}) {
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
                         />
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="major" className="block text-sm font-medium text-gray-700">major</label>
-                        <input 
-                            type="text" 
-                            name="major" 
-                            onChange={handleInput}
-                            value={userData.major}
-                            required 
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="major_id" className="block text-sm font-medium text-gray-700">major_id</label>
-                        <input 
-                            type="text" 
-                            name="major_id" 
-                            onChange={handleInput}
-                            value={userData.major_id}
-                            required 
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
-                        />
+                    <div>
+                    <label htmlFor="major_id" className="block text-sm font-medium text-gray-700">Major</label>
+                    <select
+                        name="major_id"
+                        value={userData.major_id}
+                        onChange={(e) => {
+                            const selectedMajor = majors.find(major => major.id === parseInt(e.target.value));
+                            setUserData({
+                                ...userData,
+                                major_id: e.target.value,
+                                major: selectedMajor ? selectedMajor.major_name : "",
+                                faculty: selectedMajor ? selectedMajor.faculty_id.toString() : ""
+                            });
+                        }}
+                        required
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-1 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                        <option value="">Select Major</option>
+                        {majors.map(major => (
+                            <option key={major.id} value={major.id}>
+                                {major.major_name}
+                            </option>
+                        ))}
+                    </select>
                     </div>
                     <div className="mb-4">
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Role</label>
