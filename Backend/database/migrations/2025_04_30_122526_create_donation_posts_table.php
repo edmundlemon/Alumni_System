@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('admin_id')->constrained()->onDelete('cascade');
             $table->string('donation_title');
-            $table->string('description');
+            $table->mediumText('description');
             $table->float('target_amount');
             $table->date('end_date');
             $table->string('status')->default('ongoing'); // ongoing, completed, cancelled
