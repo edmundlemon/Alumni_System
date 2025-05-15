@@ -32,7 +32,7 @@ export default function UserManageTable() {
         const getUsers = async () => {
             try {
                 console.log('Token:', token);
-                const response = await axios.get('http://localhost:8000/api/view_all_students', {
+                const response = await axios.get('http://localhost:8000/api/view_all_users', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     }
@@ -135,7 +135,7 @@ export default function UserManageTable() {
                         <BiExport size={16} />
                         Export
                     </button>
-                    <button className="flex items-center gap-1 bg-violet-600 text-white px-6 py-2 rounded text-xs" onClick={() => setShowAddUser(true)}>
+                    <button className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs" onClick={() => setShowAddUser(true)}>
                         <FaPlus size={10} />
                         <span>Add User</span>
                     </button>
@@ -144,7 +144,7 @@ export default function UserManageTable() {
 
             <div ref={printRef}>
                 <table className="min-w-full bg-white rounded-t-md shadow">
-                    <thead className='bg-violet-100 '>
+                    <thead className='bg-blue-100'>
                         <tr>
                             <th className="p-2 text-center rounded-tl-md">
                                 <input
@@ -179,7 +179,7 @@ export default function UserManageTable() {
                                     />
                                 </td>
                                 <td className="px-2 py-3 text-left">
-                                    <button onClick={() => handleViewUser(user)} className="text-blue-600 hover:underline">
+                                    <button onClick={() => handleViewUser(user)} >
                                         {user.id}
                                     </button>
                                 </td>
@@ -210,7 +210,7 @@ export default function UserManageTable() {
                         <button
                             key={i + 1}
                             onClick={() => handleChangePage(i + 1)}
-                            className={`px-3 py-1 rounded-md text-sm border ${currentPage === i + 1 ? 'bg-violet-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                            className={`px-3 py-1 rounded-md text-sm border ${currentPage === i + 1 ? 'bg-[#1560bd] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                         >
                             {i + 1}
                         </button>

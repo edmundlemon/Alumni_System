@@ -11,12 +11,13 @@ import AddUser from "./Admin/AddUser";
 import MainPage from "./User/MainPage";
 import ViewEvent from "./User/Event/ViewRegisterEvent";
 import EventMainPage from "./User/Event/EventMainPage";
+import ViewEventDetails from "./User/Event/ViewEventDetails";
 
 function AppRoutes() {
   const location = useLocation();
 
   // Only show header on these paths:
-  const showHeader = ["/userLogin", "/mainPage", "/eventMainPage"].includes(location.pathname);
+  const showHeader = ["/userLogin", "/mainPage", "/eventMainPage","/viewEventDetails"].includes(location.pathname);
 
   return (
     <>
@@ -33,6 +34,7 @@ function AppRoutes() {
         <Route path="/reset-password" element={<Login initialForm="resetPassword" />} />
         <Route path="/viewEvent" element={<ViewEvent />} />
         <Route path="/eventMainPage" element={<EventMainPage />} />
+        <Route path="/viewEventDetails" element={<ViewEventDetails />} />
         <Route
           path="/403"
           element={
@@ -41,8 +43,6 @@ function AppRoutes() {
             </div>
           }
         />
-        {/* catch-all redirect */}
-        <Route path="*" element={<Navigate to="/userLogin" replace />} />
       </Routes>
     </>
   );
