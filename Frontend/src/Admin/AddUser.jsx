@@ -1,6 +1,8 @@
 import { MdClose } from "react-icons/md";
 import axios from "axios";
+
 import { useState, useEffect } from "react";
+
 import Cookies from "js-cookie";
 
 export default function AddUser({onClose}) {
@@ -14,12 +16,32 @@ export default function AddUser({onClose}) {
     });
     const [majors, setMajors] = useState([]);
 
+
     const handleInput = (event) => {
         const { name, value } = event.target;
         setUserData({ ...userData, [name]: value });
     }
 
     const token = Cookies.get("adminToken");
+    const [majors, setMajors] = useState([]);
+    useEffect(() => {
+        const fetchMajors = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/view_all_majors', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+                console.log(response.data);
+                setMajors(response.data);
+                console.log(majors);
+            } catch (error) {
+                console.error("Error fetching majors:", error);
+            }
+        };
+
+        fetchMajors();
+    }, [token]);
 
     useEffect(() => {
     axios.get('http://localhost:8000/api/view_all_majors', {
@@ -74,7 +96,7 @@ export default function AddUser({onClose}) {
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">name</label>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
                         <input 
                             type="text" 
                             name="name" 
@@ -85,6 +107,7 @@ export default function AddUser({onClose}) {
                         />
                     </div>
                     <div className="mb-4">
+
                         <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">faculty</label>
                         <input 
                             type="text" 

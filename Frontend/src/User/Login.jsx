@@ -284,7 +284,7 @@ const toggleResetPassConfirmVisibility = () => {
                 Reset Password
               </h1>
               <p className="text-gray-600">
-                Enter your email to receive an OTP
+                Enter your email to receive an password reset Email
               </p>
             </div>
 
@@ -316,7 +316,7 @@ const toggleResetPassConfirmVisibility = () => {
                 type="submit"
                 className="h-11 w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-3 px-4 rounded-md transition duration-200 transform hover:scale-[1.01]"
               >
-                Request OTP
+                Request Email
               </button>
             </form>
           </div>
