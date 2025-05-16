@@ -5,6 +5,7 @@ import { FaAngleDown, FaAngleUp } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
 
 
+
 export default function EventMainPage() {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,12 +17,14 @@ export default function EventMainPage() {
   const [isDayOpen, setIsDayOpen] = useState(false);
   const navigate = useNavigate();
 
+
+
   const mockEvents = [
     {
       id: 1,
       title: "Friday Night Football",
       description: "High school teams clash under stadium lights in an exciting evening match.",
-      date: "2023-05-12",
+      date: "2025-05-12",
       time: "7:00 PM",
       location: "High School Stadium",
       image: "https://picsum.photos/400/250?random=1",
@@ -31,13 +34,16 @@ export default function EventMainPage() {
     {
       id: 2,
       title: "Spooky Time! Pumpkin Carving",
-      description: "Join us for spooky fun and creative carving with the whole family.",
-      date: "2023-05-25",
+      description: "Get ready for an electrifying evening of music, lights, and unforgettable energy as [Artist Name] takes the stage live at Zepp KL, Kuala Lumpur’s premier concert venue. This one-night-only performance is part of their highly anticipated 2025 world tour and promises to deliver an immersive experience that blends powerful vocals, captivating visuals, and a setlist packed with fan favorites and brand-new releases.With state-of-the-art acoustics and an intimate atmosphere, Zepp KL offers the perfect setting for a night of live music you won’t forget. Fans can expect an emotionally charged performance, interactive moments, and stunning stage design that enhances every beat and lyric.Whether you've been following [Artist Name]'s journey from the beginning or are just discovering their music, this concert is your chance to connect with a global music sensation up close and personal. Arrive early to grab exclusive merchandise, meet fellow fans, and soak in the pre-show vibes.",
+      date: "2025-05-25",
       time: "6:00 PM",
       location: "Community Hall",
       image: "https://picsum.photos/400/250?random=2",
       type: "online",
-      status: "upcoming"
+      status: "upcoming",
+      created_at: "2025-04-25",
+      lastUpdated_at: "2025-04-26",
+      postedBy: "John Doe"
     },
     {
       id: 3,
@@ -65,7 +71,7 @@ export default function EventMainPage() {
       id: 10,
       title: "Photography Workshop",
       description: "Learn the art of photography with hands-on experience and expert guidance.",
-      date: "2023-11-15",
+      date: "2025-11-15",
       time: "10:00 AM",
       location: "Art Studio",
       image: "https://picsum.photos/400/250?random=8",

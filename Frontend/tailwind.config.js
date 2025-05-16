@@ -5,6 +5,9 @@ export default {
       fontFamily: {
         sans: ['Poppins', 'sans-serif'], 
       },
+      colors: {
+        'denim': '#1560bd',
+        },
     },
   },
   plugins: [],

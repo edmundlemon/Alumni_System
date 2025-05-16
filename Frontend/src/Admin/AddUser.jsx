@@ -52,6 +52,7 @@ const handleMajorChange = (selectedOption) => {
         }
     })
     .then(response => {
+      console.log(response.data);
         setMajors(response.data);
     })
     .catch(error => {
