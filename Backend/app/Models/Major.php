@@ -9,6 +9,25 @@ class Major extends Model
 {
     use HasFactory;
 
+    protected $appends = [
+        'faculty_name',
+    ];
+
+    protected $fillable = [
+        'name',
+        'faculty_id',
+        'created_by',
+        'updated_by',
+    ];
+
+    public function getFacultyNameAttribute()
+    {
+        return $this->faculty->name;
+    }
+    public function getMajorNameAttribute()
+    {
+        return $this->name;
+    }
     public function users()
     {
         return $this->hasMany(User::class);

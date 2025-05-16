@@ -63,9 +63,24 @@ class DiscussionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         //
+        $request->validate([
+            'subject' => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
+
+        $discussion = Discussion::create([
+            'user_id' => Auth::guard('sanctum')->user()->id,
+            'subject' => $request->subject,
+            'content' => $request->content,
+        ]);
+
+        return response()->json([
+            'message' => 'Discussion created successfully',
+            'discussion' => $discussion,
+        ], 201);
     }
 
     /**
@@ -98,6 +113,24 @@ class DiscussionController extends Controller
     public function update(Request $request, Discussion $discussion)
     {
         //
+        $request->validate([
+            'subject' => 'sometimes|string|max:255',
+            'content' => 'sometimes|string',
+        ]);
+        $user = Auth::guard('sanctum')->user();
+        if ($user->id !== $discussion->user_id) {
+            return response()->json([
+                'message' => 'You are not authorized to update this discussion',
+            ], 403);
+        }
+        $discussion->update([
+            'subject' => $request->subject,
+            'content' => $request->content,
+        ]);
+        return response()->json([
+            'message' => 'Discussion updated successfully',
+            'discussion' => $discussion,
+        ], 200);
     }
 
     /**
@@ -106,5 +139,17 @@ class DiscussionController extends Controller
     public function destroy(Discussion $discussion)
     {
         //
+        $user = Auth::guard('sanctum')->user();
+        if ($user->id !== $discussion->user_id && !$user->hasRole('admin')) {
+            return response()->json([
+                'message' => 'You are not authorized to delete this discussion',
+            ], 403);
+        }
+        
+        $discussion->delete();
+
+        return response()->json([
+            'message' => 'Discussion deleted successfully',
+        ], 200);
     }
 }

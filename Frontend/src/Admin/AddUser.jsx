@@ -1,6 +1,8 @@
 import { MdClose } from "react-icons/md";
 import axios from "axios";
+
 import { useState, useEffect } from "react";
+
 import Cookies from "js-cookie";
 import Select from 'react-select';
 
@@ -44,6 +46,25 @@ const handleMajorChange = (selectedOption) => {
 };
 
     const token = Cookies.get("adminToken");
+    const [majors, setMajors] = useState([]);
+    useEffect(() => {
+        const fetchMajors = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/view_all_majors', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+                console.log(response.data);
+                setMajors(response.data);
+                console.log(majors);
+            } catch (error) {
+                console.error("Error fetching majors:", error);
+            }
+        };
+
+        fetchMajors();
+    }, [token]);
 
     useEffect(() => {
     axios.get('http://localhost:8000/api/view_all_majors', {

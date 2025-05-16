@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Models\Discussion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
@@ -81,5 +82,13 @@ class CommentController extends Controller
     public function destroy(Comment $comment)
     {
         //
+        $admin = Auth::guard('sanctum')->user();
+        if (!$admin->hasRole('admin')) {
+            return response()->json([
+                'message' => 'You are not authorized to delete this comment',
+            ], 403);;
+        }
+        
+        $comment->delete();
     }
 }

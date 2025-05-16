@@ -49,7 +49,7 @@ class PasswordResetTest extends TestCase
 
     public function test_new_user_with_new_password_can_login(){
         $response = $this->postJson('/api/user_login', [
-            'email' => 'test@example.com',
+            'id' => 1221,
             'password' => 'newpassword123',
         ]);
         $response->assertStatus(200)
