@@ -1,6 +1,6 @@
 import { MdClose } from "react-icons/md";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 
 export default function AddUser({onClose}) {
@@ -13,12 +13,32 @@ export default function AddUser({onClose}) {
         faculty: "",
     });
 
+
     const handleInput = (event) => {
         const { name, value } = event.target;
         setUserData({ ...userData, [name]: value });
     }
 
     const token = Cookies.get("adminToken");
+    const [majors, setMajors] = useState([]);
+    useEffect(() => {
+        const fetchMajors = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/view_all_majors', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+                console.log(response.data);
+                setMajors(response.data);
+                console.log(majors);
+            } catch (error) {
+                console.error("Error fetching majors:", error);
+            }
+        };
+
+        fetchMajors();
+    }, [token]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -61,7 +81,7 @@ export default function AddUser({onClose}) {
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">name</label>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
                         <input 
                             type="text" 
                             name="name" 
@@ -72,37 +92,21 @@ export default function AddUser({onClose}) {
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">faculty</label>
-                        <input 
-                            type="text" 
-                            name="faculty" 
-                            onChange={handleInput}
-                            value={userData.faculty}
-                            required 
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="major" className="block text-sm font-medium text-gray-700">major</label>
-                        <input 
-                            type="text" 
-                            name="major" 
-                            onChange={handleInput}
-                            value={userData.major}
-                            required 
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="major_id" className="block text-sm font-medium text-gray-700">major_id</label>
-                        <input 
-                            type="text" 
-                            name="major_id" 
-                            onChange={handleInput}
+                        <label htmlFor="major_id" className="block text-sm font-medium text-gray-700">Major</label>
+                        <select
+                            name="major_id"
                             value={userData.major_id}
-                            required 
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-1"
-                        />
+                            onChange={handleInput}
+                            required
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-1  focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="">Select Major</option>
+                            {majors.map((major) => (
+                                <option key={major.id} value={major.id}>
+                                    {major.major_name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="mb-4">
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Role</label>
