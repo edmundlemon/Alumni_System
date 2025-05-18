@@ -69,11 +69,12 @@ const toggleResetPassConfirmVisibility = () => {
     axios
       .post("http://localhost:8000/api/user_login", loginPost)
       .then((response) => {
-        console.log(response);
         const token = response.data.token;
+        const userId = response.data.user.id;
         Cookies.set("token", token);
-        console.log(token);
-        navigate("/SearchJob");
+        Cookies.set("userId", userId);
+        navigate("/forumMainPage");
+        console.log(userId);
       })
       .catch((error) => {
         console.log(error);
