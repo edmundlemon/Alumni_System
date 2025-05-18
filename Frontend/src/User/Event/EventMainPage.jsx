@@ -5,7 +5,6 @@ import { FaAngleDown, FaAngleUp } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
 
 
-
 export default function EventMainPage() {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,8 +15,6 @@ export default function EventMainPage() {
   const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isDayOpen, setIsDayOpen] = useState(false);
   const navigate = useNavigate();
-
-
 
   const mockEvents = [
     {
