@@ -72,7 +72,7 @@ class DatabaseSeeder extends Seeder
 
 
         // Create a user with a specific name and email
-        User::factory()->create([
+        User::factory()->withConnection(2)->withDiscussions(2)->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);

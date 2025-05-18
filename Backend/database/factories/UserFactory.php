@@ -4,6 +4,8 @@ namespace Database\Factories;
 
 use App\Models\User;
 use App\Models\Major;
+use App\Models\Comment;
+use App\Models\Discussion;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -72,6 +74,25 @@ class UserFactory extends Factory
             $user->requestedConnections()->attach(
                 User::factory($count)->create()->pluck('id'),
                 ['status' => 'pending', 'created_at' => now()]
+            );
+        });
+    }
+
+    public function withDiscussions($count = 3)
+    {
+        return $this->afterCreating(function (User $user) use ($count) {
+            // Create discussions for the user
+            $user->discussions()->saveMany(
+                Discussion::factory($count)->withComments(5)->create(['user_id' => $user->id])
+            );
+        });
+    }
+    public function withComments($count = 3)
+    {
+        return $this->afterCreating(function (User $user) use ($count) {
+            // Create comments for the user
+            $user->comments()->saveMany(
+                Comment::factory($count)->create(['user_id' => $user->id])
             );
         });
     }

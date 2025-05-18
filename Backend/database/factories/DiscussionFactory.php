@@ -26,4 +26,14 @@ class DiscussionFactory extends Factory
             'updated_at' => now(),
         ];
     }
+
+    public function withComments($count = 3)
+    {
+        return $this->afterCreating(function ($discussion) use ($count) {
+            \App\Models\Comment::factory($count)->create([
+                'discussion_id' => $discussion->id,
+                'user_id' => User::inRandomOrder()->first()->id,
+            ]);
+        });
+    }
 }

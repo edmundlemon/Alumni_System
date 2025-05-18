@@ -61,8 +61,8 @@ class DiscussionTest extends TestCase
                             'user_id',
                             'subject',
                             'content',
-                            // 'created_at',
-                            // 'updated_at',
+                            'created_at',
+                            'updated_at',
                             'comments'
                         ],
                     ],
