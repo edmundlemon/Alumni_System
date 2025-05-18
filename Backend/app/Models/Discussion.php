@@ -13,10 +13,10 @@ class Discussion extends Model
         'subject',
         'content',
     ];
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-    ];
+    // protected $hidden = [
+        // 'created_at',
+        // 'updated_at',
+    // ];
 
     public function user()
     {

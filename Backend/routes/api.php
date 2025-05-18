@@ -25,6 +25,8 @@ Route::middleware('auth:sanctum')->get('/view_all_students', [UserController::cl
 Route::middleware('auth:sanctum')->get('/view_all_alumni', [UserController::class, 'viewAllAlumni']);
 Route::middleware('auth:sanctum')->get('/view_all_users', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->put('/edit_users/{userToBeEdited}', [UserController::class, 'update']);
+Route::middleware('auth_sanctum')->put('/deactivate_user/{user}', [UserController::class, 'deactivate']);
+Route::middleware('auth:sanctum')->delete('/delete_user/{user}', [UserController::class, 'destroy']);
 
 // User Routes
 Route::middleware('guest')->post('/user_login', [LoginController::class, 'userLogin']);
@@ -67,3 +69,5 @@ Route::middleware('auth:sanctum')->delete('/delete_feedback/{feedback}', [Feedba
 // Routes for logged in users
 Route::middleware('auth:sanctum')->get('/view_all_majors', [MajorController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/discussions', [DiscussionController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/view_user/{user}', [UserController::class, 'show']);
+

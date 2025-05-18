@@ -32,6 +32,8 @@ class CommentController extends Controller
         $comment->user_id = $user->id;
         $comment->discussion_id = $request->discussion_id;
         $comment->comment_content = $request->comment_content;
+        $comment->created_at = now();
+        $comment->updated_at = now();
         $comment->save();
         return response()->json([
             'message' => 'Comment created successfully',

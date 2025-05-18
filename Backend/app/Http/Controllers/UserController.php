@@ -71,13 +71,15 @@ class UserController extends Controller
             'registration' => $registration,
         ], 201);
     }
-    public function show($id)
+    public function show(User $user)
     {
         // Fetch a single user by ID
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
+        // $admin = Auth::guard('sanctum')->user();
+
+        // $user = User::find($id);
+        // if (!$user) {
+        //     return response()->json(['message' => 'User not found'], 404);
+        // }
         return response()->json($user);
     }
     public function update(Request $request, User $userToBeEdited)
@@ -90,6 +92,17 @@ class UserController extends Controller
         
         $userToBeEdited->update($request->all());
         return response()->json($userToBeEdited);
+    }
+    public function deactivate(User $user)
+    {
+        // Deactivate a user
+        $admin = Auth::guard('sanctum')->user();
+        if (!$admin || !$admin->hasRole('admin')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        
+        $user->update(['account_status' => 'inactive']);
+        return response()->json(['message' => 'User deactivated successfully']);
     }
     public function destroy(User $user)
     {
