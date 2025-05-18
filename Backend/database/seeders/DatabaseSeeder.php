@@ -94,7 +94,7 @@ class DatabaseSeeder extends Seeder
             'user_id' => User::inRandomOrder()->first()->id,
         ]);
 
-        Comment::factory()->count(25)->create([
+        Comment::factory()->count(250)->create([
             'user_id' => User::inRandomOrder()->first()->id,
             'discussion_id' => Discussion::inRandomOrder()->first()->id,
         ]);
