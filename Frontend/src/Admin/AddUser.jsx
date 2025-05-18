@@ -1,8 +1,6 @@
 import { MdClose } from "react-icons/md";
 import axios from "axios";
-
 import { useState, useEffect } from "react";
-
 import Cookies from "js-cookie";
 import Select from 'react-select';
 
@@ -46,7 +44,6 @@ const handleMajorChange = (selectedOption) => {
 };
 
     const token = Cookies.get("adminToken");
-    // const [majors, setMajors] = useState([]);
     useEffect(() => {
         const fetchMajors = async () => {
             try {
