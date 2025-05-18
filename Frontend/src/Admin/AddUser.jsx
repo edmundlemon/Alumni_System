@@ -46,7 +46,7 @@ const handleMajorChange = (selectedOption) => {
 };
 
     const token = Cookies.get("adminToken");
-    const [majors, setMajors] = useState([]);
+    // const [majors, setMajors] = useState([]);
     useEffect(() => {
         const fetchMajors = async () => {
             try {
@@ -55,7 +55,7 @@ const handleMajorChange = (selectedOption) => {
                         'Authorization': `Bearer ${token}`,
                     }
                 });
-                console.log(response.data);
+                // console.log(response.data);
                 setMajors(response.data);
                 console.log(majors);
             } catch (error) {
