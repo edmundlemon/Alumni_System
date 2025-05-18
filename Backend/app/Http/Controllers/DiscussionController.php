@@ -75,6 +75,8 @@ class DiscussionController extends Controller
             'user_id' => Auth::guard('sanctum')->user()->id,
             'subject' => $request->subject,
             'content' => $request->content,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return response()->json([

@@ -14,7 +14,7 @@ class Major extends Model
     ];
 
     protected $fillable = [
-        'name',
+        'major_name',
         'faculty_id',
         'created_by',
         'updated_by',
@@ -22,11 +22,7 @@ class Major extends Model
 
     public function getFacultyNameAttribute()
     {
-        return $this->faculty->name;
-    }
-    public function getMajorNameAttribute()
-    {
-        return $this->name;
+        return $this->faculty->faculty_name;
     }
     public function users()
     {
