@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { FaCalendarAlt, FaMapMarkerAlt, FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import event from "../../assets/event.jpg";
 import { FaAngleDown, FaAngleUp } from 'react-icons/fa';
+import { useNavigate } from "react-router-dom";
+
 
 
 export default function EventMainPage() {
@@ -13,6 +15,8 @@ export default function EventMainPage() {
   const eventsPerPage = 6; 
   const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isDayOpen, setIsDayOpen] = useState(false);
+  const navigate = useNavigate();
+
 
 
   const mockEvents = [
@@ -20,23 +24,26 @@ export default function EventMainPage() {
       id: 1,
       title: "Friday Night Football",
       description: "High school teams clash under stadium lights in an exciting evening match.",
-      date: "2023-05-12",
+      date: "2025-05-12",
       time: "7:00 PM",
       location: "High School Stadium",
       image: "https://picsum.photos/400/250?random=1",
-      category: "sports",
+      type: "online",
       status: "upcoming"
     },
     {
       id: 2,
       title: "Spooky Time! Pumpkin Carving",
-      description: "Join us for spooky fun and creative carving with the whole family.",
-      date: "2023-05-25",
+      description: "Get ready for an electrifying evening of music, lights, and unforgettable energy as [Artist Name] takes the stage live at Zepp KL, Kuala Lumpur’s premier concert venue. This one-night-only performance is part of their highly anticipated 2025 world tour and promises to deliver an immersive experience that blends powerful vocals, captivating visuals, and a setlist packed with fan favorites and brand-new releases.With state-of-the-art acoustics and an intimate atmosphere, Zepp KL offers the perfect setting for a night of live music you won’t forget. Fans can expect an emotionally charged performance, interactive moments, and stunning stage design that enhances every beat and lyric.Whether you've been following [Artist Name]'s journey from the beginning or are just discovering their music, this concert is your chance to connect with a global music sensation up close and personal. Arrive early to grab exclusive merchandise, meet fellow fans, and soak in the pre-show vibes.",
+      date: "2025-05-25",
       time: "6:00 PM",
       location: "Community Hall",
       image: "https://picsum.photos/400/250?random=2",
-      category: "workshop",
-      status: "upcoming"
+      type: "online",
+      status: "upcoming",
+      created_at: "2025-04-25",
+      lastUpdated_at: "2025-04-26",
+      postedBy: "John Doe"
     },
     {
       id: 3,
@@ -46,7 +53,7 @@ export default function EventMainPage() {
       time: "8:00 PM",
       location: "Cafe Lounge",
       image: "https://picsum.photos/400/250?random=3",
-      category: "entertainment",
+      type: "physical",
       status: "upcoming"
     },
     {
@@ -57,18 +64,18 @@ export default function EventMainPage() {
       time: "1:00 PM",
       location: "Online",
       image: "https://picsum.photos/400/250?random=7",
-      category: "gaming",
+      type: "hybrid",
       status: "upcoming"
     },
     {
       id: 10,
       title: "Photography Workshop",
       description: "Learn the art of photography with hands-on experience and expert guidance.",
-      date: "2023-11-15",
+      date: "2025-11-15",
       time: "10:00 AM",
       location: "Art Studio",
       image: "https://picsum.photos/400/250?random=8",
-      category: "workshop",
+      type: "hybrid",
       status: "upcoming"
     },
     {
@@ -79,7 +86,7 @@ export default function EventMainPage() {
       time: "8:00 AM",
       location: "Mountain Resort",
       image: "https://picsum.photos/400/250?random=9",
-      category: "wellness",
+      type: "physical",
       status: "upcoming"
     },
     {
@@ -90,7 +97,7 @@ export default function EventMainPage() {
       time: "11:00 AM",
       location: "Downtown Square",
       image: "https://picsum.photos/400/250?random=10",
-      category: "food",
+      type: "online",
       status: "upcoming"
     },
     // Past Events
@@ -102,7 +109,7 @@ export default function EventMainPage() {
       time: "2:00 PM",
       location: "City Park",
       image: "https://picsum.photos/400/250?random=1",
-      category: "music",
+      type: "physical",
       status: "past"
     },
     {
@@ -113,7 +120,7 @@ export default function EventMainPage() {
       time: "9:00 AM",
       location: "Convention Center",
       image: "https://picsum.photos/400/250?random=2",
-      category: "technology",
+      type: "hybrid",
       status: "past"
     },
     {
@@ -124,7 +131,7 @@ export default function EventMainPage() {
       time: "5:00 PM",
       location: "Art Gallery",
       image: "https://picsum.photos/400/250?random=4",
-      category: "arts",
+      type: "hybrid",
       status: "past"
     },
     {
@@ -135,7 +142,7 @@ export default function EventMainPage() {
       time: "9:00 AM",
       location: "City Park",
       image: "https://picsum.photos/400/250?random=5",
-      category: "sports",
+      type: "online",
       status: "past"
     },
     {
@@ -146,7 +153,7 @@ export default function EventMainPage() {
       time: "3:00 PM",
       location: "Community Kitchen",
       image: "https://picsum.photos/400/250?random=6",
-      category: "workshop",
+      type: "online",
       status: "past"
     }
   ];
@@ -196,9 +203,9 @@ export default function EventMainPage() {
                          event.description.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesType = typeFilter === "" || 
-                        (typeFilter === "physical" && event.location !== "Online") ||
-                        (typeFilter === "online" && event.location === "Online") ||
-                        (typeFilter === "hybrid" && event.location.includes("Hybrid"));
+                        (typeFilter === "physical" && event.type !== "Online") ||
+                        (typeFilter === "online" && event.type === "Online") ||
+                        (typeFilter === "hybrid" && event.type.includes("Hybrid"));
 
       const matchesDayTime = filterByDayTime(event, dayTimeFilter);
 
@@ -221,6 +228,7 @@ export default function EventMainPage() {
   behavior: 'smooth',
 })
 };
+
 
 
   return (
@@ -269,31 +277,30 @@ export default function EventMainPage() {
               </div>
               <div className="relative">
                 <select
-                className="
-                w-full
-                py-3 px-4 pr-10
-                rounded-lg border
-                bg-white text-gray-700
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                shadow-md
-                appearance-none
-                cursor-pointer
-                transition-all
-                hover:border-gray-400"
-                onChange={(e) => setDayTimeFilter(e.target.value)}
-                value={dayTimeFilter}
-                onFocus={() => setIsDayOpen(true)}
-                onBlur={() => setIsDayOpen(false)}
-              >
-                <option value="">All Days</option>
-                <option value="thisWeek">This Week</option>
-                <option value="thisMonth">This Month</option>
-              </select>
-              <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center px-2 text-gray-500">
-                {isDayOpen ? <FaAngleUp /> : <FaAngleDown />}
+                  className="
+                  w-full
+                  py-3 px-4 pr-10
+                  rounded-lg border
+                  bg-white text-gray-700
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  shadow-md
+                  appearance-none
+                  cursor-pointer
+                  transition-all
+                  hover:border-gray-400"
+                  onChange={(e) => setDayTimeFilter(e.target.value)}
+                  value={dayTimeFilter}
+                  onFocus={() => setIsDayOpen(true)}
+                  onBlur={() => setIsDayOpen(false)}
+                >
+                  <option value="">All Days</option>
+                  <option value="thisWeek">This Week</option>
+                  <option value="thisMonth">This Month</option>
+                </select>
+                <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center px-2 text-gray-500">
+                  {isDayOpen ? <FaAngleUp /> : <FaAngleDown />}
+                </div>
               </div>
-              </div>
-              
 
               <div className="relative">
                 <select
@@ -312,7 +319,7 @@ export default function EventMainPage() {
                   onChange={(e) => setTypeFilter(e.target.value)}
                   value={typeFilter}
                   onFocus={() => setIsTypeOpen(true)}
-                onBlur={() => setIsTypeOpen(false)}
+                  onBlur={() => setIsTypeOpen(false)}
                 >
                   <option className="mt-10" value="">All Types</option>
                   <option value="physical">Physical</option>
@@ -346,9 +353,10 @@ export default function EventMainPage() {
             <>
               <div  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {currentEvents.map((event) => (
-                  <div key={event.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    <div className="relative h-48 overflow-hidden">
+                  <div key={event.id} className="bg-white rounded-lg p-4 shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full max-h-[460px]">
+                    <div className="relative h-80  overflow-hidden">
                       <img src={event.image} alt={event.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+                      {/* Status Badge */}
                       {event.status === "past" ? (
                         <div className="absolute top-4 right-4 bg-gray-800 text-white px-3 py-1 text-xs">
                           Past Event
@@ -360,27 +368,35 @@ export default function EventMainPage() {
                         </div>
                       )}
                     </div>
-                    <div className="p-6">
-                      <div className="flex items-center text-sm text-gray-500 mb-2">
-                        <FaCalendarAlt className="mr-2" />
-                        <span>{formatDate(event.date)} • {event.time}</span>
+
+                    <div className="p-4 flex flex-col h-full">
+                      <div>
+                        <div className="flex items-center text-sm text-gray-500 mb-2">
+                          <FaCalendarAlt className="mr-2" />
+                          <span>{formatDate(event.date)} • {event.time}</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">{event.title}</h3>
+                        <div className="flex items-center text-sm text-gray-600 mb-3">
+                          <FaMapMarkerAlt className="mr-2" />
+                          <span>{event.location}</span>
+                        </div>
+                        <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
                       </div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">{event.title}</h3>
-                      <div className="flex items-center text-sm text-gray-600 mb-3">
-                        <FaMapMarkerAlt className="mr-2" />
-                        <span>{event.location}</span>
-                      </div>
-                      <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
-                      <div className="flex justify-between items-center">
-                        <span className="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
-                          {event.category}
+                      
+                      <div className="flex justify-between items-center mt-auto">
+                        <span className="hi inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+                          {event.type}
                         </span>
-                        <button className="text-blue-600 hover:text-blue-800 font-medium">
+                        <button
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                          onClick={() => navigate("/viewEventDetails", { state: { event } })}
+                        >
                           View Details →
                         </button>
                       </div>
                     </div>
                   </div>
+
                 ))}
               </div>
 

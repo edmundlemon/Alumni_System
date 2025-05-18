@@ -22,6 +22,7 @@ const Sidebar = () => {
   const [open, setOpen] = useState(true);
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [hoveredMenu, setHoveredMenu] = useState(null);
 
   useEffect(() => {
     if (!open) {
@@ -40,21 +41,22 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     const token = Cookies.get("adminToken");
-  
-    axios.post("http://localhost:8000/api/admin_logout", null, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    .then((response) => {
-      console.log(response.data);
-      Cookies.remove("adminToken");
-      navigate("/adminLogin");
-    })
-    .catch((error) => {
-      console.error("Logout error:", error);
-    });
+
+    axios
+      .post("http://localhost:8000/api/admin_logout", null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        console.log(response.data);
+        Cookies.remove("adminToken");
+        navigate("/adminLogin");
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+      });
   };
 
   const profileMenus = [
@@ -62,106 +64,94 @@ const Sidebar = () => {
     { name: "Log Out", action: handleLogout, icon: HiOutlineLogout },
   ];
 
-  
-
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-200">
       {/* Sidebar */}
-        <div
-            className={`bg-[#212F3C] flex flex-col justify-between transition-all duration-200 ease-linear ${
-              open ? "w-64" : "w-16"
-            } text-gray-100 my-3 rounded-tr-xl rounded-br-xl shadow-xl overflow-hidden`}
-            aria-label="Main navigation"
-          >
-
+      <div
+        className={`bg-gray-200 flex flex-col justify-between transition-all duration-200 ease-linear ${
+          open ? "w-64" : "w-16"
+        } text-gray-800 my-3 ml-3 rounded-xl border border-gray-200`}
+      >
         <div>
           {/* Header */}
-          <div className="p-4 flex justify-between items-center ">
+          <div className="p-4 flex justify-between items-center border-b border-gray-400">
             {open && (
-              <h1 className="text-xl font-bold text-white" aria-label="MMUJOB Logo">
-                MMU ALUMNI
-              </h1>
+              <h1 className="text-xl font-bold text-gray-800">MMU ALUMNI</h1>
             )}
             <button
               onClick={() => setOpen(!open)}
-              className="cursor-pointer hover:text-gray-300 transition-colors"
+              className="cursor-pointer hover:text-gray-500 transition-colors"
               aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
             >
-              <HiMenuAlt3 size={24} className="ml-1" />
+              <HiMenuAlt3 size={24} />
             </button>
           </div>
 
           {/* Main Menu */}
-          <nav className="mt-4 px-2 space-y-1" aria-label="Primary navigation">
-          {menus.map((menu, index) => (
-          <Link
-            to={menu.link}
-            key={index}
-            onClick={() => setActiveMenu(menu.name)}
-            className={`relative group flex items-center p-3 rounded-lg transition-all duration-200 ease-linear ${
-              activeMenu === menu.name
-                ? "bg-blue-600 text-white"
-                : "hover:bg-gray-800 text-gray-300"
+          <nav className="mt-4 px-2 space-y-1">
+            {menus.map((menu, index) => (
+              <Link
+                to={menu.link}
+                key={index}
+                onClick={() => setActiveMenu(menu.name)}
+                onMouseEnter={() => setHoveredMenu(menu.name)}
+                onMouseLeave={() => setHoveredMenu(null)}
+                className={`relative group flex items-center p-3 rounded-lg transition-all duration-200 ease-linear ${
+                  activeMenu === menu.name
+                    ? "bg-blue-100 text-blue-700"
+                    : "hover:bg-gray-100 text-gray-700"
+                }`}
+              >
+                <span className="text-xl pl-[2px]">
+                  {React.createElement(menu.icon, { "aria-hidden": true })}
+                </span>
+
+                <span
+                  className={`ml-3 whitespace-nowrap transition-all duration-200 ease-linear ${
+                    open ? "opacity-100" : "opacity-0 w-0"
                   }`}
                 >
-                  <span className="text-xl pl-[2px]">
-                    {React.createElement(menu.icon, {
-                      "aria-hidden": true,
-                    })}
-                  </span>
-                  {/* Menu text when expanded */}
-                  <span
-                    className={`ml-3 whitespace-nowrap transition-all duration-200 ease-linear ${
-                      open ? "opacity-100" : "opacity-0 w-0"
-                    }`}
-                  >
-                    {menu.name}
-                  </span>
+                  {menu.name}
+                </span>
 
-                  {/* Tooltip on hover when collapsed */}
-                  {!open && (
-                    <span
-                      className="absolute left-full ml-2 px-3 py-1 text-sm bg-white text-gray-900 rounded shadow-lg opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 whitespace-nowrap z-50"
-                      role="tooltip"
-                    >
+
+                {/* Tooltip */}
+                {!open && hoveredMenu === menu.name && (
+                  <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 z-50">
+                    <div className="px-3 py-1 text-sm bg-white text-gray-900 rounded shadow-lg border border-gray-300 whitespace-nowrap">
                       {menu.name}
-                    </span>
-                  )}
-                </Link>
-              ))}
-
+                      <div className="absolute right-full top-1/2 -mt-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent "></div>
+                    </div>
+                  </div>
+                )}
+              </Link>
+            ))}
           </nav>
         </div>
 
         {/* Profile Section */}
-        <div className="p-3 border-t border-gray-700">
+        <div className="p-3 border-t border-gray-400">
           <div
             onClick={() => open && setShowProfileMenu(!showProfileMenu)}
-            className={`flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-800 transition-all duration-200 ease-linear ${
+            className={`flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-all duration-200 ease-linear ${
               open ? "justify-between" : "justify-center"
-            } `}
-            aria-expanded={showProfileMenu}
-            aria-controls="profile-menu"
+            }`}
           >
-           <div
-              className={`flex items-center ${
-                open ? "" : "justify-center "
-              }`}
+            <div
+              className={`flex items-center ${open ? "" : "justify-center"}`}
             >
-              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-sm font-medium border border-gray-500">
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium border border-gray-400">
                 A
               </div>
               {open && (
                 <div className="ml-3 transition-all duration-200 ease-linear overflow-hidden">
                   <p className="text-sm font-medium whitespace-nowrap">Admin</p>
-                  <p className="text-xs text-gray-400 whitespace-nowrap">
+                  <p className="text-xs text-gray-500 whitespace-nowrap">
                     admin@example.com
                   </p>
                 </div>
               )}
             </div>
-
-
             {open && (
               <span className="text-gray-400 transition-transform">
                 {showProfileMenu ? "↑" : "↓"}
@@ -171,25 +161,20 @@ const Sidebar = () => {
 
           {/* Profile Dropdown */}
           <div
-            id="profile-menu"
             className={`overflow-hidden transition-all duration-200 ease-linear ${
-              showProfileMenu && open
-                ? "max-h-40 opacity-100 mt-2"
-                : "max-h-0 opacity-0"
+              showProfileMenu && open ? "max-h-40 opacity-100 mt-2" : "max-h-0 opacity-0"
             }`}
           >
-            <div className="ml-2 pl-6 border-l border-gray-600 space-y-1">
+            <div className="ml-2 pl-6 border-l border-gray-400 space-y-1">
               {profileMenus.map((menu, index) =>
                 menu.action ? (
                   <button
                     key={index}
                     onClick={menu.action}
-                    className="flex items-center w-full p-2 text-sm rounded-lg hover:bg-gray-800 transition-colors "
+                    className="flex items-center w-full p-2 text-sm rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                   >
                     <span className="text-lg">
-                      {React.createElement(menu.icon, {
-                        "aria-hidden": true,
-                      })}
+                      {React.createElement(menu.icon, { "aria-hidden": true })}
                     </span>
                     <span className="ml-3">{menu.name}</span>
                   </button>
@@ -197,12 +182,10 @@ const Sidebar = () => {
                   <Link
                     to={menu.link}
                     key={index}
-                    className="flex items-center p-2 text-sm rounded-lg hover:bg-gray-800 transition-colors "
+                    className="flex items-center p-2 text-sm rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                   >
                     <span className="text-lg">
-                      {React.createElement(menu.icon, {
-                        "aria-hidden": true,
-                      })}
+                      {React.createElement(menu.icon, { "aria-hidden": true })}
                     </span>
                     <span className="ml-3">{menu.name}</span>
                   </Link>
@@ -213,9 +196,9 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 bg-gray-100 m-4 ">
-        <UserManageTable></UserManageTable>
+      {/* Main Content */}
+      <div className="flex-1 bg-gray-100 m-4 rounded-md">
+        <UserManageTable />
       </div>
     </div>
   );
