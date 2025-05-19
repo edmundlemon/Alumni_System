@@ -17,7 +17,13 @@ class Discussion extends Model
         // 'created_at',
         // 'updated_at',
     // ];
-
+    protected $appends = [
+        'name',
+    ];
+    public function getNameAttribute()
+    {
+        return $this->user->name;
+    }
     public function user()
     {
         return $this->belongsTo(User::class);

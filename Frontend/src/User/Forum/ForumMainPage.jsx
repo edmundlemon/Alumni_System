@@ -5,7 +5,6 @@ import { FaRegFile } from "react-icons/fa";
 import { CiImageOn } from "react-icons/ci";
 import { IoSearchSharp } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
 import logo from "../../assets/logo.png";
 import Cookies from "js-cookie";
 import { useState, useEffect, useRef } from "react";
@@ -20,7 +19,6 @@ import { PiShareFatBold } from "react-icons/pi";
 import AddComment from "./AddComment";
 import AddPost from "./AddPost";
 import { LiaPollSolid } from "react-icons/lia";
-import { MdOutlineGifBox } from "react-icons/md";
 import { IoArrowBackOutline } from "react-icons/io5";
 
 export default function ForumMainPage() {

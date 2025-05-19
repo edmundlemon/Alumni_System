@@ -12,59 +12,115 @@ class DonationController extends Controller
      */
     public function index()
     {
-        //
-        $donations = Donation::latest()->all()->get();
+        // Donation::latest() already returns a Builder → call ->get()
+        $donations = Donation::latest()->get();
+
         return response()->json([
-            // 'status' => 200,
-            'donations' => $donations
-        ], 200);
+            'donations' => $donations,
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    /* POST /api/donations/create-order
+       Body: { "amount": 12.34 }   // amount in SGD */
+    public function createOrder(Request $request)
     {
-        //
+        $request->validate([
+            'amount' => 'required|numeric|min:0.5',    // >= 0.50 SGD
+        ]);
+
+        // ②  Convert dollars → cents
+        $amountCents = (int) round($request->amount * 100);
+
+        // ③  Create Razorpay order (server‑side!)
+        $rzpOrder = $this->razor->order->create([
+            'amount'          => $amountCents,
+            'currency'        => 'SGD',
+            'receipt'         => 'rcpt_'.Str::uuid(),
+            'payment_capture' => 1,  // auto‑capture
+            // you can add arbitrary notes
+        ]);
+
+        // ④  Persist in DB so we can match webhooks later
+        $donation = Donation::create([
+            'user_id'           => Auth::guard('sanctum')->id,               // or null / guest
+            'donated_amount'      => $amountCents,
+            'currency'          => 'SGD',
+            'razorpay_order_id' => $rzpOrder['id'],
+            'status'            => 'pending',                  // enum: pending|paid|failed
+        ]);
+
+        // ⑤  Send data back to the browser that will open Checkout
+        return response()->json([
+            'key'         => config('services.razorpay.key'),
+            'orderId'     => $rzpOrder['id'],
+            'amountCents' => $rzpOrder['amount'],
+            'donationId'  => $donation->id,   // keep a handle on our record
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    /* POST /api/donations/verify-payment
+       Body: { razorpay_order_id, razorpay_payment_id, razorpay_signature } */
+    public function verifyPayment(Request $request)
     {
-        //
+        $request->validate([
+            'razorpay_order_id'   => 'required',
+            'razorpay_payment_id' => 'required',
+            'razorpay_signature'  => 'required',
+        ]);
+
+        // ⑥  Verify signature
+        $sig = hash_hmac(
+            'sha256',
+            $request->razorpay_order_id.'|'.$request->razorpay_payment_id,
+            config('services.razorpay.secret')
+        );
+
+        if ($sig !== $request->razorpay_signature) {
+            return response()->json(['error' => 'Signature mismatch'], 400);
+        }
+
+        // ⑦  Mark donation as paid
+        $donation = Donation::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
+        $donation->update([
+            'razorpay_payment_id' => $request->razorpay_payment_id,
+            'razorpay_signature'  => $request->razorpay_signature,
+            'status'              => 'paid',
+            'paid_at'             => now(),
+        ]);
+
+        return response()->json(['status' => 'ok']);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Donation $donation)
+    /* OPTIONAL: POST /api/razorpay/webhook     (webhook endpoint)
+       Handle payment.captured, payment.failed, refund.created … */
+    public function webhook(Request $request)
     {
-        //
-    }
+        $payload   = $request->getContent();
+        $signature = $request->header('X-Razorpay-Signature');
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Donation $donation)
-    {
-        //
-    }
+        $secret    = config('services.razorpay.webhook_secret'); // set in .env
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Donation $donation)
-    {
-        //
-    }
+        $expected  = hash_hmac('sha256', $payload, $secret);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Donation $donation)
-    {
-        //
+        if ($expected !== $signature) {
+            return response('Invalid signature', 400);
+        }
+
+        $event = $request->input('event');
+
+        if ($event === 'payment.captured') {
+            $orderId = $request->input('payload.payment.entity.order_id');
+
+            Donation::where('razorpay_order_id', $orderId)
+                    ->where('status', 'pending')
+                    ->update([
+                        'status'  => 'paid',
+                        'paid_at' => now(),
+                    ]);
+        }
+
+        // handle other events as needed …
+
+        return response('OK', 200);
     }
 }
