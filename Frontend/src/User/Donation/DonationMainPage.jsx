@@ -13,18 +13,18 @@ export default function DonationMainPage() {
   const navigate = useNavigate();
 
 
-  const mockEvents = [
-    { id: 1,  name: 'Food Donation',            description: 'Help us provide food to those in need.',              image: 'https://picsum.photos/400/250?random=1',  raised: 12_500, goal: 25_000 },
-    { id: 2,  name: 'Clothing Donation',        description: 'Donate clothes to help the less fortunate.',         image: 'https://picsum.photos/400/250?random=2',  raised: 8_000,  goal: 15_000 },
-    { id: 3,  name: 'Book Donation',            description: 'Share your love for reading by donating books.',     image: 'https://picsum.photos/400/250?random=3',  raised: 3_500,  goal: 10_000 },
-    { id: 4,  name: 'Toy Donation',             description: 'Bring joy to children by donating toys.',            image: 'https://picsum.photos/400/250?random=4',  raised: 12_000, goal: 20_000 },
-    { id: 5,  name: 'School Supplies Donation', description: 'Help students succeed by donating school supplies.', image: 'https://picsum.photos/400/250?random=5',  raised: 4_500,  goal: 12_000 },
-    { id: 6,  name: 'Medical Supplies',         description: 'Support healthcare by donating medical supplies.',   image: 'https://picsum.photos/400/250?random=6',  raised: 28_000, goal: 30_000 },
-    { id: 7,  name: 'Animal Shelter',           description: 'Help us care for animals in need.',                  image: 'https://picsum.photos/400/250?random=7',  raised: 7_500,  goal: 20_000 },
-    { id: 8,  name: 'Environmental',            description: 'Support environmental conservation efforts.',        image: 'https://picsum.photos/400/250?random=8',  raised: 18_000, goal: 25_000 },
-    { id: 9,  name: 'Disaster Relief',          description: 'Help those affected by natural disasters.',          image: 'https://picsum.photos/400/250?random=9',  raised: 42_000, goal: 50_000 },
-    { id: 10, name: 'Community Development',    description: 'Support local community development projects.',      image: 'https://picsum.photos/400/250?random=10', raised: 9_500,  goal: 30_000 },
-  ];
+const mockEvents = [
+    { id: 1,  name: 'Food Donation',            description: 'Help us provide food to those in need. Your contribution will ensure that families and individuals facing hardship receive nutritious meals and support during difficult times.',              image: 'https://picsum.photos/400/250?random=1',  raised: 12_500, goal: 25_000 },
+    { id: 2,  name: 'Clothing Donation',        description: 'Donate clothes to help the less fortunate. Every piece of clothing you give brings warmth and dignity to someone in need, especially during harsh weather.',         image: 'https://picsum.photos/400/250?random=2',  raised: 8_000,  goal: 15_000 },
+    { id: 3,  name: 'Book Donation',            description: 'Share your love for reading by donating books. Your donation will help build libraries and provide educational resources to underprivileged children.',     image: 'https://picsum.photos/400/250?random=3',  raised: 3_500,  goal: 10_000 },
+    { id: 4,  name: 'Toy Donation',             description: 'Bring joy to children by donating toys. Your generosity will light up a child’s face and create cherished memories for years to come.',            image: 'https://picsum.photos/400/250?random=4',  raised: 12_000, goal: 20_000 },
+    { id: 5,  name: 'School Supplies Donation', description: 'Help students succeed by donating school supplies. Your support ensures that every child has the tools they need to learn and thrive in school.', image: 'https://picsum.photos/400/250?random=5',  raised: 4_500,  goal: 12_000 },
+    { id: 6,  name: 'Medical Supplies',         description: 'Support healthcare by donating medical supplies. Your help provides essential items to clinics and hospitals serving vulnerable communities.',   image: 'https://picsum.photos/400/250?random=6',  raised: 28_000, goal: 30_000 },
+    { id: 7,  name: 'Animal Shelter',           description: 'Help us care for animals in need. Your donation will provide food, shelter, and medical care for rescued animals awaiting loving homes.',                  image: 'https://picsum.photos/400/250?random=7',  raised: 7_500,  goal: 20_000 },
+    { id: 8,  name: 'Environmental',            description: 'Support environmental conservation efforts. Your contribution aids in tree planting, clean-up drives, and protecting natural habitats.',        image: 'https://picsum.photos/400/250?random=8',  raised: 18_000, goal: 25_000 },
+    { id: 9,  name: 'Disaster Relief',          description: 'Help those affected by natural disasters. Your timely support delivers emergency aid, shelter, and hope to communities in crisis.',          image: 'https://picsum.photos/400/250?random=9',  raised: 42_000, goal: 50_000 },
+    { id: 10, name: 'Community Development',    description: 'Support local community development projects. Your donation empowers initiatives that improve infrastructure, education, and quality of life.',      image: 'https://picsum.photos/400/250?random=10', raised: 9_500,  goal: 30_000 },
+];
 
   useEffect(() => {
     setAllEvents(mockEvents);
@@ -98,7 +98,9 @@ export default function DonationMainPage() {
                 </div>
 
                 {/* body */}
-                <p className="text-gray-600 px-6 py-6">{dnt.description}</p>
+               <p className="px-6 py-6 text-gray-600 line-clamp-2 overflow-hidden mb-4">
+                    {dnt.description}
+                </p>
 
                 {/* funding progress */}
                 <div className="px-6 pb-6">

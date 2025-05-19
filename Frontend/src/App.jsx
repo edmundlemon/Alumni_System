@@ -22,7 +22,7 @@ function AppRoutes() {
 
   // Only show header on these paths:
   const showHeader = ["/userLogin", "/mainPage", "/eventMainPage","/viewEventDetails", 
-    "/forumMainPage","/donationMainpage","/viewDonateDetails"].includes(location.pathname);
+    "/forumMainPage","/donationMainPage","/viewDonateDetails"].includes(location.pathname);
 
   return (
     <>

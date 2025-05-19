@@ -17,7 +17,6 @@
     "@schedule-x/events-service": "^2.31.0",
     "@schedule-x/react": "^2.30.0",
     "@schedule-x/theme-default": "^2.31.0",
-    "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.9.0",
     "emoji-picker-react": "^4.12.2",
     "formik": "^2.4.6",
@@ -34,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.3",
