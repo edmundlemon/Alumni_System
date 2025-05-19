@@ -3,10 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Donation;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Razorpay\Api\Api; // Add this import
 
 class DonationController extends Controller
 {
+    protected $razor;
+
+    public function __construct()
+    {
+        $this->razor = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+    }
     /**
      * Display a listing of the resource.
      */
@@ -30,7 +42,9 @@ class DonationController extends Controller
 
         // ②  Convert dollars → cents
         $amountCents = (int) round($request->amount * 100);
-
+        return response()->json([
+            'amountCents' => $amountCents,
+        ]);
         // ③  Create Razorpay order (server‑side!)
         $rzpOrder = $this->razor->order->create([
             'amount'          => $amountCents,
