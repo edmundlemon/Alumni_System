@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('donation_post_id')->constrained('donation_posts')->onDelete('cascade');
-            $table->float('donated_amount');
+            // $table->float('donated_amount');
+            $table->integer('donated_amount');
             $table->timestamps();
         });
     }
