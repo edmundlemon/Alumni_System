@@ -29,6 +29,7 @@
     "react-qr-code": "^2.0.15",
     "react-router-dom": "^7.5.3",
     "react-select": "^5.10.1",
+    "react-select-country-list": "^2.2.3",
     "yup": "^1.6.1"
   },
   "devDependencies": {

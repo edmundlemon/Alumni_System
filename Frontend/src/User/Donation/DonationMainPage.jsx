@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FaChevronLeft, FaChevronRight, FaSearch } from 'react-icons/fa';
-import donationHeader from '../../assets/donation.png';     // banner image
+import donationHeader from '../../assets/donation2.jpeg';     // banner image
 // import axios from 'axios';
 // import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
@@ -71,8 +71,8 @@ const mockEvents = [
 
           <div className="relative">
             <input
-              value={searchText}
-              onChange={e => { setSearchText(e.target.value); goToPage(1); }}
+              value=''
+              onChange=''
               type="text"
               placeholder="Search programs…"
               className="py-3 px-5 pr-12 rounded-lg shadow-md w-[300px] sm:w-[420px] lg:w-[550px] focus:outline-denim"
@@ -136,7 +136,6 @@ const mockEvents = [
         </div>
 
         {/* pagination */}
-        {totalPages > 1 && (
           <div className="flex justify-between items-center mt-10">
             <p className="text-sm text-gray-600">
               Showing {firstIndex + 1}-{Math.min(firstIndex + EVENTS_PER_PAGE, filteredEvents.length)} of{' '}
@@ -163,7 +162,6 @@ const mockEvents = [
                   {i + 1}
                 </button>
               ))}
-
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
@@ -173,7 +171,6 @@ const mockEvents = [
               </button>
             </div>
           </div>
-        )}
       </div>
     </section>
   );

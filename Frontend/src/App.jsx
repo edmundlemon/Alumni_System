@@ -16,13 +16,17 @@ import ForumMainPage from "./User/Forum/ForumMainPage";
 import DonationMainPage from "./User/Donation/DonationMainPage";
 import RazorPay from "./User/Donation/RazorPay";
 import ViewDonateDetails from "./User/Donation/viewDonateDetails";
+import AlumniMainPage from "./User/Alumni/AlumniMainPage";
+import ViewProfile from "./User/ViewProfile";
+import AddEvent from "./User/Event/AddEvent";
 
 function AppRoutes() {
   const location = useLocation();
 
   // Only show header on these paths:
   const showHeader = ["/userLogin", "/mainPage", "/eventMainPage","/viewEventDetails", 
-    "/forumMainPage","/donationMainPage","/viewDonateDetails"].includes(location.pathname);
+    "/forumMainPage","/donationMainPage","/viewDonateDetails", "/alumniMainPage",
+   "/viewProfile", "/addEvent"].includes(location.pathname);
 
   return (
     <>
@@ -44,6 +48,10 @@ function AppRoutes() {
         <Route path="/donationMainPage" element={<DonationMainPage />} />
         <Route path="/razorpay" element={<RazorPay />} />
         <Route path="/viewDonateDetails" element={<ViewDonateDetails />} />
+        <Route path="/alumniMainPage" element={<AlumniMainPage />} />
+        <Route path="/viewProfile" element={<ViewProfile />} />
+        <Route path="/addEvent" element={<AddEvent />} />
+
         {/* 404 Not Found */}
         <Route
           path="/403"

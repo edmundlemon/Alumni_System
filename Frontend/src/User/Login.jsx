@@ -71,8 +71,10 @@ const toggleResetPassConfirmVisibility = () => {
       .then((response) => {
         const token = response.data.token;
         const userId = response.data.user.id;
+        const userRole = response.data.user.role;
         Cookies.set("token", token);
         Cookies.set("userId", userId);
+        Cookies.set("userRole", userRole);
         navigate("/forumMainPage");
         console.log(userId);
       })

@@ -22,7 +22,7 @@ export default function RazorPay() {
       return;
     }
     if (!scriptLoaded) {
-      alert("Gateway script still loading – try again in a moment.");
+      alert("Gateway script still loading - try again in a moment.");
       return;
     }
 
