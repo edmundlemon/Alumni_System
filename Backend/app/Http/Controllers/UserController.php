@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Mail\RegistrationMail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -59,7 +61,7 @@ class UserController extends Controller
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('photos'), $filename);
+            $file->move(public_path('profile_pictures'), $filename);
             $registration->photo = $filename;
         }
         $registration->save();
@@ -71,15 +73,19 @@ class UserController extends Controller
             'registration' => $registration,
         ], 201);
     }
+    public function search(Request $request)
+    {
+        // Search for users
+        $query = $request->input('query');
+        $users = User::where('name', 'LIKE', "%$query%")
+            ->orWhere('email', 'LIKE', "%$query%")
+            ->orWhere('id', 'LIKE', "%$query%")
+            ->get();
+        return response()->json($users);
+    }
     public function show(User $user)
     {
         // Fetch a single user by ID
-        // $admin = Auth::guard('sanctum')->user();
-
-        // $user = User::find($id);
-        // if (!$user) {
-        //     return response()->json(['message' => 'User not found'], 404);
-        // }
         return response()->json($user);
     }
     public function update(Request $request, User $userToBeEdited)

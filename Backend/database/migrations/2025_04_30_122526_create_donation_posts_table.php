@@ -18,7 +18,9 @@ return new class extends Migration
             $table->mediumText('description');
             $table->float('target_amount');
             $table->date('end_date');
-            $table->string('status')->default('ongoing'); // ongoing, completed, cancelled
+            $table->string('status')->default
+            ('ongoing'); // ongoing, completed, cancelled
+            $table->mediumText('photo')->nullable();
             $table->timestamps();
         });
     }
