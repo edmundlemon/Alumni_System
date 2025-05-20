@@ -6,7 +6,7 @@ import { LuCalendarDays } from "react-icons/lu";
 import { MdOutlineAccessTime } from "react-icons/md";
 import { GrLocationPin } from "react-icons/gr";
 import { MdOutlineLocationOn } from "react-icons/md";
-import { FaCalendarAlt, FaMapMarkerAlt, FaShare, FaCopy, FaUser } from "react-icons/fa";
+import {  FaShare, FaCopy, FaUser } from "react-icons/fa";
 import { BiCategory } from "react-icons/bi";
 import { IoTimeOutline } from "react-icons/io5";
 import { TiChevronLeft, TiChevronRight  } from "react-icons/ti";
