@@ -22,6 +22,7 @@ return new class extends Migration
             $table->date('registration_close_date');
             $table->string('status')->default('upcoming');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->mediumText('photo')->nullable();
             // $table->foreignId('major_id')->constrained()->onDelete('cascade');
             // $table->foreignId('admin_id')->constrained()->onDelete('cascade');
             // $table->string('event_approval_comment')->nullable();

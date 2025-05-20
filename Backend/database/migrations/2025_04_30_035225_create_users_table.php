@@ -25,7 +25,7 @@ return new class extends Migration
             $table->bigInteger('enrollment_year')->nullable();
             $table->bigInteger('graduation_year')->nullable();
             $table->string('account_status')->default('active');
-            $table->string('profile_picture')->nullable();
+            $table->mediumText('photo')->nullable();
             $table->string('job_title')->nullable();
             $table->string('company')->nullable();
             $table->string('position')->nullable();
