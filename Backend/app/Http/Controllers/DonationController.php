@@ -3,10 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Donation;
+use Illuminate\Support\Str;
+use App\Models\DonationPost;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Razorpay\Api\Api; // Add this import
 
 class DonationController extends Controller
 {
+    protected $razor;
+
+    public function __construct()
+    {
+        $this->razor = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+    }
     /**
      * Display a listing of the resource.
      */
@@ -22,7 +36,11 @@ class DonationController extends Controller
 
     /* POST /api/donations/create-order
        Body: { "amount": 12.34 }   // amount in SGD */
-    public function createOrder(Request $request)
+    public function createOrder(Request $request, DonationPost $donationPost)
+        // ①  Validate request
+        // 0.50 SGD = 50 cents
+        // Razorpay minimum amount is 0.50 SGD
+        // Razorpay minimum amount is 1 cent
     {
         $request->validate([
             'amount' => 'required|numeric|min:0.5',    // >= 0.50 SGD
@@ -30,62 +48,39 @@ class DonationController extends Controller
 
         // ②  Convert dollars → cents
         $amountCents = (int) round($request->amount * 100);
-
         // ③  Create Razorpay order (server‑side!)
         $rzpOrder = $this->razor->order->create([
             'amount'          => $amountCents,
             'currency'        => 'SGD',
-            'receipt'         => 'rcpt_'.Str::uuid(),
+            // 'receipt'         => 'rcpt_'.Str::uuid(),
+            'receipt' => 'rcpt_' . substr((string) Str::uuid(), 0, 35),
+
             'payment_capture' => 1,  // auto‑capture
             // you can add arbitrary notes
         ]);
 
-        // ④  Persist in DB so we can match webhooks later
-        $donation = Donation::create([
-            'user_id'           => Auth::guard('sanctum')->id,               // or null / guest
-            'donated_amount'      => $amountCents,
-            'currency'          => 'SGD',
-            'razorpay_order_id' => $rzpOrder['id'],
-            'status'            => 'pending',                  // enum: pending|paid|failed
-        ]);
-
-        // ⑤  Send data back to the browser that will open Checkout
         return response()->json([
-            'key'         => config('services.razorpay.key'),
-            'orderId'     => $rzpOrder['id'],
-            'amountCents' => $rzpOrder['amount'],
-            'donationId'  => $donation->id,   // keep a handle on our record
+            'order_id' => $rzpOrder['id'],
+            'key'     => config('services.razorpay.key'),
         ]);
+        
+ 
     }
 
-    /* POST /api/donations/verify-payment
-       Body: { razorpay_order_id, razorpay_payment_id, razorpay_signature } */
-    public function verifyPayment(Request $request)
+    public function verifyPayment(Request $request, DonationPost $donationPost)
+
     {
+        Log::channel('auth_activity')->info('verifyPayment', $request->all());
         $request->validate([
-            'razorpay_order_id'   => 'required',
-            'razorpay_payment_id' => 'required',
-            'razorpay_signature'  => 'required',
+            'amount' => 'required|numeric|min:0.5',    // >= 0.50 SGD
         ]);
-
-        // ⑥  Verify signature
-        $sig = hash_hmac(
-            'sha256',
-            $request->razorpay_order_id.'|'.$request->razorpay_payment_id,
-            config('services.razorpay.secret')
-        );
-
-        if ($sig !== $request->razorpay_signature) {
-            return response()->json(['error' => 'Signature mismatch'], 400);
-        }
-
-        // ⑦  Mark donation as paid
-        $donation = Donation::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
-        $donation->update([
-            'razorpay_payment_id' => $request->razorpay_payment_id,
-            'razorpay_signature'  => $request->razorpay_signature,
-            'status'              => 'paid',
-            'paid_at'             => now(),
+        Donation::create([
+            'donation_post_id' => $donationPost->id, // or null / guest
+            'user_id'           => Auth::guard('sanctum')->user()->id,               // or null / guest
+            'donated_amount'      => $request->amount,
+            'currency'          => 'SGD',
+            'razorpay_order_id' => $request->razorpay_order_id,
+            'payment_status'            => 'paid',                  // enum: pending|paid|failed
         ]);
 
         return response()->json(['status' => 'ok']);

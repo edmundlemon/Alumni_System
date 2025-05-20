@@ -18,9 +18,9 @@ class Donation extends Model
         'donor_name',
         'donor_id',
     ];
-    protected $casts = [
-        'donated_amount' => 'float',
-    ];
+    // protected $casts = [
+    //     'donated_amount' => 'float',
+    // ];
     protected $hidden = [
         'donations_post',
     ];

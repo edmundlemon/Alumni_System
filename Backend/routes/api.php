@@ -74,8 +74,8 @@ Route::middleware('auth:sanctum')->get('/view_user/{user}', [UserController::cla
 // Payment Gateway Routes
 Route::prefix('donations')->group(function () {
     Route::get('/',                [DonationController::class, 'index']);
-    Route::post('/create-order',   [DonationController::class, 'createOrder']);
-    Route::post('/verify-payment', [DonationController::class, 'verifyPayment']);
+    Route::post('/create-donation/{donationPost}',   [DonationController::class, 'createOrder']);
+    Route::post('/verify-payment/{donationPost}', [DonationController::class, 'verifyPayment']);
 });
 
 Route::post('/razorpay/webhook',   [DonationController::class, 'webhook']);
