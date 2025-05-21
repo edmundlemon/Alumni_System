@@ -77,8 +77,8 @@ const mockEvents = [
 
           <div className="relative">
             <input
-              value=''
-              onChange=''
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
               type="text"
               placeholder="Search programs…"
               className="py-3 px-5 pr-12 rounded-lg shadow-md w-[300px] sm:w-[420px] lg:w-[550px] focus:outline-denim"

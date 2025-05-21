@@ -3,6 +3,7 @@ import { FaChevronLeft, FaChevronRight, FaSearch } from 'react-icons/fa';
 import { useState, useEffect, use } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 // Import profile images
 import img from '../../assets/profile/img_1.jpeg';
 import img1 from '../../assets/profile/img_2.jpeg';
@@ -21,27 +22,10 @@ import img13 from '../../assets/profile/img_14.jpeg';
 import img14 from '../../assets/profile/img_15.jpeg';
 
 // Array of images for random selection
-const profileImages = [
-    img, img1, img2, img3, img4, img5, img6, img7, img8, img9,
-    img10, img11, img12, img13, img14
-];
-
-
-function getRandomProfileImage(seed) {
-    let hash = 0;
-    if (typeof seed === 'string') {
-        for (let i = 0; i < seed.length; i++) {
-            hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-        }
-    } else if (typeof seed === 'number') {
-        hash = seed;
-    }
-    const index = Math.abs(hash) % profileImages.length;
-    return profileImages[index];
-}
 
 
 export default function AlumniMainPage() {
+    const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     const ALUMNI_PER_PAGE = 6;
     const getInitial = (name = "") => name.charAt(0).toUpperCase();
@@ -69,6 +53,25 @@ export default function AlumniMainPage() {
             console.error('Token not found');
         }
     }, []);
+    const profileImages = [
+    img, img1, img2, img3, img4, img5, img6, img7, img8, img9,
+    img10, img11, img12, img13, img14
+];
+
+
+function getRandomProfileImage(seed) {
+    let hash = 0;
+    if (typeof seed === 'string') {
+        for (let i = 0; i < seed.length; i++) {
+            hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+        }
+    } else if (typeof seed === 'number') {
+        hash = seed;
+    }
+    const index = Math.abs(hash) % profileImages.length;
+    return profileImages[index];
+}
+
 
     const totalPages    = Math.ceil(alumni.length / ALUMNI_PER_PAGE);
     const firstIndex    = (currentPage - 1) * ALUMNI_PER_PAGE;
@@ -163,7 +166,10 @@ export default function AlumniMainPage() {
                                     </div>
                                 </div>
                                 <div className='flex items-center justify-center mt-6'>
-                                    <button className='w-full bg-blue-900 text-white py-2 rounded-full'>View Profile</button>
+                                    <button 
+                                        onClick={() => navigate("/AlumniProfile", { state: { alumni } })}
+                                        className='w-full bg-blue-900 text-white py-2 rounded-full'>View Profile
+                                     </button>
                                 </div>
                             </div>
                         </div> 

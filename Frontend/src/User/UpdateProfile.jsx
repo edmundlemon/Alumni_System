@@ -25,7 +25,7 @@ import img13 from '../assets/profile/img_14.jpeg';
 import img14 from '../assets/profile/img_15.jpeg';
 
 
-export default function ViewProfile() {
+export default function UpdateProfile() {
     const profileImages = [
     img, img1, img2, img3, img4, img5, img6, img7, img8, img9,
     img10, img11, img12, img13, img14

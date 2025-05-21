@@ -18,14 +18,14 @@ function Header() {
 
     const navItems = [
         { name: 'Home', path: '/mainPage' },
-        { name: 'Profile', path: '/viewProfile' },
+        { name: 'Profile', path: '/updateProfile' },
         { name: 'Donation', path: '/donationMainPage' },
         { 
             name: 'Events', 
             path: '/eventMainPage',
             dropdown: [
                 { name: 'Register Events', path: '/events/upcoming' },
-                ...(userRole === 'alumni' ? [{ name: 'Create Events', path: '/events/past' }] : [])
+                ...(userRole === 'alumni' ? [{ name: 'Create Events', path: '/addEvent' }] : [])
             ]
         },
         { name: 'Forum', path: '/forumMainPage' },

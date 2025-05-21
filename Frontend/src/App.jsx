@@ -23,13 +23,14 @@ import DonationMainPage from "./User/Donation/DonationMainPage";
 import RazorPay from "./User/Donation/RazorPay";
 import ViewDonateDetails from "./User/Donation/viewDonateDetails";
 import AlumniMainPage from "./User/Alumni/AlumniMainPage";
-import ViewProfile from "./User/UpdateProfile";
 import AddEvent from "./User/Event/AddEvent";
 import DonateNow from "./User/Donation/DonateNow";
 import Footer from "./User/Footer";
 import TermAndCondition from "./User/footer/TermOfUse";
 import ContactUs from "./User/footer/ContactUs";
 import Policy from "./User/footer/Policy";
+import ViewProfile from "./User/Alumni/ViewProfile";
+import UpdateProfile from "./User/UpdateProfile";
 
 function AppRoutes() {
   const location = useLocation();
@@ -81,6 +82,7 @@ function AppRoutes() {
         <Route path="/termAndCondition" element={<TermAndCondition />} />
         <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/policy" element={<Policy />} />
+        <Route path="/updateProfile" element={<UpdateProfile />} />
         {/* 404 Not Found */}
         <Route
           path="/403"
