@@ -43,11 +43,12 @@ export default function ViewEvent() {
   }, [eventsService]);
 
   return (
-    <div className="px-32 py-4">
-      <h2 className="text-2xl mb-4">My Calendar</h2>
-      <div className="[&_.sx__month-grid]:h-[700px]">
+    <div className="px-32 pt-6 ">
+      <h2 className="text-3xl font-semibold mb-4 uppercase">Register Event</h2>
+      <div className="h-[700px] overflow-hidden">
         <ScheduleXCalendar calendarApp={calendar} />
       </div>
+
     </div>
   );
 }

@@ -4,14 +4,16 @@ import donationHeader from '../../assets/donation2.jpeg';     // banner image
 // import axios from 'axios';
 // import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
+import DonateNow from './DonateNow';
 
 export default function DonationMainPage() {
   const EVENTS_PER_PAGE = 6;
   const [allEvents,   setAllEvents]   = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchText,  setSearchText]  = useState('');
+  const [showDonate, setShowDonate] = useState(false);
   const navigate = useNavigate();
-
+  const [seletedDonate, setSelectedDonate] = useState(null);
 
 const mockEvents = [
     { id: 1,  name: 'Food Donation',            description: 'Help us provide food to those in need. Your contribution will ensure that families and individuals facing hardship receive nutritious meals and support during difficult times.',              image: 'https://picsum.photos/400/250?random=1',  raised: 12_500, goal: 25_000 },
@@ -47,6 +49,10 @@ const mockEvents = [
   const calcProgress = (raised, goal) =>
     Math.min(Math.round((raised / goal) * 100), 100);
 
+  const clickDonate = (dnt) => {
+    setShowDonate(true);
+    setSelectedDonate(dnt);
+  }
   return (
     <section>
       {/* Banner */}
@@ -121,7 +127,9 @@ const mockEvents = [
 
                 {/* footer */}
                 <div className="flex gap-4 border-t px-6 py-4 mt-auto">
-                  <button className="flex-1 py-2 bg-denim text-white rounded hover:opacity-90">
+                  <button 
+                    onClick={()=>clickDonate(dnt)}
+                    className="flex-1 py-2 bg-denim text-white rounded hover:opacity-90">
                     Donate
                   </button>
                   <button 
@@ -171,6 +179,11 @@ const mockEvents = [
               </button>
             </div>
           </div>
+          {showDonate && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+              <DonateNow donate={seletedDonate} onClose={() => setShowDonate(false)} />
+            </div>
+          )}
       </div>
     </section>
   );

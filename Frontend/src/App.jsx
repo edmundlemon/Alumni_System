@@ -19,6 +19,7 @@ import ViewDonateDetails from "./User/Donation/viewDonateDetails";
 import AlumniMainPage from "./User/Alumni/AlumniMainPage";
 import ViewProfile from "./User/ViewProfile";
 import AddEvent from "./User/Event/AddEvent";
+import DonateNow from "./User/Donation/DonateNow";
 
 function AppRoutes() {
   const location = useLocation();
@@ -51,6 +52,7 @@ function AppRoutes() {
         <Route path="/alumniMainPage" element={<AlumniMainPage />} />
         <Route path="/viewProfile" element={<ViewProfile />} />
         <Route path="/addEvent" element={<AddEvent />} />
+        <Route path="/donateNow" element={<DonateNow />} />
 
         {/* 404 Not Found */}
         <Route

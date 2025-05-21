@@ -17,7 +17,7 @@ function Header() {
     const userRole = Cookies.get('userRole');
 
     const navItems = [
-        { name: 'Home', path: '/home' },
+        { name: 'Home', path: '/mainPage' },
         { name: 'Profile', path: '/viewProfile' },
         { name: 'Donation', path: '/donationMainPage' },
         { 
