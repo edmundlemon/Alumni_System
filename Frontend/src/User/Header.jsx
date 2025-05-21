@@ -57,7 +57,7 @@ function Header() {
     };
 
     return (
-        <nav className="bg-slate-100/80 backdrop-blur-md shadow-md sticky top-0 z-50 px-4 lg:px-20">
+        <nav className="bg-gray-100 backdrop-blur-md shadow-md sticky top-0 z-50 px-4 lg:px-20">
             <div className="flex items-center justify-between py-3">
                 {/* Logo Section */}
                 <div 

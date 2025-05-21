@@ -1,10 +1,16 @@
 // src/App.jsx
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import Header from "./User/Header";
 import Login from "./User/Login";
 import AdminLogin from "./Admin/AdminLogin";
-import UserProfile from "./Admin/UserProfile";
+import UserProfile from "./Admin/UserProfileTable";
 import Sidebar from "./Admin/Sidebar";
 import UserManageTable from "./Admin/UserManageTable";
 import AddUser from "./Admin/AddUser";
@@ -17,21 +23,36 @@ import DonationMainPage from "./User/Donation/DonationMainPage";
 import RazorPay from "./User/Donation/RazorPay";
 import ViewDonateDetails from "./User/Donation/viewDonateDetails";
 import AlumniMainPage from "./User/Alumni/AlumniMainPage";
-import ViewProfile from "./User/ViewProfile";
+import ViewProfile from "./User/UpdateProfile";
 import AddEvent from "./User/Event/AddEvent";
 import DonateNow from "./User/Donation/DonateNow";
+import Footer from "./User/Footer";
+import TermAndCondition from "./User/footer/TermOfUse";
+import ContactUs from "./User/footer/ContactUs";
+import Policy from "./User/footer/Policy";
 
 function AppRoutes() {
   const location = useLocation();
 
   // Only show header on these paths:
-  const showHeader = ["/userLogin", "/mainPage", "/eventMainPage","/viewEventDetails", 
-    "/forumMainPage","/donationMainPage","/viewDonateDetails", "/alumniMainPage",
-   "/viewProfile", "/addEvent"].includes(location.pathname);
-
+  const hideHeader = [
+    "/sidebar",
+    "/userManageTable",
+    "/userProfile",
+    "/addUser",
+    "/adminLogin",
+  ].includes(location.pathname);
+  const hideFooter = [
+    "/sidebar",
+    "/userManageTable",
+    "/userProfile",
+    "/addUser",
+    "/adminLogin",
+    "/forumMainPage",
+  ].includes(location.pathname);
   return (
     <>
-      {showHeader && <Header />}
+      {!hideHeader && <Header />}
       <Routes>
         <Route path="/" element={<Navigate to="/userLogin" replace />} />
         <Route path="/userLogin" element={<Login />} />
@@ -41,7 +62,10 @@ function AppRoutes() {
         <Route path="/userManageTable" element={<UserManageTable />} />
         <Route path="/addUser" element={<AddUser />} />
         <Route path="/mainPage" element={<MainPage />} />
-        <Route path="/reset-password" element={<Login initialForm="resetPassword" />} />
+        <Route
+          path="/reset-password"
+          element={<Login initialForm="resetPassword" />}
+        />
         <Route path="/viewEvent" element={<ViewEvent />} />
         <Route path="/eventMainPage" element={<EventMainPage />} />
         <Route path="/viewEventDetails" element={<ViewEventDetails />} />
@@ -53,7 +77,10 @@ function AppRoutes() {
         <Route path="/viewProfile" element={<ViewProfile />} />
         <Route path="/addEvent" element={<AddEvent />} />
         <Route path="/donateNow" element={<DonateNow />} />
-
+        <Route path="/footer" element={<Footer />} />
+        <Route path="/termAndCondition" element={<TermAndCondition />} />
+        <Route path="/contactUs" element={<ContactUs />} />
+        <Route path="/policy" element={<Policy />} />
         {/* 404 Not Found */}
         <Route
           path="/403"
@@ -64,6 +91,7 @@ function AppRoutes() {
           }
         />
       </Routes>
+      {!hideFooter && <Footer />}
     </>
   );
 }

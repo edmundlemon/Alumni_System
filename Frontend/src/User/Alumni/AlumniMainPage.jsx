@@ -1,10 +1,49 @@
 import mapImage from '../../assets/alumni.jpeg'; 
-import { FaSearch } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaSearch } from 'react-icons/fa';
 import { useState, useEffect, use } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+// Import profile images
+import img from '../../assets/profile/img_1.jpeg';
+import img1 from '../../assets/profile/img_2.jpeg';
+import img2 from '../../assets/profile/img_3.jpeg';
+import img3 from '../../assets/profile/img_4.jpeg';
+import img4 from '../../assets/profile/img_5.jpeg';
+import img5 from '../../assets/profile/img_6.jpeg';
+import img6 from '../../assets/profile/img_7.jpeg';
+import img7 from '../../assets/profile/img_8.jpeg';
+import img8 from '../../assets/profile/img_9.jpeg';
+import img9 from '../../assets/profile/img_10.jpeg';
+import img10 from '../../assets/profile/img_11.jpeg';
+import img11 from '../../assets/profile/img_12.jpeg';
+import img12 from '../../assets/profile/img_13.jpeg';
+import img13 from '../../assets/profile/img_14.jpeg';
+import img14 from '../../assets/profile/img_15.jpeg';
+
+// Array of images for random selection
+const profileImages = [
+    img, img1, img2, img3, img4, img5, img6, img7, img8, img9,
+    img10, img11, img12, img13, img14
+];
+
+
+function getRandomProfileImage(seed) {
+    let hash = 0;
+    if (typeof seed === 'string') {
+        for (let i = 0; i < seed.length; i++) {
+            hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+        }
+    } else if (typeof seed === 'number') {
+        hash = seed;
+    }
+    const index = Math.abs(hash) % profileImages.length;
+    return profileImages[index];
+}
+
 
 export default function AlumniMainPage() {
+    const [currentPage, setCurrentPage] = useState(1);
+    const ALUMNI_PER_PAGE = 6;
     const getInitial = (name = "") => name.charAt(0).toUpperCase();
     const [alumni, setAlumni] = useState([]);
     const token = Cookies.get('token');
@@ -30,6 +69,13 @@ export default function AlumniMainPage() {
             console.error('Token not found');
         }
     }, []);
+
+    const totalPages    = Math.ceil(alumni.length / ALUMNI_PER_PAGE);
+    const firstIndex    = (currentPage - 1) * ALUMNI_PER_PAGE;
+    const currentAlumni = alumni.slice(firstIndex, firstIndex + ALUMNI_PER_PAGE);
+
+    const goToPage = page =>
+    setCurrentPage(Math.min(Math.max(page, 1), totalPages || 1));
 
 
     return(
@@ -63,70 +109,105 @@ export default function AlumniMainPage() {
                 </div>
 
                 <div className='grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3'>
-                    {alumni.map(alumni=>{
+                    {currentAlumni.map(alumni=>{
                         return(
                             <div
-  key={alumni.id}
-  className="bg-white shadow-lg border rounded-xl overflow-hidden p-6 flex flex-col items-center text-center transition hover:shadow-xl duration-300"
->
-  {/* Profile Picture or Initials */}
-  <div className="w-28 h-28 mb-4">
-    {alumni.profile_picture ? (
-      <img
-        src={alumni.profile_picture}
-        alt="profile"
-        className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
-      />
-    ) : (
-      <div className="w-full h-full rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-3xl font-semibold">
-        {getInitial(alumni?.name)}
-      </div>
-    )}
-  </div>
+                                key={alumni.id}
+                                className="bg-white shadow-lg border rounded-xl overflow-hidden p-2 flex flex-col items-start transition hover:shadow-xl duration-300"
+                                >
+                                {/* Profile Picture or Initials */}
+                                <div className='w-full bg-blue-900 h-32 rounded-lg relative'>
+                                    <div className="w-24 h-24 mb-4 absolute bottom-[-50px] left-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                    {alumni.profile_picture ? (
+                                    <img
+                                        src={alumni.profile_picture}
+                                        alt="profile"
+                                        className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
+                                    />
+                                    ) : (
+                                    <img
+                                    src={getRandomProfileImage(alumni.id)}
+                                    alt="profile"
+                                    className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
+                                    />
 
-  {/* Name */}
-  <h3 className="text-xl font-semibold text-gray-800">{alumni.name}</h3>
+                                    )}
+                                    </div>
+                                </div>
+                                    
+                                <div className='p-4 w-full'>   
+                                {/* Name */}
+                                <div className='flex w-full items-center justify-between mt-8'>
+                                    <h3 className="text-xl font-semibold text-gray-800 ">{alumni.name}</h3>
+                                    <button className='text-xs bg-gray-200 text-gray-600 px-4 py-1 rounded-full'>Connect</button>
+                                </div>
 
-  {/* Major / Faculty */}
-  <p className="text-gray-500 text-sm mt-1">{alumni.major_name}</p>
-  <p className="text-gray-400 text-sm">
-    {alumni.major?.faculty_name || alumni.faculty}
-  </p>
-
-  {/* Graduation Year */}
-  {alumni.graduation_year && (
-    <p className="text-gray-500 text-sm mt-1">
-      Class of {alumni.graduation_year}
-    </p>
-  )}
-
-  {/* Job Details (if available) */}
-  {(alumni.job_title || alumni.position || alumni.company) && (
-    <div className="mt-3">
-      {alumni.job_title && (
-        <p className="text-blue-800 font-medium text-sm">
-          {alumni.job_title}
-        </p>
-      )}
-      {alumni.position && (
-        <p className="text-blue-700 text-sm">{alumni.position}</p>
-      )}
-      {alumni.company && (
-        <p className="text-gray-600 text-sm">{alumni.company}</p>
-      )}
-    </div>
-  )}
-
-  {/* Optional Email / Phone / Bio */}
-  {alumni.bio && (
-    <p className="mt-3 text-sm text-gray-500 line-clamp-3">{alumni.bio}</p>
-  )}
-</div>
-
+                                {/* Major / Faculty */}
+                                <p className="text-gray-500 text-sm mt-4">{alumni.major_name}</p>
+                                <p className="text-gray-400 text-sm">
+                                    {alumni.major?.faculty_name || alumni.faculty}
+                                </p>
+                                    
+                                <div className='grid grid-cols-3 gap-4=2 mt-6'>
+                                    <div className='flex flex-col items-center'>
+                                        <p>100</p>
+                                        <p className='text-gray-400 text-sm'>Connections</p>
+                                    </div>
+                                    <div className='flex flex-col items-center border-x'>
+                                        <p>5</p>
+                                        <p className='text-gray-400 text-sm'>Posts</p>
+                                    </div>
+                                    <div className='flex flex-col items-center'>
+                                        <p>10</p>
+                                        <p className='text-gray-400 text-sm'>Events</p>
+                                    </div>
+                                </div>
+                                <div className='flex items-center justify-center mt-6'>
+                                    <button className='w-full bg-blue-900 text-white py-2 rounded-full'>View Profile</button>
+                                </div>
+                            </div>
+                        </div> 
                         )
                     })}
                 </div>
+                 {/* pagination */}
+                      <div className="flex justify-between items-center mt-10">
+                        <p className="text-sm text-gray-600">
+                          Showing {firstIndex + 1}-{Math.min(firstIndex + ALUMNI_PER_PAGE, alumni.length)} of{' '}
+                          {alumni.length} programs
+                        </p>
+            
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => goToPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="p-2 rounded border hover:bg-gray-100 disabled:opacity-50"
+                          >
+                            <FaChevronLeft />
+                          </button>
+            
+                          {Array.from({ length: totalPages }, (_, i) => (
+                            <button
+                              key={i + 1}
+                              onClick={() => goToPage(i + 1)}
+                              className={`w-10 h-10 rounded ${
+                                currentPage === i + 1 ? 'bg-denim text-white' : 'border hover:bg-gray-100'
+                              }`}
+                            >
+                              {i + 1}
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => goToPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="p-2 rounded border hover:bg-gray-100 disabled:opacity-50"
+                          >
+                            <FaChevronRight />
+                          </button>
+                        </div>
+                      </div>
             </div>
+           
         </section>
     )
 }

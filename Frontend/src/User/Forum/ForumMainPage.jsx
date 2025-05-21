@@ -112,7 +112,7 @@ export default function ForumMainPage() {
         setPosts(postsRes.data.discussions.data);
         setUsers(usersRes.data);
         setMainUser(mainRes.data);
-        setConnectPost(connectRes.data);
+        setConnectPost(connectRes.data.discussions.data);
         console.log("Connected Posts:", connectRes.data);
         console.log("Post:", postsRes.data.discussions.data);
         const map = {};
@@ -171,9 +171,6 @@ export default function ForumMainPage() {
 
           {/* Bottom Section */}
           <div className="space-y-3">
-            {" "}
-            {/* Added space between buttons */}
-            {/* Post Button */}
             <button
               onClick={() => {
                 setShowAddPost(!showAddPost);
@@ -191,39 +188,37 @@ export default function ForumMainPage() {
           </div>
         </div>
       </div>
-
-      {/* Main Content - Scrollable */}
-      <div className="flex-1 border-x border-gray-200 border rounded ml-64 mr-80">
-        {/* Header */}
-        <div className="sticky top-24 translate-y-[-9PX] bg-white border-gray-300 border-y z-10 flex bg-blur">
+        <div className="flex-1 border-x border-gray-200 border rounded ml-64 mr-80">
+            <div className="sticky top-24 translate-y-[-9PX] bg-white border-gray-300 border-y z-10 flex bg-blur">
           {showPostDetails === false ? (
             <>
               {["For you", "Following"].map((tab, i) => (
-                <button
-                  key={i}
-                  className={`flex-1 text-center py-3 font-semibold hover:bg-gray-100 transition ${
-                    i === 0
-                      ? "text-blue-600 border-b-2 border-blue-500"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {tab}
-                </button>
+            <button
+              key={i}
+              className={`flex-1 text-center py-3 font-semibold hover:bg-gray-100 transition ${
+                (i === 0 && !showConnectPost) || (i === 1 && showConnectPost)
+              ? "text-blue-600 border-b-2 border-blue-500"
+              : "text-gray-600"
+              }`}
+              onClick={() => setShowConnectPost(i === 1)}
+            >
+              {tab}
+            </button>
               ))}
             </>
           ) : (
             <div className="flex items-center gap-7 py-3 px-8 ">
               <button
-                onClick={() => setShowPostDetails(!showPostDetails)}
-                className="p-1 text-gray-600"
+            onClick={() => setShowPostDetails(!showPostDetails)}
+            className="p-1 text-gray-600"
               >
-                <IoArrowBackOutline size={23} />
+            <IoArrowBackOutline size={23} />
               </button>
               <p className="text-lg font-semibold">Post</p>
             </div>
           )}
-        </div>
-        {/* Posts */}
+            </div>
+            {/* Posts */}
         {showPostDetails === false ? (
           <>
             <div className="px-8 py-4 border-b border-gray-100">
@@ -322,9 +317,10 @@ export default function ForumMainPage() {
                 </div>
               </form>
             </div>
-
-            <div>
-              {posts.map((post, i) => {
+            {/* Posts List */}
+            {showConnectPost === true ? (
+              <div>
+                {connectPost.map((post, i) => {
                 const user = userMap[post.user_id];
                 return (
                   <div
@@ -368,7 +364,55 @@ export default function ForumMainPage() {
                   </div>
                 );
               })}
-            </div>
+              </div>
+            ):(
+              <div>
+                {posts.map((post, i) => {
+                const user = userMap[post.user_id];
+                return (
+                  <div
+                    key={i}
+                    onClick={() => handlePostDetails(post)}
+                    className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
+                      {user ? user.name[0] : "?"}
+                    </div>
+                    {/* Post Content */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-900">
+                          {user ? user.name : "Unknown User"}
+                        </span>
+                        <span className="text-gray-400 text-xs">
+                          · {getTimeAgo(post.created_at)}
+                        </span>
+                      </div>
+                      <p>{post.subject}</p>
+                      <div className="text-gray-800 text-base pt-3 pb-1">
+                        {post.content}
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                          <FaRegHeart size={15} />
+                        </div>
+                        <div
+                          onClick={() => handleClickComment(post)}
+                          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
+                        >
+                          <FaRegComment size={15} />
+                        </div>
+                        <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                          <PiShareFatBold size={15} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              </div>
+            )}
           </>
         ) : (
           <div className="flex gap-3 px-9 mt-4 pt-4">
@@ -395,7 +439,7 @@ export default function ForumMainPage() {
                   <FaRegHeart size={15} />
                 </div>
                 <div
-                  onClick={() => handleClickComment(post)}
+                  onClick={() => handleClickComment(posts)}
                   className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
                 >
                   <FaRegComment size={15} />
@@ -466,36 +510,36 @@ export default function ForumMainPage() {
               )}
 
               {selectedPost.post.comments.length === 0 ? (
-  <div className="py-6 text-center text-gray-500">
-    No comments yet. Be the first to comment!
-  </div>
-) : (
-  selectedPost.post.comments.map((comment, i) => {
-    console.log("Comment:", comment);
-    const user = userMap[comment.user_id];
-    return (
-      <div
-        key={i}
-        className="flex gap-3 mt-2 py-4 border-b border-gray-200"
-      >
-        <div className="w-11 h-11 rounded-full bg-gray-600 flex items-center justify-center font-bold">
-          {getInitial(user?.name)}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-lg">
-              {user ? user.name : "Unknown User"}
-            </span>
-            <span className="text-gray-400 text-sm">
-              · {getTimeAgo(comment.created_at)}
-            </span>
-          </div>
-          <p className="text-lg">{comment.comment_content}</p>
-        </div>
-      </div>
-    );
-  })
-)}
+                  <div className="py-6 text-center text-gray-500">
+                    No comments yet. Be the first to comment!
+                  </div>
+                ) : (
+                  selectedPost.post.comments.map((comment, i) => {
+                    console.log("Comment:", comment);
+                    const user = userMap[comment.user_id];
+                    return (
+                      <div
+                        key={i}
+                        className="flex gap-3 mt-2 py-4 border-b border-gray-200"
+                      >
+                        <div className="w-11 h-11 rounded-full bg-gray-600 flex items-center justify-center font-bold">
+                          {getInitial(user?.name)}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-lg">
+                              {user ? user.name : "Unknown User"}
+                            </span>
+                            <span className="text-gray-400 text-sm">
+                              · {getTimeAgo(comment.created_at)}
+                            </span>
+                          </div>
+                          <p className="text-lg">{comment.comment_content}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
             </div>
           </div>
         )}
