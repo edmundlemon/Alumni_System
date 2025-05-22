@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
+
 export default function LoginPage({ initialForm = "login" }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const location = useLocation();
@@ -181,7 +182,7 @@ const toggleResetPassConfirmVisibility = () => {
   return (
     <div className="relative min-h-screen">
       <div className="h-72 w-full bg-blue-900"></div>
-      <div className="absolute top-5 left-20 text-white text-5xl font-extrabold">Login Page</div>
+      <div className="absolute top-7 left-20 text-white text-5xl font-extrabold">Login Page</div>
     <div className="flex justify-center my-10 absolute top-72 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
       <div className="flex max-w-4xl shadow-lg overflow-hidden">
         {/* Left Panel - Branding */}

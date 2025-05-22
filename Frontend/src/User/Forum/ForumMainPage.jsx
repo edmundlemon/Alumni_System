@@ -40,6 +40,10 @@ export default function ForumMainPage() {
   const [joinComment, setJoinComment] = useState(false);
   const [connectPost, setConnectPost] = useState([]);
   const [showConnectPost, setShowConnectPost] = useState(false);
+  const [showConnect, setShowConnect] = useState(false);
+  const [connectUser, setConnectUser] = useState([]);
+  const [showposted, setShowPosted] = useState(false);
+  const [ownPost, setOwnPost] = useState([]);
 
   const getTimeAgo = (dateString) => {
     const date = new Date(dateString);
@@ -83,16 +87,15 @@ export default function ForumMainPage() {
   };
 
   const menus = [
-    { text: "Home", link: "/AdminDashboard", icon: GoHomeFill },
-    { text: "Notifications", link: "/jobSeekerTable", icon: FaRegBell },
-    { text: "Connect", link: "/employerTable", icon: FiUsers },
-    { text: "Posted", link: "/adminTable", icon: FaRegFile },
+    { text: "Home", onClick: () => {setShowPosted(false),setShowConnect(false)}, icon: GoHomeFill },
+    { text: "Connect", onClick: () => {setShowConnect(true),setShowPosted(false)}, icon: FiUsers },
+    { text: "My Posted", onClick: () => {setShowPosted(true),setShowConnect(false)}, icon: FaRegFile },
   ];
 
   useEffect(() => {
     const getPostsAndUsers = async () => {
       try {
-        const [postsRes, usersRes, mainRes, connectRes] = await Promise.all([
+        const [postsRes, usersRes, mainRes, connectRes, ownPost, connectUserRes] = await Promise.all([
           axios.get("http://localhost:8000/api/discussions", {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -107,14 +110,29 @@ export default function ForumMainPage() {
             {
               headers: { Authorization: `Bearer ${token}` },
             }
+          ),axios.get(
+            "http://localhost:8000/api/view_my_own_discussion",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          ),
+          axios.get(
+            "http://localhost:8000/api/view_all_alumni",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
           ),
         ]);
         setPosts(postsRes.data.discussions.data);
         setUsers(usersRes.data);
         setMainUser(mainRes.data);
         setConnectPost(connectRes.data.discussions.data);
+        setConnectUser(connectUserRes.data);
+        setOwnPost(ownPost.data.discussions.data);
+        console.log("Own Post:", ownPost.data.discussions.data);
         console.log("Connected Posts:", connectRes.data);
         console.log("Post:", postsRes.data.discussions.data);
+        console.log("Users:", usersRes.data);
         const map = {};
         usersRes.data.forEach((user) => {
           map[user.id] = user;
@@ -159,6 +177,7 @@ export default function ForumMainPage() {
             {menus.map((item, index) => (
               <button
                 key={index}
+                onClick={item.onClick}
                 className="flex items-center p-3 rounded-full hover:bg-gray-200 w-full"
               >
                 <span className="w-6 h-6 mr-4">
@@ -174,244 +193,441 @@ export default function ForumMainPage() {
             <button
               onClick={() => {
                 setShowAddPost(!showAddPost);
-              }}
-              className="
-                    bg-denim hover:bg-blue-600 
-                    text-white font-semibold 
-                    py-2.5 px-4 rounded-full 
-                    w-full transition-colors duration-200
-                    shadow-md hover:shadow-lg
+                }}
+                className="
+                  bg-denim hover:bg-blue-600 
+                  text-white font-semibold 
+                  py-2.5 px-4 rounded-full 
+                  w-full transition-colors duration-200
+                  shadow-md hover:shadow-lg
                 "
-            >
-              Post
-            </button>
-          </div>
-        </div>
-      </div>
-        <div className="flex-1 border-x border-gray-200 border rounded ml-64 mr-80">
-            <div className="sticky top-24 translate-y-[-9PX] bg-white border-gray-300 border-y z-10 flex bg-blur">
-          {showPostDetails === false ? (
-            <>
-              {["For you", "Following"].map((tab, i) => (
-            <button
-              key={i}
-              className={`flex-1 text-center py-3 font-semibold hover:bg-gray-100 transition ${
-                (i === 0 && !showConnectPost) || (i === 1 && showConnectPost)
-              ? "text-blue-600 border-b-2 border-blue-500"
-              : "text-gray-600"
-              }`}
-              onClick={() => setShowConnectPost(i === 1)}
-            >
-              {tab}
-            </button>
-              ))}
-            </>
-          ) : (
-            <div className="flex items-center gap-7 py-3 px-8 ">
-              <button
-            onClick={() => setShowPostDetails(!showPostDetails)}
-            className="p-1 text-gray-600"
               >
-            <IoArrowBackOutline size={23} />
+                Post
               </button>
-              <p className="text-lg font-semibold">Post</p>
+              </div>
             </div>
-          )}
             </div>
-            {/* Posts */}
+            <div className="flex-1 border-x border-gray-200 border rounded ml-64 mr-80">
+              <div className="sticky top-24 translate-y-[-9PX] bg-white border-gray-300 border-y z-10 flex bg-blur">
+              {showPostDetails === false ? (
+              <>
+                {(showposted === true || showConnect) ===true? (
+                showConnect === true ? (
+                  <button
+                  className="flex-1 text-center py-3 font-semibold text-blue-600 border-b-2 border-blue-500 transition"
+                  onClick={() => {setShowPosted(false),setShowConnect(false)}}
+                  >
+                    Connect User
+                  </button>
+                ):(
+                  <button
+                  className="flex-1 text-center py-3 font-semibold text-blue-600 border-b-2 border-blue-500"
+                  onClick={() => {setShowPosted(false),setShowConnect(false)}}
+                  >
+                    My Own Post
+                  </button>
+                )
+                ) : (
+                  
+                ["For you", "Following"].map((tab, i) => (
+                  <button
+                  key={i}
+                  className={`flex-1 text-center py-3 font-semibold hover:bg-gray-100 transition ${
+                    (i === 0 && !showConnectPost) || (i === 1 && showConnectPost)
+                    ? "text-blue-600 border-b-2 border-blue-500"
+                    : "text-gray-600"
+                  }`}
+                  onClick={() => setShowConnectPost(i === 1)}
+                  >
+                  {tab}
+                  </button>
+                ))
+                )}
+              </>
+              ) : (
+              <div className="flex items-center gap-7 py-3 px-8 ">
+                <button
+                onClick={() => setShowPostDetails(!showPostDetails)}
+                className="p-1 text-gray-600"
+                >
+                <IoArrowBackOutline size={23} />
+                </button>
+                <p className="text-lg font-semibold">Post</p>
+              </div>
+              )}
+              </div>
+              {/* Posts */}
         {showPostDetails === false ? (
           <>
-            <div className="px-8 py-4 border-b border-gray-100">
-              <form className="flex  bg-white">
-                {/* Avatar */}
-                <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-400 mr-4 font-bold">
-                  {getInitial(mainUser?.name)}
-                </div>
+            {(showposted === true || showConnect === true) ? (
+              showConnect === true ? (
+                <div className="flex flex-col gap-4">
+                {connectUser.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center gap-4 border-b p-4 w-full"
+                  >
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+                      {user.image ? (
+                        <img
+                          src={user.image}
+                          alt="Profile"
+                          className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-full h-full text-3xl font-medium flex items-center justify-center rounded-full border-4 border-blue-200 shadow-sm">
+                          {getInitial(user.name)}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h1 className="text-lg font-bold">{user.name}</h1>
+                      <p>
+                        {user.major_name} , {user.major.faculty_name}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              ) : (
+                <div>
+                    <div className="px-8 py-4 border-b border-gray-100">
+                  <form className="flex  bg-white">
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-400 mr-4 font-bold">
+                      {getInitial(mainUser?.name)}
+                    </div>
 
-                {/* Composer */}
-                <div className="flex-1">
-                  <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="w-full bg-transparent text-gray-800 placeholder-gray-500 text-lg outline-none resize-none focus:border-b focus:border-blue-500 transition-colors"
-                    placeholder="What's happening?"
-                    rows="2"
-                  />
-
-                  <div className="flex items-center justify-between mt-3">
-                    {/* Action Icons */}
-                    <div className="flex items-center space-x-3 text-blue-500">
-                      <button
-                        type="button"
-                        onClick={handleImageClick}
-                        className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                        title="Add Image"
-                      >
-                        <CiImageOn size={24} />
-                      </button>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        hidden
+                    {/* Composer */}
+                    <div className="flex-1">
+                      <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        className="w-full bg-transparent text-gray-800 placeholder-gray-500 text-lg outline-none resize-none focus:border-b focus:border-blue-500 transition-colors"
+                        placeholder="What's happening?"
+                        rows="2"
                       />
-                      <button
-                        type="button"
-                        className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                        title="Add Image"
-                      >
-                        <PiGif size={24} />
-                      </button>
-                      <button
-                        type="button"
-                        className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                        title="Add Image"
-                      >
-                        <LiaPollSolid size={24} />
-                      </button>
-                      <div className="relative">
-                        <button
-                          className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setShowPicker(!showPicker);
-                          }}
-                        >
-                          <BsEmojiSmile size={19} />
-                        </button>
 
-                        {showPicker && (
-                          <div className="absolute top-10 left-0 z-10">
-                            <EmojiPicker
-                              onEmojiClick={onEmojiClick}
-                              width={300}
-                              height={350}
-                            />
+                      <div className="flex items-center justify-between mt-3">
+                        {/* Action Icons */}
+                        <div className="flex items-center space-x-3 text-blue-500">
+                          <button
+                            type="button"
+                            onClick={handleImageClick}
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <CiImageOn size={24} />
+                          </button>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            hidden
+                          />
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <PiGif size={24} />
+                          </button>
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <LiaPollSolid size={24} />
+                          </button>
+                          <div className="relative">
+                            <button
+                              className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setShowPicker(!showPicker);
+                              }}
+                            >
+                              <BsEmojiSmile size={19} />
+                            </button>
+
+                            {showPicker && (
+                              <div className="absolute top-10 left-0 z-10">
+                                <EmojiPicker
+                                  onEmojiClick={onEmojiClick}
+                                  width={300}
+                                  height={350}
+                                />
+                              </div>
+                            )}
                           </div>
-                        )}
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <GoLocation size={19} />
+                          </button>
+                        </div>
+
+                        {/* Post Button */}
+                        <button
+                          type="submit"
+                          disabled={!content.trim()}
+                          className={`px-5 py-2 text-sm font-semibold rounded-full transition 
+                            ${
+                              content.trim()
+                                ? "bg-blue-500 hover:bg-blue-600 text-white"
+                                : "bg-blue-300 text-white cursor-not-allowed opacity-50"
+                            }`}
+                        >
+                          Post
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                        title="Add Image"
-                      >
-                        <GoLocation size={19} />
-                      </button>
+                    </div>
+                  </form>
+                </div>
+                    {ownPost.map((post, i) => {
+                      const user = userMap[post.user_id];
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => handlePostDetails(post)}
+                          className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                        >
+                          {/* Avatar */}
+                          <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
+                            {user ? user.name[0] : "?"}
+                          </div>
+                          {/* Post Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-900">
+                                {user ? user.name : "Unknown User"}
+                              </span>
+                              <span className="text-gray-400 text-xs">
+                                · {getTimeAgo(post.created_at)}
+                              </span>
+                            </div>
+                            <p>{post.subject}</p>
+                            <div className="text-gray-800 text-base pt-3 pb-1">
+                              {post.content}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                <FaRegHeart size={15} />
+                              </div>
+                              <div
+                                onClick={() => handleClickComment(post)}
+                                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
+                              >
+                                <FaRegComment size={15} />
+                              </div>
+                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                <PiShareFatBold size={15} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+              )
+            ) : (
+              <>
+                <div className="px-8 py-4 border-b border-gray-100">
+                  <form className="flex  bg-white">
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-400 mr-4 font-bold">
+                      {getInitial(mainUser?.name)}
                     </div>
 
-                    {/* Post Button */}
-                    <button
-                      type="submit"
-                      disabled={!content.trim()}
-                      className={`px-5 py-2 text-sm font-semibold rounded-full transition 
-                        ${
-                          content.trim()
-                            ? "bg-blue-500 hover:bg-blue-600 text-white"
-                            : "bg-blue-300 text-white cursor-not-allowed opacity-50"
-                        }`}
-                    >
-                      Post
-                    </button>
-                  </div>
+                    {/* Composer */}
+                    <div className="flex-1">
+                      <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        className="w-full bg-transparent text-gray-800 placeholder-gray-500 text-lg outline-none resize-none focus:border-b focus:border-blue-500 transition-colors"
+                        placeholder="What's happening?"
+                        rows="2"
+                      />
+
+                      <div className="flex items-center justify-between mt-3">
+                        {/* Action Icons */}
+                        <div className="flex items-center space-x-3 text-blue-500">
+                          <button
+                            type="button"
+                            onClick={handleImageClick}
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <CiImageOn size={24} />
+                          </button>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            hidden
+                          />
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <PiGif size={24} />
+                          </button>
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <LiaPollSolid size={24} />
+                          </button>
+                          <div className="relative">
+                            <button
+                              className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setShowPicker(!showPicker);
+                              }}
+                            >
+                              <BsEmojiSmile size={19} />
+                            </button>
+
+                            {showPicker && (
+                              <div className="absolute top-10 left-0 z-10">
+                                <EmojiPicker
+                                  onEmojiClick={onEmojiClick}
+                                  width={300}
+                                  height={350}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <GoLocation size={19} />
+                          </button>
+                        </div>
+
+                        {/* Post Button */}
+                        <button
+                          type="submit"
+                          disabled={!content.trim()}
+                          className={`px-5 py-2 text-sm font-semibold rounded-full transition 
+                            ${
+                              content.trim()
+                                ? "bg-blue-500 hover:bg-blue-600 text-white"
+                                : "bg-blue-300 text-white cursor-not-allowed opacity-50"
+                            }`}
+                        >
+                          Post
+                        </button>
+                      </div>
+                    </div>
+                  </form>
                 </div>
-              </form>
-            </div>
-            {/* Posts List */}
-            {showConnectPost === true ? (
-              <div>
-                {connectPost.map((post, i) => {
-                const user = userMap[post.user_id];
-                return (
-                  <div
-                    key={i}
-                    onClick={() => handlePostDetails(post)}
-                    className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
-                  >
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
-                      {user ? user.name[0] : "?"}
-                    </div>
-                    {/* Post Content */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-gray-900">
-                          {user ? user.name : "Unknown User"}
-                        </span>
-                        <span className="text-gray-400 text-xs">
-                          · {getTimeAgo(post.created_at)}
-                        </span>
-                      </div>
-                      <p>{post.subject}</p>
-                      <div className="text-gray-800 text-base pt-3 pb-1">
-                        {post.content}
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
-                          <FaRegHeart size={15} />
-                        </div>
+                {/* Posts List */}
+                {showConnectPost === true ? (
+                  <div>
+                    {connectPost.map((post, i) => {
+                      const user = userMap[post.user_id];
+                      return (
                         <div
-                          onClick={() => handleClickComment(post)}
-                          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
+                          key={i}
+                          onClick={() => handlePostDetails(post)}
+                          className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
                         >
-                          <FaRegComment size={15} />
+                          {/* Avatar */}
+                          <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
+                            {user ? user.name[0] : "?"}
+                          </div>
+                          {/* Post Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-900">
+                                {user ? user.name : "Unknown User"}
+                              </span>
+                              <span className="text-gray-400 text-xs">
+                                · {getTimeAgo(post.created_at)}
+                              </span>
+                            </div>
+                            <p>{post.subject}</p>
+                            <div className="text-gray-800 text-base pt-3 pb-1">
+                              {post.content}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                <FaRegHeart size={15} />
+                              </div>
+                              <div
+                                onClick={() => handleClickComment(post)}
+                                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
+                              >
+                                <FaRegComment size={15} />
+                              </div>
+                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                <PiShareFatBold size={15} />
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
-                          <PiShareFatBold size={15} />
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-              </div>
-            ):(
-              <div>
-                {posts.map((post, i) => {
-                const user = userMap[post.user_id];
-                return (
-                  <div
-                    key={i}
-                    onClick={() => handlePostDetails(post)}
-                    className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
-                  >
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
-                      {user ? user.name[0] : "?"}
-                    </div>
-                    {/* Post Content */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-gray-900">
-                          {user ? user.name : "Unknown User"}
-                        </span>
-                        <span className="text-gray-400 text-xs">
-                          · {getTimeAgo(post.created_at)}
-                        </span>
-                      </div>
-                      <p>{post.subject}</p>
-                      <div className="text-gray-800 text-base pt-3 pb-1">
-                        {post.content}
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
-                          <FaRegHeart size={15} />
-                        </div>
+                ) : (
+                  <div>
+                    {posts.map((post, i) => {
+                      const user = userMap[post.user_id];
+                      return (
                         <div
-                          onClick={() => handleClickComment(post)}
-                          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
+                          key={i}
+                          onClick={() => handlePostDetails(post)}
+                          className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
                         >
-                          <FaRegComment size={15} />
+                          {/* Avatar */}
+                          <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
+                            {user ? user.name[0] : "?"}
+                          </div>
+                          {/* Post Content */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-900">
+                                {user ? user.name : "Unknown User"}
+                              </span>
+                              <span className="text-gray-400 text-xs">
+                                · {getTimeAgo(post.created_at)}
+                              </span>
+                            </div>
+                            <p>{post.subject}</p>
+                            <div className="text-gray-800 text-base pt-3 pb-1">
+                              {post.content}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                <FaRegHeart size={15} />
+                              </div>
+                              <div
+                                onClick={() => handleClickComment(post)}
+                                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
+                              >
+                                <FaRegComment size={15} />
+                              </div>
+                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                <PiShareFatBold size={15} />
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
-                          <PiShareFatBold size={15} />
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-              </div>
+                )}
+              </>
             )}
           </>
         ) : (

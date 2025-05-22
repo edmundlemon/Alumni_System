@@ -15,7 +15,11 @@ import {
 import { TbReportAnalytics } from "react-icons/tb";
 import axios from "axios";
 import Cookies from "js-cookie";
-import UserManageTable from "./UserManageTable";
+import { Outlet } from "react-router-dom";
+import { BiDonateHeart } from "react-icons/bi";
+import { BiMessageRoundedDots } from "react-icons/bi";
+import { FaRegCalendarAlt } from "react-icons/fa";
+import { LuUsers } from "react-icons/lu";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -32,11 +36,12 @@ const Sidebar = () => {
 
   const menus = [
     { name: "Dashboard", link: "/AdminDashboard", icon: MdOutlineDashboard },
-    { name: "User Manage", link: "/jobSeekerTable", icon: HiOutlineUser },
-    { name: "Event", link: "/employerTable", icon: MdOutlineBusiness },
-    { name: "Donation", link: "/adminTable", icon: TbReportAnalytics },
-    { name: "Forum", link: "/categoryTable", icon: MdStorage },
-    { name: "Review", link: "/reviewTable", icon: MdOutlineMessage },
+    { name: "User Manage", link: "/userTable", icon: LuUsers },
+    { name: "Event", link: "/eventTable", icon: FaRegCalendarAlt },
+    { name: "Donation", link: "/donationTable", icon: BiDonateHeart },
+    { name: "Forum", link: "/forumTable", icon: MdOutlineMessage },
+    { name: "Comment", link: "/commentTable", icon: BiMessageRoundedDots },
+    { name: "Major", link: "/majorTable", icon: MdStorage  },
   ];
 
   const handleLogout = () => {
@@ -198,7 +203,7 @@ const Sidebar = () => {
 
       {/* Main Content */}
       <div className="flex-1 bg-gray-100 m-4 rounded-md">
-        <UserManageTable />
+        <Outlet />
       </div>
     </div>
   );

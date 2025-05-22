@@ -31,25 +31,34 @@ import ContactUs from "./User/footer/ContactUs";
 import Policy from "./User/footer/Policy";
 import ViewProfile from "./User/Alumni/ViewProfile";
 import UpdateProfile from "./User/UpdateProfile";
+import EventTable from "./Admin/EventTable";
+import ForumTable from "./Admin/ForumTable";
+import DonationTable from "./Admin/DonationTable";
+import MajorTable from "./Admin/MajorTable";
+import CommentTable from "./Admin/CommentTable";
 
 function AppRoutes() {
   const location = useLocation();
 
   // Only show header on these paths:
   const hideHeader = [
-    "/sidebar",
-    "/userManageTable",
-    "/userProfile",
-    "/addUser",
+    "/userTable",
+    "/eventTable",
+    "/forumTable",
+    "/donationTable",
     "/adminLogin",
+    "/commentTable",
+    "/majorTable",
   ].includes(location.pathname);
   const hideFooter = [
-    "/sidebar",
-    "/userManageTable",
-    "/userProfile",
-    "/addUser",
+    "/userTable",
+    "/eventTable",
+    "/forumTable",
+    "/donationTable",
     "/adminLogin",
     "/forumMainPage",
+    "/commentTable",
+    "/majorTable",
   ].includes(location.pathname);
   return (
     <>
@@ -83,6 +92,14 @@ function AppRoutes() {
         <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/policy" element={<Policy />} />
         <Route path="/updateProfile" element={<UpdateProfile />} />
+        <Route element={<Sidebar />}>
+          <Route path="/userTable" element={<UserManageTable />} />
+          <Route path="/eventTable" element={<EventTable />} />
+          <Route path="/forumTable" element={<ForumTable />} />
+          <Route path="/donationTable" element={<DonationTable />} />
+          <Route path="/majorTable" element={<MajorTable />} />
+          <Route path="/commentTable" element={<CommentTable />} />
+        </Route>
         {/* 404 Not Found */}
         <Route
           path="/403"
