@@ -232,7 +232,7 @@ export default function EventMainPage() {
     <section className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="relative w-full h-96 flex items-end" style={{ backgroundImage: `url(${event})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
         <div className="relative w-full max-w-7xl px-6 lg:px-20 pb-12">
           <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-2">Events</h1>
           <p className="text-xl text-white/90">Discover and join exciting events happening around you</p>

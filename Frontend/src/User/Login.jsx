@@ -71,8 +71,10 @@ const toggleResetPassConfirmVisibility = () => {
       .then((response) => {
         const token = response.data.token;
         const userId = response.data.user.id;
+        const userRole = response.data.user.role;
         Cookies.set("token", token);
         Cookies.set("userId", userId);
+        Cookies.set("userRole", userRole);
         navigate("/forumMainPage");
         console.log(userId);
       })
@@ -177,7 +179,10 @@ const toggleResetPassConfirmVisibility = () => {
   
 
   return (
-    <div className="flex justify-center mt-10">
+    <div className="relative min-h-screen">
+      <div className="h-72 w-full bg-blue-900"></div>
+      <div className="absolute top-5 left-20 text-white text-5xl font-extrabold">Login Page</div>
+    <div className="flex justify-center my-10 absolute top-72 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
       <div className="flex max-w-4xl shadow-lg overflow-hidden">
         {/* Left Panel - Branding */}
         <div className="w-[430px] p-8 flex flex-col justify-center items-center border-r-2 border-r-custom-medium text-center bg-slate-100">
@@ -201,7 +206,7 @@ const toggleResetPassConfirmVisibility = () => {
 
         {/* Right Panel - Login or Forgot Password Form */}
         {currentForm === "login" && (
-          <div className="w-[320px] p-10 flex flex-col justify-center">
+          <div className="w-[320px] p-10 flex flex-col justify-center bg-white">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Sign In</h1>
               <p className="text-gray-600">
@@ -279,7 +284,7 @@ const toggleResetPassConfirmVisibility = () => {
         )}
 
         {currentForm === "forgotPassword" && (
-          <div className="w-[320px] p-10 flex flex-col justify-center">
+          <div className="w-[320px] p-10 flex flex-col justify-center bg-white">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
                 Reset Password
@@ -412,6 +417,7 @@ const toggleResetPassConfirmVisibility = () => {
   </div>
 )}
       </div>
+    </div>
     </div>
   );
 }
