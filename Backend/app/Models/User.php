@@ -3,10 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use DB;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -25,7 +26,13 @@ class User extends Authenticatable
 
     protected $guard = 'user';
     protected $role;
-    protected $appends = ['major_name', 'faculty'];
+    protected $appends = [
+        'major_name',
+        'faculty',
+        'connections_count',
+        'discussions_count',
+        'events_count',
+        ];
 
 
     /**
@@ -49,6 +56,41 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getMajorNameAttribute()
+    {
+        return $this->major->major_name ?? null;
+    }
+    public function getFacultyAttribute()
+    {
+        return $this->major->faculty->faculty_name ?? null;
+    }
+    public function getConnectionsCountAttribute()
+    {
+        // Get all user IDs where this user is either the requesting or accepting user and status is 'accepted'
+        $requesting = DB::table('connections')
+            ->where('requesting_user_id', $this->id)
+            ->where('status', 'accepted')
+            ->pluck('accepting_user_id');
+
+        $accepting = DB::table('connections')
+            ->where('accepting_user_id', $this->id)
+            ->where('status', 'accepted')
+            ->pluck('requesting_user_id');
+
+        // Merge and get unique user IDs
+        $allConnections = $requesting->merge($accepting)->unique();
+
+        return $allConnections->count();
+    }
+    public function getDiscussionsCountAttribute()
+    {
+        return $this->discussions()->count();
+    }
+    public function getEventsCountAttribute()
+    {
+        return $this->joinedEvents()->count();
     }
 
     public function role()
@@ -91,23 +133,15 @@ class User extends Authenticatable
     }
     public function hostedEvents()
     {
-        return $this->hasMany(Event::class, 'host_id');
+        return $this->hasMany(Event::class, 'user_id');
     }
     public function joinedEvents()
     {
-        return $this->belongsToMany(Event::class, 'event_user')->withTimestamps();
+        return $this->belongsToMany(Event::class, 'registrations')->withTimestamps();
     }
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class);
-    }
-    public function getMajorNameAttribute()
-    {
-        return $this->major->major_name ?? null;
-    }
-    public function getFacultyAttribute()
-    {
-        return $this->major->faculty->faculty_name ?? null;
     }
     public function major()
     {
