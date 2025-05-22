@@ -62,7 +62,20 @@ class EventController extends Controller
         ], 201);
         
     }
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $events = Event::where('event_title', 'LIKE', "%{$query}%")
+            ->orWhere('description', 'LIKE', "%{$query}%")
+            ->orWhere('location', 'LIKE', "%{$query}%")
+            ->get();
 
+        return response()->json([
+            'status' => true,
+            'message' => 'Events fetched successfully',
+            'events' => $events,
+        ], 200);
+    }
     /**
      * Store a newly created resource in storage.
      */

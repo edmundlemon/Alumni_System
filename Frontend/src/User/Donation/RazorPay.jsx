@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 export default function RazorPay() {
+  const token = Cookies.get("token");
   const [amount, setAmount] = useState("");       // amount in SGD dollars
+  const [orderId, setId] = useState("");         // order ID from Razorpay
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [isPaying,  setIsPaying]  = useState(false);
 
@@ -21,6 +26,7 @@ export default function RazorPay() {
       alert("Enter a valid amount (e.g. 5 or 12.50)");
       return;
     }
+
     if (!scriptLoaded) {
       alert("Gateway script still loading - try again in a moment.");
       return;
@@ -29,54 +35,79 @@ export default function RazorPay() {
     setIsPaying(true);
 
     try {
-      /* ②‑A  Ask your Laravel backend to create the order */
-      const res = await fetch("http://localhost:8000/api/donations/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Number(amount) }),   // SGD, not ×100
+      // 🔥 Call your Laravel backend to create an order
+      const response = await axios.post("http://localhost:8000/api/donations/create-donation/2", {
+        amount: amount, // in SGD
+        currency: "SGD"
+      }).then((response) => {
+        console.log("Order created successfully:", response.data);
+        return response;
+      }).catch((error) => {
+        console.error("Error creating order:", error);
+        alert("An error occurred. Please try again.");
+        setIsPaying(false);
       });
-      console.log(res);
-      if (!res.ok) {
-        throw new Error("Server error while creating order");
+
+      const { order_id, key, currency } = response.data;
+
+      if (!order_id) {
+        alert("Failed to create order. Please try again.");
+        setIsPaying(false);
+        return;
       }
 
-      const { key, orderId, amountCents } = await res.json(); // ← comes from PHP
+      const options = {
+        key: key, // from backend
+        amount: amount * 100, // in subunits
+        currency: currency || "SGD",
+        name: "Donation",
+        description: "Thank you for your support!",
+        image: "https://example.com/your_logo",
+        order_id: order_id,
+        handler: async function (response) {
+          alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+          setIsPaying(false);
+          setAmount("");
+          try {
+            const paymentData = {
+              order_id: response.razorpay_order_id,
+              payment_id: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              amount: amount*100,
+            };
 
-      /* ②‑B  Open Razorpay Checkout **with that order** */
-      const rzp = new window.Razorpay({
-        key,                              // still the TEST key
-        order_id: orderId,                // critical line
-        amount:   amountCents,            // only for display
-        currency: "SGD",
-        name: "STARTUP_PROJECTS",
-        description: "Test Donation",
-        handler: async function (resp) {
-          /* ②‑C  Tell backend to verify the payment */
-          const ok = await fetch("http://localhost:8000/api/donations/verify-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(resp),   // { razorpay_payment_id, razorpay_order_id, razorpay_signature }
-          });
+            await axios.post("http://localhost:8000/api/donations/verify-payment/2",paymentData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
-          if (ok.ok) {
-            alert("Payment successful! ID: " + resp.razorpay_payment_id);
+            alert("✅ Payment successful and recorded!");
             setAmount("");
-          } else {
-            alert("Payment captured but verification failed on server.");
+          } catch (error) {
+            console.error("❌ Failed to record payment:", error);
+            alert("Payment was successful but failed to save. Contact support.");
+          } finally {
+            setIsPaying(false);
           }
         },
         prefill: {
-          name: "Customer Name",
-          email: "customer@example.com",
-          contact: "9999999999",
+          name: "John Doe",
+          email: "hello@gmail.com"
         },
-        theme: { color: "#3399cc" },
-      });
+        notes: {
+          address: "note value"
+        },
+        theme: {
+          color: "#F37254"
+        }
+      };
 
+      const rzp = new window.Razorpay(options);
       rzp.open();
-    } catch (err) {
-      console.error(err);
-      alert(err.message || "Unable to start payment");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("An error occurred. Please try again.");
     } finally {
       setIsPaying(false);
     }

@@ -84,6 +84,19 @@ class DiscussionController extends Controller
             'discussion' => $discussion,
         ], 201);
     }
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $discussions = Discussion::where('subject', 'LIKE', "%{$query}%")
+            ->orWhere('content', 'LIKE', "%{$query}%")
+            ->with('comments')
+            ->latest()
+            ->paginate(10);
+
+        return response()->json([
+            'discussions' => $discussions,
+        ], 200);
+    }
 
     /**
      * Store a newly created resource in storage.

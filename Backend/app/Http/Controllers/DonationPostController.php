@@ -71,7 +71,17 @@ class DonationPostController extends Controller
             'donation_post' => $donationPost
         ], 201);
     }
-
+    public function search(Request $request)
+    {
+        //
+        $query = $request->input('query');
+        $donationPosts = DonationPost::where('donation_title', 'LIKE', "%{$query}%")
+            ->orWhere('description', 'LIKE', "%{$query}%")
+            ->get();
+        return response()->json([
+            'donation_posts' => $donationPosts,
+        ]);
+    }
     /**
      * Store a newly created resource in storage.
      */
