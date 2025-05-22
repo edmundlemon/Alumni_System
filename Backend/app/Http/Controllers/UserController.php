@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Mail\RegistrationMail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
@@ -99,6 +100,8 @@ class UserController extends Controller
         if (!$user || !$user->hasRole('admin')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
+        Log::channel('auth_activity')->info('User to be edited: ', ['user' => $userToBeEdited]);
+        dd($request->all());
         $photoPath = $userToBeEdited->photo;
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
