@@ -31,9 +31,9 @@ export default function Footer() {
                 <ul className="space-y-2">
                     <li className="font-[1000] text-xl text-gray-500">Quick Link</li>
                     <li className="text-gray-500 text-base font-thin pt-1">Login</li>
-                    <li className="text-gray-500 text-base font-thin">Register</li>
                     <li className="text-gray-500 text-base font-thin">Event</li>
-                    <li className="text-gray-500 text-base font-thin">Directory</li>
+                    <li className="text-gray-500 text-base font-thin">Forum</li>
+                    <li className="text-gray-500 text-base font-thin">Donation</li>
                 </ul>
                 <ul className="space-y-2">
                     <li className="font-[1000] text-xl text-gray-500">Term of Use</li>

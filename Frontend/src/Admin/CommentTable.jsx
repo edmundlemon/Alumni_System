@@ -5,33 +5,27 @@ import { MdDeleteOutline } from "react-icons/md";
 import { IoSearchSharp } from "react-icons/io5";
 import { BiExport } from "react-icons/bi";
 import { BiSortAlt2 } from "react-icons/bi";
-import UserProfile from "./UserProfileTable";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import AddUser from "./AddUser";
 import Skeleton from "react-loading-skeleton";
 
-export default function UserManageTable() {
+export default function CommentTable() {
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
-  const [selectUser, setSelectUser] = useState([]);
-  const [error, setError] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [selectComment, setSelectComment] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortCriteria, setSortCriteria] = useState({ key: "", order: "asc" });
-  const itemsPerPage = 10;
-  const token = Cookies.get("adminToken");
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [showUserProfile, setShowUserProfile] = useState(false);
-  const [showAddUser, setShowAddUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const itemsPerPage = 10;
   const printRef = useRef();
+  const token = Cookies.get("adminToken");
 
   useEffect(() => {
-    const getUsers = async () => {
+    const fetchComment = async () => {
       try {
         console.log("Token:", token);
         const response = await axios.get(
@@ -43,18 +37,17 @@ export default function UserManageTable() {
           }
         );
         console.log(response.data);
-        setUsers(response.data);
+        setComments(response.data);
       } catch (error) {
         console.error("Error Response:", error.response);
-        setError(error.response?.data?.message || "An error occurred");
         console.error("There was an error!", error.message);
-      }finally {
+      } finally {
         setIsLoading(false);
       }
     };
 
     if (token) {
-      getUsers();
+      fetchComment();
     } else {
       console.error("No token found, user might not be authenticated");
       setError("User not authenticated");
@@ -62,13 +55,13 @@ export default function UserManageTable() {
     }
   }, [token, navigate]);
 
-  const filteredUsers = users.filter(
+  const filteredComment = comments.filter(
     (user) =>
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
+  const sortedComment = [...filteredComment].sort((a, b) => {
     const aValue = a[sortCriteria.key];
     const bValue = b[sortCriteria.key];
 
@@ -77,18 +70,18 @@ export default function UserManageTable() {
     return 0;
   });
 
-  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
-  const displayUsers = sortedUsers.slice(
+  const totalPages = Math.ceil(sortedComment.length / itemsPerPage);
+  const displayComment = sortedComment.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   const handleSelectAll = (isChecked) => {
-    setSelectUser(isChecked ? displayUsers.map((u) => u.id) : []);
+    setSelectComment(isChecked ? displayComment.map((u) => u.id) : []);
   };
 
   const handleSelectOne = (id, isChecked) => {
-    setSelectUser((prev) =>
+    setSelectComment((prev) =>
       isChecked ? [...prev, id] : prev.filter((i) => i !== id)
     );
   };
@@ -102,11 +95,6 @@ export default function UserManageTable() {
 
   const handleChangePage = (newPage) => {
     setCurrentPage(newPage);
-  };
-
-  const handleViewUser = (user) => {
-    setSelectedUserId(user);
-    setShowUserProfile(true);
   };
 
   const handleExport = async () => {
@@ -136,7 +124,7 @@ export default function UserManageTable() {
       }}
     >
       <div className="flex justify-between items-center pb-4 ">
-        <p className="font-bold text-xl">Users Management Table</p>
+        <p className="font-bold text-xl">Comment Management Table</p>
         <div className="flex h-9 gap-2">
           <div className="relative">
             <input
@@ -178,8 +166,10 @@ export default function UserManageTable() {
                   type="checkbox"
                   onChange={(e) => handleSelectAll(e.target.checked)}
                   checked={
-                    displayUsers.length > 0 &&
-                    displayUsers.every((user) => selectUser.includes(user.id))
+                    displayComment.length > 0 &&
+                    displayComment.every((user) =>
+                      selectComment.includes(user.id)
+                    )
                   }
                 />
               </th>
@@ -215,33 +205,33 @@ export default function UserManageTable() {
                     ))}
                   </tr>
                 ))
-              : displayUsers.map((user) => (
+              : displayComment.map((comment) => (
                   <tr
-                    key={user.id}
+                    key={comment.id}
                     className="border-b-2 border-gray-100 hover:bg-gray-50"
                   >
                     <td className="border-b border-gray-300 p-2 text-center">
                       <input
                         type="checkbox"
                         onChange={(e) =>
-                          handleSelectOne(user.id, e.target.checked)
+                          handleSelectOne(comment.id, e.target.checked)
                         }
-                        checked={selectUser.includes(user.id)}
+                        checked={selectComment.includes(comment.id)}
                       />
                     </td>
                     <td className="px-2 py-3 text-left">
-                      <button onClick={() => handleViewUser(user)}>
-                        {user.id}
+                      <button onClick={() => handleViewUser(comment)}>
+                        {comment.id}
                       </button>
                     </td>
-                    <td className="px-2 py-3 text-left">{user.email}</td>
-                    <td className="px-2 py-3 text-left">{user.name}</td>
-                    <td className="px-2 py-3 text-left">{user.role}</td>
+                    <td className="px-2 py-3 text-left">{comment.email}</td>
+                    <td className="px-2 py-3 text-left">{comment.name}</td>
+                    <td className="px-2 py-3 text-left">{comment.role}</td>
                     <td className="px-2 py-3 text-left">
-                      {user.account_status}
+                      {comment.account_status}
                     </td>
                     <td className="px-2 py-3 text-left">
-                      {new Date(user.created_at).toLocaleDateString()}
+                      {new Date(comment.created_at).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
@@ -251,63 +241,41 @@ export default function UserManageTable() {
 
       {!isLoading && (
         <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2 ">
-          <p className="text-sm text-gray-500">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, sortedUsers.length)} of{" "}
-            {sortedUsers.length} entries
-          </p>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => handleChangePage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 rounded-md border text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i + 1}
-                onClick={() => handleChangePage(i + 1)}
-                className={`px-3 py-1 rounded-md text-sm border ${
-                  currentPage === i + 1
-                    ? "bg-[#1560bd] text-white"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => handleChangePage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 rounded-md border text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showUserProfile && (
-        <>
-          <div
-            className="fixed inset-0 bg-black bg-opacity-70 z-40"
-            onClick={() => setShowUserProfile(false)}
-          ></div>
-          <div
-            className={`fixed top-0 right-0 h-screen w-[50%] z-50 bg-white shadow-lg rounded-l-xl transform transition-transform duration-100 ease-in-out translate-x-0`}
+        <p className="text-sm text-gray-500">
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, sortedComment.length)} of{" "}
+          {sortedComment.length}
+        </p>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => handleChangePage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded-md border text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
           >
-            <UserProfile
-              user={selectedUserId}
-              onClose={() => setShowUserProfile(false)}
-            />
-          </div>
-        </>
-      )}
-      {showAddUser && (
-        <div className="fixed z-50 top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-          <AddUser onClose={() => setShowAddUser(false)} />
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i + 1}
+              onClick={() => handleChangePage(i + 1)}
+              className={`px-3 py-1 rounded-md text-sm border ${
+                currentPage === i + 1
+                  ? "bg-[#1560bd] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => handleChangePage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded-md border text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
+      </div>
       )}
     </div>
   );

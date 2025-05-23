@@ -50,7 +50,7 @@ export default function MainPage() {
 
 
   return (
-    <section>
+    <section className="bg-[]">
       {/* Hero Section */}
       <div className="w-full h-[450px] relative bg-blue-900">
         {/* <img src={mmuCampus} alt="MMU Campus" className="w-full h-full object-cover" /> */}
@@ -60,7 +60,7 @@ export default function MainPage() {
           <p className="text-lg font-medium">and fellow graduates. Access exclusive benefits, participate in events, and</p>
           <p className="text-lg font-medium">contribute to the growth of our community.</p>
           <div className="flex gap-2 mt-7">
-            <button className="px-4 py-2 text-lg bg-yellow-500 text-white rounded-lg hover:bg-yellow-700 transition">Join The Network</button>
+            <button className="px-4 py-2 text-lg bg-[#A7C7E7] text-white rounded-lg hover:bg-yellow-700 transition">Join The Network</button>
             <button className="px-4 py-2 border-2 text-lg  text-white rounded-lg hover:bg-gray-300 transition">Learn More</button>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function MainPage() {
       <div className="bg-blue-900 text-white mt-16">
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-4xl font-bold text-yellow-400 mb-6">Make an Impact</h2>
+            <h2 className="text-4xl font-bold text-[#A7C7E7] mb-6">Make an Impact</h2>
             <p className="text-lg mb-6 leading-relaxed">
               Your support helps create scholarships, improve campus facilities, and provide resources for current students and future alumni.
             </p>
@@ -116,7 +116,7 @@ export default function MainPage() {
               Every gift, regardless of size, makes a difference and helps us continue the tradition of excellence at MMU. There are many ways to give back, from one-time donations to planned giving.
             </p>
             <div className="flex gap-4">
-              <button className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg transition-all shadow-lg">
+              <button className="px-6 py-3 bg-[#A7C7E7] hover:bg-yellow-600 text-white font-medium rounded-lg transition-all shadow-lg">
                 Donate Now
               </button>
               <button className="px-6 py-3 border-2 border-white hover:bg-white/10 text-white font-medium rounded-lg transition-all">
