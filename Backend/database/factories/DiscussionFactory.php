@@ -19,7 +19,7 @@ class DiscussionFactory extends Factory
     {
         return [
             //
-            'user_id' => User::inRandomOrder()->first()->id,
+            'user_id' => User::inRandomOrder()->value('id'),
             'subject' => $this->faker->sentence(),
             'content' => $this->faker->paragraph(),
             'created_at' => now(),

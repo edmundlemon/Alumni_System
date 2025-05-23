@@ -19,7 +19,7 @@ class DonationPostFactory extends Factory
     {
         return [
             //
-            'admin_id' => Admin::inRandomOrder()->first()->id,
+            'admin_id' => Admin::inRandomOrder()->value('id'),
             'donation_title' => $this->faker->sentence(3),
             'description' => $this->faker->paragraph(3),
             'target_amount' => $this->faker->randomFloat(2, 1000, 100000),

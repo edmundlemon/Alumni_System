@@ -8,6 +8,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -32,6 +33,7 @@ class User extends Authenticatable
         'connections_count',
         'discussions_count',
         'events_count',
+        'is_connected'
         ];
 
 
@@ -83,6 +85,24 @@ class User extends Authenticatable
         $allConnections = $requesting->merge($accepting)->unique();
 
         return $allConnections->count();
+    }
+    public function getIsConnectedAttribute()
+    {
+        if (Auth::guard('sanctum')->user() == null) {
+            return false;
+        }
+        $userID = Auth::guard('sanctum')->user()->id;
+        $connected = DB::table('connections')
+            ->where('requesting_user_id', $userID)
+            ->where('accepting_user_id', $this->id)
+            ->where('status', 'accepted')
+            // ->pluck('accepting_user_id');
+            ->orWhere('accepting_user_id', $this->id)
+            ->where('requesting_user_id', $userID)
+            ->where('status', 'accepted');
+
+        // Merge and get unique user IDs
+        return $connected->count() > 0;
     }
     public function getDiscussionsCountAttribute()
     {
@@ -170,6 +190,21 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'connections', 'accepting_user_id', 'requesting_user_id')
                     ->wherePivot('status', 'pending');
+    }
+    public function isConnectedTo($userId)
+    {
+        $connected = DB::table('connections')
+            ->where('requesting_user_id', $this->id)
+            ->where('acccepting_user_id', $userId)
+            ->where('status', 'accepted')
+            // ->pluck('accepting_user_id');
+            ->orWhere('accepting_user_id', $this->id)
+            ->where('requesting_user_id', $userId)
+            ->where('status', 'accepted');
+
+        // Merge and get unique user IDs
+        return $connected->count() > 0;
+
     }
     public function isConnected($userId)
     {
