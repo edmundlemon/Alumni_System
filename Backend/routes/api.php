@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->post('/user_logout', [LoginController::class,
 Route::middleware('guest')->post('/forgot_password', [LoginController::class, 'userForgotPassword']);
 Route::middleware('guest')->post('/reset_password', [LoginController::class, 'userResetPassword']);
 Route::middleware('auth:sanctum')->get('/connected_users', [UserController::class, 'viewConnectedUsers']);
-Route::middleware('auth:sanctum')->get('/search_users', [UserController::class, 'ssearch']);
+Route::middleware('auth:sanctum')->get('/search_users', [UserController::class, 'search']);
 // Discussion Routes
 Route::middleware('auth:sanctum')->get('/view_connected_users_discussion', [DiscussionController::class, 'viewConnectedUsersDiscussion']);
 Route::middleware('auth:sanctum')->get('/view_comments/{discussion}', [DiscussionController::class, 'viewComments']);

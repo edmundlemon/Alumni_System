@@ -18,8 +18,8 @@ class DonationFactory extends Factory
     {
         return [
             //
-            'donation_post_id' => \App\Models\DonationPost::inRandomOrder()->first()->id,
-            'user_id' => \App\Models\User::inRandomOrder()->first()->id,
+            'donation_post_id' => \App\Models\DonationPost::inRandomOrder()->value('id'),
+            'user_id' => \App\Models\User::inRandomOrder()->value('id'),
             'donated_amount' => $this->faker->randomFloat(2, 10, 1000),
         ];
     }
