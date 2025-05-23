@@ -90,19 +90,8 @@ class UserController extends Controller
     }
     public function show(User $user)
     {
-        // You can add multiple temporary attributes like this:
-        $user->past_events = $user->hostedEvents()
-            ->where('event_date', '<', now())
-            ->get();
-        $user->discussions = $user->discussions()
-            ->with('comments')
-            ->get();
-        $user->discussions->each(function ($discussion) {
-            $discussion->makeHidden('user');
-        });
-        return response()->json(
-            $user
-        );
+        // Fetch a single user by ID
+        return response()->json($user);
     }
     public function update(Request $request, User $userToBeEdited)
     {

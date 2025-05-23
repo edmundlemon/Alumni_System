@@ -20,7 +20,7 @@ class CommentFactory extends Factory
     {
         return [
             //
-            'user_id' => User::inRandomOrder()->value('id'),
+            'user_id' => User::inRandomOrder()->first()->id,
             'discussion_id' => Discussion::inRandomOrder()->first()->id,
             'comment_content' => $this->faker->paragraph(),
         ];
