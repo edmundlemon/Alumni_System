@@ -45,7 +45,7 @@ export default function AdminLogin() {
             const token = response.data.token; 
                 Cookies.set('adminToken', token); 
                 console.log(token);
-                navigate('/userManageTable');
+                navigate('/userTable');
         })
         .catch(error => {
             console.log(error);

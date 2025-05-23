@@ -49,6 +49,7 @@ function AppRoutes() {
     "/adminLogin",
     "/commentTable",
     "/majorTable",
+    "/403",
   ].includes(location.pathname);
   const hideFooter = [
     "/userTable",
@@ -59,6 +60,7 @@ function AppRoutes() {
     "/forumMainPage",
     "/commentTable",
     "/majorTable",
+    "/403"
   ].includes(location.pathname);
   return (
     <>
