@@ -56,6 +56,8 @@ Route::middleware('auth:sanctum')->put('/edit_donation_post/{donationPost}', [Do
 Route::middleware('auth:sanctum')->delete('/cancel_donation_post/{donationPost}', [DonationPostController::class, 'cancelDonationPost']);
 // Event Routes
 Route::middleware('auth:sanctum')->get('/view_all_events', [EventController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/view_past_events', [EventController::class, 'viewPastEvents']);
+Route::middleware('auth:sanctum')->get('/view_upcoming_events', [EventController::class, 'viewUpcomingEvents']);
 Route::middleware('auth:sanctum')->post('/create_event', [EventController::class, 'create']);
 Route::middleware('auth:sanctum')->put('/edit_event/{event}', [EventController::class, 'update']);
 Route::middleware('auth:sanctum')->delete('/cancel_event/{event}', [EventController::class, 'cancelEvent']);

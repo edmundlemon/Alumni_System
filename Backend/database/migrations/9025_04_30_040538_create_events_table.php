@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('event_title');
             $table->mediumText('description');
             $table->string('location');
+            $table->string('event_mode')->default('physical');
             $table->date('event_date');
             $table->time('event_time');
             $table->bigInteger('max_participant')->nullable();
