@@ -10,6 +10,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\DonationPostController;
 use App\Http\Controllers\RegistrationController;
@@ -72,6 +73,11 @@ Route::middleware('auth:sanctum')->post('/give_feedback/{event}', [FeedbackContr
 Route::middleware('auth:sanctum')->get('/view_feedback/{event}', [FeedbackController::class, 'index']);
 Route::middleware('auth:sanctum')->put('/edit_feedback/{feedback}', [FeedbackController::class, 'update']);
 Route::middleware('auth:sanctum')->delete('/delete_feedback/{feedback}', [FeedbackController::class, 'destroy']);
+// Connection Routes
+Route::middleware('auth:sanctum')->post('/connect/{acceptingUser}', [ConnectionController::class, 'create']);
+Route::middleware('auth:sanctum')->get('/view_pending_connections', [ConnectionController::class, 'viewPendingConnections']);
+Route::middleware('auth:sanctum')->get('/view_pending_to_accept_connections', [ConnectionController::class, 'viewPendingToAcceptConnections']);
+Route::middleware('auth:sanctum')->get('/update_connection', [ConnectionController::class, 'edit']);
 
 
 // Routes for logged in users

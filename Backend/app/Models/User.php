@@ -171,6 +171,20 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'connections', 'user_id', 'connection_id');
     }
+    public function userIsConnected(User $user)
+    {
+        $connectionExists = DB::table('connections')
+            ->where(function ($query) use ($user) {
+                $query->where('requesting_user_id', $this->id)
+                      ->where('accepting_user_id', $user->id);
+            })
+            ->orWhere(function ($query) use ($user) {
+                $query->where('accepting_user_id', $this->id)
+                      ->where('requesting_user_id', $user->id);
+            })
+            ->exists();
+        return $connectionExists;
+    }
 
     public function pendingConnectionsRequests()
     {
