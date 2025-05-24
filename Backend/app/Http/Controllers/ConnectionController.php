@@ -30,9 +30,9 @@ class ConnectionController extends Controller
                 'error' => 'You cannot send a connection request to yourself',
             ], 400);
         }
-        if ($user->isConnected($acceptingUser)) {
+        if ($user->userIsConnected($acceptingUser)) {
             return response()->json([
-                'error' => 'You are already connected with this user',
+                'error' => 'You are already have existing with this user',
             ], 400);
         }
 
@@ -67,6 +67,30 @@ class ConnectionController extends Controller
     public function show(Connection $connection)
     {
         //
+    }
+    public function viewPendingConnections()
+    {
+        // Fetch all connections for the authenticated user
+        $user = Auth::guard('sanctum')->user();
+        $connections = Connection::where('status', 'pending')
+            ->where('accepting_user_id', $user->id)
+            ->with(['requestingUser', 'acceptingUser'])
+            ->get();
+        return response()->json([
+            'connections' => $connections,
+        ], 200);
+    }
+    public function viewPendingToAcceptConnections()
+    {
+        // Fetch all connections for the authenticated user
+        $user = Auth::guard('sanctum')->user();
+        $connections = Connection::where('status', 'pending')
+            ->where('requesting_user_id', $user->id)
+            ->with(['requestingUser', 'acceptingUser'])
+            ->get();
+        return response()->json([
+            'connections' => $connections,
+        ], 200);
     }
 
     public function viewConnectedUsers()
