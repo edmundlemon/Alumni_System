@@ -35,11 +35,7 @@ class ConnectionController extends Controller
                 'error' => 'You are already connected with this user',
             ], 400);
         }
-        // if ($user->hasPendingRequest($acceptingUser)) {
-        //     return response()->json([
-        //         'error' => 'You have already sent a connection request to this user',
-        //     ], 400);
-        // }
+
         if (!$user)
         {
             return response()->json([

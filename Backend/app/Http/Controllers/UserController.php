@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Mail\RegistrationMail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
@@ -89,8 +90,19 @@ class UserController extends Controller
     }
     public function show(User $user)
     {
-        // Fetch a single user by ID
-        return response()->json($user);
+        // You can add multiple temporary attributes like this:
+        $user->past_events = $user->hostedEvents()
+            ->where('event_date', '<', now())
+            ->get();
+        $user->discussions = $user->discussions()
+            ->with('comments')
+            ->get();
+        $user->discussions->each(function ($discussion) {
+            $discussion->makeHidden('user');
+        });
+        return response()->json(
+            $user
+        );
     }
     public function update(Request $request, User $userToBeEdited)
     {
@@ -99,6 +111,8 @@ class UserController extends Controller
         if (!$user || !$user->hasRole('admin')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
+        Log::channel('auth_activity')->info('User to be edited: ', ['user' => $userToBeEdited]);
+        dd($request->all());
         $photoPath = $userToBeEdited->photo;
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
