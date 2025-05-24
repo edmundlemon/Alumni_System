@@ -23,6 +23,13 @@ class Event extends Model
         'start_date' => 'datetime',
         'end_date' => 'datetime',
     ];
+    protected $appends = [
+        'host_name',
+    ];
+    public function getHostNameAttribute()
+    {
+        return $this->organizer->name ?? 'Not Available';
+    }
     public function organizer()
     {
         return $this->belongsTo(User::class, 'user_id');

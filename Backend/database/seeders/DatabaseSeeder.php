@@ -4,8 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Admin;
-use App\Models\Major;
+use App\Models\Event;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Major;
 use App\Models\Comment;
 use App\Models\Donation;
 use App\Models\Discussion;
@@ -96,7 +97,10 @@ class DatabaseSeeder extends Seeder
 
         Comment::factory()->count(250)->create([
             'user_id' => User::inRandomOrder()->first()->id,
-            'discussion_id' => Discussion::inRandomOrder()->first()->id,
+            'discussion_id' => Discussion::inRandomOrder()->value('id'),
+        ]);
+        Event::factory()->count(10)->create([
+            'user_id' => User::inRandomOrder()->value('id'),
         ]);
 
         DonationPost::factory()->count(2)->create();

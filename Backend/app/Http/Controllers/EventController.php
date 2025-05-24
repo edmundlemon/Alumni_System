@@ -13,7 +13,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        $events = Event::latest()->all();
+        $events = Event::latest()->get();
 
         return response()->json([
             'status' => true,
@@ -90,6 +90,31 @@ class EventController extends Controller
     public function show(Event $event)
     {
         //
+    }
+
+    public function viewPastEvents()
+    {
+        $events = Event::where('event_date', '<', now()->format('Y-m-d'))
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Past events fetched successfully',
+            'events' => $events,
+        ], 200);
+    }
+    public function viewUpcomingEvents()
+    {
+        $events = Event::where('event_date', '>=', now()->format('Y-m-d'))
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Upcoming events fetched successfully',
+            'events' => $events,
+        ], 200);
     }
 
     public function viewSingleEvent(Event $event)
