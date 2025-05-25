@@ -11,6 +11,7 @@ use App\Models\Comment;
 use App\Models\Donation;
 use App\Models\Discussion;
 use App\Models\DonationPost;
+use App\Models\Connection;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -105,6 +106,10 @@ class DatabaseSeeder extends Seeder
 
         DonationPost::factory()->count(2)->create();
         Donation::factory()->count(5)->create();
+        Connection::factory()->count(20)->create([
+            'requesting_user_id' => fn() => User::inRandomOrder()->value('id'),
+            'accepting_user_id' => fn() => User::inRandomOrder()->value('id'),
+        ]);
         
     }
 }
