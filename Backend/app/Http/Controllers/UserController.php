@@ -118,12 +118,11 @@ class UserController extends Controller
             $file = $request->file('photo');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('profile_pictures'), $filename);
-            // $request->photo = $filename;
             $photoPath = asset('profile_pictures/'.$filename);
-            // Returns: http://yourdomain.com/profile_pictures/1654012345.jpg
-            // $request->photo = $filename;
         }
-        $userToBeEdited->update($request->all());
+        $data = $request->all();
+        $data['first_login'] = false; // Ensure first_login is set to false
+        $userToBeEdited->update($data);
         $userToBeEdited->photo = $photoPath;
         $userToBeEdited->save();
         return response()->json($userToBeEdited);

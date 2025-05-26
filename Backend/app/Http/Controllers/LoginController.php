@@ -72,6 +72,7 @@ class LoginController extends Controller
         if (Auth::guard('user')->attempt($request->only('id', 'password'))) {
             // Redirect to the intended page or dashboard
             $user = Auth::guard('user')->user();
+            User::where('id', $user->id)->update(['first_login' => false]);
             $token = $user->createToken('userToken')->plainTextToken;
             return response()->json([
                 'token' => $token,

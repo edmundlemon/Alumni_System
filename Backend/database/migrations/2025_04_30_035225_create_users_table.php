@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('home_country')->nullable();
             $table->string('bio')->nullable();
             $table->unsignedBigInteger('admin_id')->foreign('admin_id')->references('id')->on('admins')->nullable();
+            $table->boolean('first_login')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });
