@@ -3,25 +3,26 @@ import Select from 'react-select';
 import { RxImage } from "react-icons/rx";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 export default function AddEvent() {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
     const [formData, setFormData] = useState({
-        eventTitle: '',
-        eventType: '',
+        event_title: '',
+        event_type: '',
         description: '',
-        eventDate: '',
-        startTime: '',
-        endTime: '',
-        registerCloseDate: '',
-        maxAttendees: '',
-        noLimit: false,
+        event_date: '',
+        event_time: '',
+        registration_close_date: '',
+        max_attendees: '',
         location: '',
+        noLimit: false,
         image: null
     });
-
-    const [errors, setErrors] = useState({});
+    const token = Cookies.get("token");
+    const [errors, setErrors] = useState([]);
     const [imagePreview, setImagePreview] = useState(null);
 
     const eventTypeOptions = [
@@ -45,17 +46,16 @@ export default function AddEvent() {
         }));
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setFormData(prev => ({ ...prev, image: file }));
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+   const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setFormData(prev => ({ ...prev, image: file }));
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result);
+    reader.readAsDataURL(file);
+  }
+};
+
 
     const removeImage = () => {
         setFormData(prev => ({ ...prev, image: null }));
@@ -65,16 +65,51 @@ export default function AddEvent() {
         }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Validate and submit logic here
-        console.log('Form submitted:', formData);
-        navigate('/events'); // Redirect after submission
-    };
+
+   const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const payload = new FormData();
+  payload.append("event_title", formData.event_title);
+  payload.append("event_type", formData.event_type);
+  payload.append("description", formData.description);
+  payload.append("event_date", formData.event_date);
+  payload.append("event_time", formData.event_time);
+  payload.append("registration_close_date", formData.registration_close_date);
+  payload.append("max_attendees", formData.noLimit ? '' : formData.max_attendees);
+  payload.append("location", formData.location);
+
+  if (formData.image) {
+    payload.append("image", formData.image);
+  }
+
+  try {
+    const response = await axios.post(
+      "http://localhost:8000/api/create_event",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    navigate("/user/event");
+  } catch (error) {
+    console.error("Full error:", error);
+    if (error.response?.data?.message) {
+      alert(`Error: ${error.response.data.message}`);
+    } else {
+      alert("An unexpected error occurred. Please check the console for details.");
+    }
+  }
+};
+
+
 
     return (
-        <section className="min-h-screen mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <section className="min-h-screen  px-4 sm:px-6 lg:px-8 py-10 bg-[#f7f9f9]">
+            <div className="bg-white mx-10 rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                 <div className="px-8 pt-6 border-gray-200">
                     <h1 className="text-3xl font-bold text-gray-900">Create New Event</h1>
                     <p className="mt-1 text-gray-600">Fill in the details below to create your event</p>
@@ -89,9 +124,8 @@ export default function AddEvent() {
                             </label>
                             <input
                                 type="text"
-                                name="eventTitle"
-                                id="eventTitle"
-                                value={formData.eventTitle}
+                                name="event_title"
+                                value={formData.event_title}
                                 onChange={handleChange}
                                 placeholder="Enter event title"
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
@@ -101,11 +135,11 @@ export default function AddEvent() {
 
                         {/* Event Type */}
                         <div className="space-y-2">
-                            <label htmlFor="eventType" className="block text-base font-medium text-gray-700">
+                            <label htmlFor="event_type" className="block text-base font-medium text-gray-700">
                                 Event Type <span className="text-red-500">*</span>
                             </label>
                             <Select
-                                name="eventType"
+                                name="event_type"
                                 options={eventTypeOptions}
                                 placeholder="Select event type"
                                 onChange={handleSelectChange}
@@ -123,7 +157,7 @@ export default function AddEvent() {
                         </label>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <div 
-                                className={`w-full h-52 sm:w-2/3 flex flex-col items-center justify-center rounded-lg border-2 border-dashed ${imagePreview ? 'border-gray-300' : 'border-gray-300'} p-6 text-center hover:border-blue-400 transition-colors cursor-pointer`}
+                                className={`w-full h-60 sm:w-2/3 flex flex-col items-center justify-center rounded-lg border-2 border-dashed ${imagePreview ? 'border-gray-300' : 'border-gray-300'} p-6 text-center hover:border-blue-400 transition-colors cursor-pointer`}
                                 onClick={() => fileInputRef.current.click()}
                             >
                                 {imagePreview ? (
@@ -185,7 +219,7 @@ export default function AddEvent() {
                         <textarea
                             name="description"
                             id="description"
-                            rows={5}
+                            rows={6}
                             value={formData.description}
                             onChange={handleChange}
                             placeholder="Write a detailed description about your event..."
@@ -198,64 +232,46 @@ export default function AddEvent() {
                     <div className="mt-6 grid grid-cols-1 gap-4">
                         <div className="flex flex-col sm:flex-row gap-4">
                             <div className="w-full sm:w-1/3 space-y-2">
-                                <label htmlFor="eventDate" className="block text-base font-medium text-gray-700">
+                                <label htmlFor="event_date" className="block text-base font-medium text-gray-700">
                                     Event Date <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="date"
-                                    name="eventDate"
-                                    id="eventDate"
-                                    value={formData.eventDate}
+                                    name="event_date"
+                                    value={formData.event_date}
                                     onChange={handleChange}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
                             </div>
                             <div className="w-full sm:w-1/3 space-y-2">
-                                <label htmlFor="startTime" className="block text-base font-medium text-gray-700">
-                                    Start Time <span className="text-red-500">*</span>
+                                <label htmlFor="event_time" className="block text-base font-medium text-gray-700">
+                                    Event Time <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="time"
-                                    name="startTime"
-                                    id="startTime"
-                                    value={formData.startTime}
+                                    name="event_time"
+                                    value={formData.event_time}
                                     onChange={handleChange}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
                             </div>
                             <div className="w-full sm:w-1/3 space-y-2">
-                                <label htmlFor="endTime" className="block text-base font-medium text-gray-700">
-                                    End Time <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="time"
-                                    name="endTime"
-                                    id="endTime"
-                                    value={formData.endTime}
-                                    onChange={handleChange}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                                    required
-                                />
+                                <label htmlFor="registration_close_date" className="block text-base font-medium text-gray-700">
+                                Registration Deadline <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="registration_close_date"
+                                        value={formData.registration_close_date}
+                                        onChange={handleChange}
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                        required
+                                    />
                             </div>
                         </div>
                 <div className="flex w-full gap-4 mt-1">
-                        {/* Registration Deadline */}
-                        <div className="w-full space-y-2">
-                            <label htmlFor="registerCloseDate" className="block text-base font-medium text-gray-700">
-                                Registration Deadline <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                name="registerCloseDate"
-                                id="registerCloseDate"
-                                value={formData.registerCloseDate}
-                                onChange={handleChange}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
-                                required
-                            />
-                        </div>
 
                         {/* Location */}
                         <div className=" w-full space-y-2">
@@ -273,18 +289,17 @@ export default function AddEvent() {
                                 required
                             />
                         </div>
-                    </div>
-                        {/* Max Attendees */}
-                        <div className="space-y-2 mt-1">
-                            <label htmlFor="maxAttendees" className="block text-base font-medium text-gray-700">
+
+                          {/* Max Attendees */}
+                        <div className="w-full space-y-2 mt-1">
+                            <label htmlFor="max_attendees" className="block text-base font-medium text-gray-700">
                                 Maximum Attendees
                             </label>
                             <div className="flex items-center gap-4">
                                 <input
                                     type="number"
-                                    name="maxAttendees"
-                                    id="maxAttendees"
-                                    value={formData.maxAttendees}
+                                    name="max_attendees"
+                                    value={formData.max_attendees}
                                     onChange={handleChange}
                                     disabled={formData.noLimit}
                                     placeholder="Enter maximum number of attendees"
@@ -306,6 +321,8 @@ export default function AddEvent() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                        
                     </div>
 
                     {/* Form Actions */}

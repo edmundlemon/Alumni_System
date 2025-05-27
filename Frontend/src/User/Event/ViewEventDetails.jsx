@@ -77,18 +77,6 @@ export default function ViewEventDetails() {
                 {/* left Column Image and event details */}
                 <div className="w-[800px] ">
                     <div className="relative w-[830px]">
-                            <button 
-                                onClick={handlePrevImage}
-                                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white p-1 rounded-md shadow-md z-10 transition-all"
-                            >
-                                <TiChevronLeft size={28} className="text-gray-700" />
-                            </button>
-                            <button 
-                                onClick={handleNextImage}
-                                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white p-1 rounded-md shadow-md z-10 transition-all"
-                            >
-                                <TiChevronRight size={28} className="text-gray-700" />
-                            </button>
                             <img
                                 className="w-full h-[390px] object-cover rounded shadow-sm"
                                 src={event.image}

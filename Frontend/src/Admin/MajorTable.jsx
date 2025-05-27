@@ -11,6 +11,8 @@ import { useRef } from "react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
+import { FiEdit3 } from "react-icons/fi";
+
 
 export default function MajorTable() {
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ export default function MajorTable() {
       try {
         console.log("Token:", token);
         const response = await axios.get(
-          "http://localhost:8000/api/view_all_users",
+          "http://localhost:8000/api/view_all_majors",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -56,10 +58,11 @@ export default function MajorTable() {
   }, [token, navigate]);
 
   const filteredMajors = majors.filter(
-    (user) =>
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  (user) =>
+    user.major_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.id?.toString().includes(searchTerm)
   );
+
 
   const sortedMajors = [...filteredMajors].sort((a, b) => {
     const aValue = a[sortCriteria.key];
@@ -152,7 +155,7 @@ export default function MajorTable() {
             onClick={() => setShowAddUser(true)}
           >
             <FaPlus size={10} />
-            <span>Add User</span>
+            <span>Add Major</span>
           </button>
         </div>
       </div>
@@ -171,17 +174,18 @@ export default function MajorTable() {
                   }
                 />
               </th>
-              {["id", "email", "name", "role", "status", "created_at"].map(
+              {["Major id", "Major Name", "Faculty Name", "Action"].map(
                 (key) => (
                   <th
                     key={key}
                     className={`p-2 border-b text-left cursor-pointer ${
                       key === "created_at" ? "rounded-tr-md" : ""
                     }`}
-                    onClick={() => handleSort(key)}
+                    onClick={() => key !== "Action" && handleSort(key)}
                   >
                     <p className="flex items-center gap-2 capitalize">
-                      {key.replace("_", " ")} <BiSortAlt2 size={20} />
+                      {key.replace("_", " ")}
+                      {key !== "Action" && <BiSortAlt2 size={20} />}
                     </p>
                   </th>
                 )
@@ -190,12 +194,12 @@ export default function MajorTable() {
           </thead>
           <tbody>
             {isLoading
-              ? Array.from({ length: 11 }, (_, i) => (
+              ? Array.from({ length: itemsPerPage }, (_, i) => (
                   <tr key={i} className="border-b border-gray-100">
                     <td className="p-2 text-center">
                       <Skeleton circle height={16} width={16} />
                     </td>
-                    {[...Array(6)].map((_, j) => (
+                    {[...Array(4)].map((_, j) => (
                       <td key={j} className="px-2 py-3 text-left">
                         <Skeleton height={10} width="80%" />
                       </td>
@@ -221,14 +225,13 @@ export default function MajorTable() {
                         {major.id}
                       </button>
                     </td>
-                    <td className="px-2 py-3 text-left">{major.email}</td>
-                    <td className="px-2 py-3 text-left">{major.name}</td>
-                    <td className="px-2 py-3 text-left">{major.role}</td>
+                    <td className="px-2 py-3 text-left">{major.major_name}</td>
                     <td className="px-2 py-3 text-left">
-                      {major.account_status}
+                      {major.faculty_name}
                     </td>
-                    <td className="px-2 py-3 text-left">
-                      {new Date(major.created_at).toLocaleDateString()}
+                    <td className="flex px-2 pt-3 gap-2">
+                      <button className="p-1 rounded border border-gray-300 shadow" onClick={() => handleViewUser(user)}><FiEdit3 /></button>
+                      <button className="p-1 rounded border border-gray-300 shadow"><MdDeleteOutline /></button>
                     </td>
                   </tr>
                 ))}
@@ -236,7 +239,7 @@ export default function MajorTable() {
         </table>
       </div>
     
-    {!isLoading &&
+ 
         <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2 ">
         <p className="text-sm text-gray-500">
           Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
@@ -273,7 +276,6 @@ export default function MajorTable() {
           </button>
         </div>
       </div>
-    }
     </div>
   );
 }

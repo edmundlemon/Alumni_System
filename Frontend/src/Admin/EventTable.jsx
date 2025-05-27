@@ -13,6 +13,7 @@ import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
+
 export default function EventTable() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
@@ -30,7 +31,7 @@ export default function EventTable() {
       try {
         console.log("Token:", token);
         const response = await axios.get(
-          "http://localhost:8000/api/view_all_users",
+          "http://localhost:8000/api/view_all_events",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -38,7 +39,7 @@ export default function EventTable() {
           }
         );
         console.log(response.data);
-        setEvents(response.data);
+        setEvents(response.data.events);
       } catch (error) {
         console.error("Error Response:", error.response);
         console.error("There was an error!", error.message);
@@ -172,12 +173,12 @@ export default function EventTable() {
                   }
                 />
               </th>
-              {["id", "email", "name", "role", "status", "created_at"].map(
+              {["id", "email", "name", "role", "status", "created_at","Action"].map(
                 (key) => (
                   <th
                     key={key}
                     className={`p-2 border-b text-left cursor-pointer ${
-                      key === "created_at" ? "rounded-tr-md" : ""
+                      key === "Action" ? "rounded-tr-md" : ""
                     }`}
                     onClick={() => handleSort(key)}
                   >
@@ -192,7 +193,7 @@ export default function EventTable() {
           <tbody>
             {isLoading
               ? // Skeleton rows while loading
-                Array.from({ length: 11 }, (_, i) => (
+                Array.from({ length: itemsPerPage }, (_, i) => (
                   <tr key={i} className="border-b border-gray-100">
                     <td className="p-2 text-center">
                       <Skeleton circle height={16} width={16} />
@@ -227,7 +228,13 @@ export default function EventTable() {
                     <td className="px-2 py-3 text-left">{event.name}</td>
                     <td className="px-2 py-3 text-left">{event.role}</td>
                     <td className="px-2 py-3 text-left">
-                      {event.account_status}
+                      {
+                        event.account_status === "active" ? (
+                          <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">Active</span>
+                        ) : (
+                          <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">Inactive</span>
+                        )
+                      }
                     </td>
                     <td className="px-2 py-3 text-left">
                       {new Date(event.created_at).toLocaleDateString()}
@@ -238,7 +245,6 @@ export default function EventTable() {
         </table>
       </div>
 
-      {!isLoading &&(
         <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2 ">
         <p className="text-sm text-gray-500">
           Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
@@ -275,9 +281,6 @@ export default function EventTable() {
           </button>
         </div>
       </div>
-      )
-
-      }
     </div>
   );
 }

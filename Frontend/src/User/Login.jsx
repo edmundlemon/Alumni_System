@@ -13,7 +13,7 @@ export default function LoginPage({ initialForm = "login" }) {
   const navigate = useNavigate();
   const [currentForm, setCurrentForm] = useState(initialForm);
   const [formError, setFormError] = useState({ id: "", password: "" });
-  const [loginPost, setLoginPost] = useState({ email: "", password: "" });
+  const [loginPost, setLoginPost] = useState({ id: "", password: "" });
   const [formResetError, setFormResetError] = useState({ password: "" , password_confirmation: ""});
   const [resetPassPost, setResetPassPost] = useState({
     email: "",
@@ -66,7 +66,7 @@ const toggleResetPassConfirmVisibility = () => {
     }
 
     setFormError({ id: "", password: "" });
-
+    
     axios
       .post("http://localhost:8000/api/user_login", loginPost)
       .then((response) => {
@@ -75,15 +75,28 @@ const toggleResetPassConfirmVisibility = () => {
         const userRole = response.data.user.role;
         Cookies.set("token", token);
         Cookies.set("userId", userId);
+        Cookies.set("email", response.data.user.email);
+        if( response.data.photo === null){
+          Cookies.set("name", response.data.user.name);
+           Cookies.set("photo", null);
+        }
+        else{
+          Cookies.set("photo", response.data.photo);
+        }
         Cookies.set("userRole", userRole);
-        navigate("/forumMainPage");
-        console.log(userId);
+        console.log("Login successful:", response.data);
+        if(response.data.user.first_login===1){
+          navigate("/updateProfile");
+        }
+        else{
+          navigate("/forumMainPage");
+        }
       })
       .catch((error) => {
         console.log(error);
-        if (error.response.status === 401) {
+        if (error) {
           setFormError({
-            email: "Invalid email or password",
+            id: "Invalid email or password",
             password: "Invalid email or password",
           });
         }
@@ -160,7 +173,7 @@ const toggleResetPassConfirmVisibility = () => {
       .then((response) => {
         console.log("Password reset response:", response.data);
         alert("Password reset successfully");
-        navigate("/login");
+        navigate("/forumMainPage");
       })
       .catch((error) => {
         console.error("Error resetting password:", error);
@@ -182,7 +195,13 @@ const toggleResetPassConfirmVisibility = () => {
   return (
     <div className="relative min-h-screen">
       <div className="h-72 w-full bg-blue-900"></div>
-      <div className="absolute top-7 left-20 text-white text-5xl font-extrabold">Login Page</div>
+      {currentForm === "resetPassword" ?(
+        <div className="absolute top-7 left-20 text-white text-5xl font-extrabold">Reset Password</div>
+      ):(
+        <div className="absolute top-7 left-20 text-white text-5xl font-extrabold">Login Page</div>
+      )
+
+      }
     <div className="flex justify-center my-10 absolute top-72 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
       <div className="flex max-w-4xl shadow-lg overflow-hidden">
         {/* Left Panel - Branding */}
@@ -209,7 +228,7 @@ const toggleResetPassConfirmVisibility = () => {
         {currentForm === "login" && (
           <div className="w-[320px] p-10 flex flex-col justify-center bg-white">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Sign In</h1>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">Login</h1>
               <p className="text-gray-600">
                 Welcome back! Please enter your details
               </p>
@@ -221,12 +240,12 @@ const toggleResetPassConfirmVisibility = () => {
                   htmlFor="id"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  id
+                  User Id
                 </label>
                 <input
                   name="id"
                   type="id"
-                  placeholder="Enter id address"
+                  placeholder="Enter your user Id"
                   value={loginPost.id}
                   onChange={handleInput}
                   className="h-11 w-full px-4 py-3 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
@@ -278,7 +297,7 @@ const toggleResetPassConfirmVisibility = () => {
                 type="submit"
                 className="h-11 w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-3 px-4 rounded-md transition duration-200 transform hover:scale-[1.01]"
               >
-                Sign In
+                Login
               </button>
             </form>
           </div>
@@ -288,10 +307,10 @@ const toggleResetPassConfirmVisibility = () => {
           <div className="w-[320px] p-10 flex flex-col justify-center bg-white">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Reset Password
+                Request Link
               </h1>
               <p className="text-gray-600">
-                Enter your email to receive an password reset Email
+                Enter your email to receive a link reset password
               </p>
             </div>
 
@@ -323,14 +342,14 @@ const toggleResetPassConfirmVisibility = () => {
                 type="submit"
                 className="h-11 w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-3 px-4 rounded-md transition duration-200 transform hover:scale-[1.01]"
               >
-                Request Email
+                Request OTP Link
               </button>
             </form>
           </div>
         )}
 
 {currentForm === "resetPassword" && (
-  <div className="w-[320px] p-10 flex flex-col justify-center">
+  <div className="w-[320px] p-10 flex flex-col justify-center bg-white">
     <div className="mb-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-2">
         Reset Password

@@ -35,12 +35,11 @@ const Sidebar = () => {
   }, [open]);
 
   const menus = [
-    { name: "Dashboard", link: "/AdminDashboard", icon: MdOutlineDashboard },
+    { name: "Dashboard", link: "/dashboard", icon: MdOutlineDashboard },
     { name: "User Manage", link: "/userTable", icon: LuUsers },
     { name: "Event", link: "/eventTable", icon: FaRegCalendarAlt },
     { name: "Donation", link: "/donationTable", icon: BiDonateHeart },
     { name: "Forum", link: "/forumTable", icon: MdOutlineMessage },
-    { name: "Comment", link: "/commentTable", icon: BiMessageRoundedDots },
     { name: "Major", link: "/majorTable", icon: MdStorage  },
   ];
 

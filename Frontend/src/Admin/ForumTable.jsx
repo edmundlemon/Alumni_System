@@ -10,6 +10,8 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { FiEdit3 } from "react-icons/fi";
+
 
 export default function ForumTable() {
   const navigate = useNavigate();
@@ -51,12 +53,12 @@ export default function ForumTable() {
 
   // Table columns for forums
   const columns = [
-    { key: "subject", label: "Subject" },
-    { key: "userId", label: "User ID" },
-    { key: "content", label: "Content" },
+    { key: "forumID", label: "Forum ID" },
+    { key: "Tittle", label: "tittle" },
+    { key: "comment", label: "comment" },
+    { key: "userID", label: "User ID" },
     { key: "created_at", label: "Created At" },
-    { key: "account_status", label: "Status" },
-    { key: "date", label: "Date" },
+    { key: "Action", label: "Action" },
   ];
 
   const filteredForums = forums.filter(
@@ -112,7 +114,11 @@ export default function ForumTable() {
   };
 
   return (
-    <div className="h-full p-4 rounded-lg bg-white shadow">
+    <div className="h-full p-4 rounded-lg bg-white"
+    style={{
+        boxShadow:
+          "0 4px 6px rgba(0,0,0,0.1), 0 -4px 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1)",
+      }}>
       <div className="flex justify-between items-center pb-4">
         <p className="font-bold text-xl">Forum Management Table</p>
         <div className="flex h-9 gap-2">
@@ -132,14 +138,10 @@ export default function ForumTable() {
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs"
+            className="flex items-center gap-1 border-2 bg-[#1560bd] text-white px-2 py-2 rounded-md text-xs"
           >
             <BiExport size={16} />
             Export
-          </button>
-          <button className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs">
-            <FaPlus size={10} />
-            <span>Add User</span>
           </button>
         </div>
       </div>
@@ -164,10 +166,11 @@ export default function ForumTable() {
                   className={`p-2 border-b text-left cursor-pointer ${
                     index === columns.length - 1 ? "rounded-tr-md" : ""
                   }`}
-                  onClick={() => handleSort(col.key)}
+                  onClick={() => col.key !== "Action" && handleSort(col.key)}
                 >
                   <p className="flex items-center gap-2 capitalize">
-                    {col.label} <BiSortAlt2 size={20} />
+                    {col.label} 
+                    {col.key !== "Action" && <BiSortAlt2 size={20} />}
                   </p>
                 </th>
               ))}
@@ -175,7 +178,7 @@ export default function ForumTable() {
           </thead>
           <tbody>
             {isLoading
-              ? Array.from({ length: itemsPerPage }, (_, i) => (
+              ? Array.from({ length: itemsPerPage  }, (_, i) => (
                   <tr key={i} className="border-b border-gray-100">
                     <td className="p-2 text-center">
                       <Skeleton circle height={16} width={16} />
@@ -201,25 +204,36 @@ export default function ForumTable() {
                         checked={selectForum.includes(forum.id)}
                       />
                     </td>
-                    <td className="px-2 py-3 text-left line-clamp-1">{forum.subject}</td>
-                    <td className="px-2 py-3 text-left">{forum.userId}</td>
-                    <td className="px-2 py-3 text-left ine-clamp-1">{forum.content}</td>
-                    <td className="px-2 py-3 text-left">{forum.created_at}</td>
                     <td className="px-2 py-3 text-left">
-                      {forum.account_status}
+                      <div className="line-clamp-1">{forum.id}</div>
                     </td>
+                    <td className="px-2 py-3 text-left">
+                      <div className="line-clamp-1">
+                       {forum.subject && forum.subject.length > 5
+                          ? forum.subject.slice(0, 20) + "..."
+                          : forum.subject}
+                      </div>
+                    </td>
+                    <td className="px-2 py-3 text-left">
+                      {forum.comments.length}
+                    </td>
+                    <td className="px-2 py-3 text-left">{forum.user_id}</td>
                     <td className="px-2 py-3 text-left">
                       {forum.created_at
                         ? new Date(forum.created_at).toLocaleDateString()
                         : ""}
                     </td>
+                    <td className="flex px-2 pt-3 gap-2">
+                                          <button className="p-1 rounded border border-gray-300 shadow" onClick={() => handleViewUser(user)}><FiEdit3 /></button>
+                                          <button className="p-1 rounded border border-gray-300 shadow"><MdDeleteOutline /></button>
+                                        </td>
                   </tr>
                 ))}
           </tbody>
         </table>
       </div>
 
-      {!isLoading && (
+      
         <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2">
           <p className="text-sm text-gray-500">
             Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
@@ -256,7 +270,7 @@ export default function ForumTable() {
             </button>
           </div>
         </div>
-      )}
+
     </div>
   );
 }
