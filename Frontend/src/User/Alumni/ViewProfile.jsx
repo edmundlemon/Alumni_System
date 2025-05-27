@@ -30,12 +30,12 @@ export default function ViewProfile() {
           axios.get("http://localhost:8000/api/view_all_alumni", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-        //   axios.get(`http://localhost:8000/api/view_event/${alumni.id}`, {
-        //     headers: { Authorization: `Bearer ${token}` },
-        //   }),
+          axios.get(`http://localhost:8000/api/view_event/${alumni.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
         setconnect(connectRes.data);
-        // setEvent(eventRes.data);
+        console.log("Alumni events:", eventRes.data);
       } catch (error) {
         if (error.response && error.response.status === 404) {
           console.error("Event not found for this alumni.");
@@ -51,6 +51,28 @@ export default function ViewProfile() {
       console.error("Token or alumni ID not found");
     }
   }, [token, alumni]);
+
+   const handleConnect = async (alumniId) => {
+    if (!token) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/connect/${alumniId}`,{},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Connection successful:", response.data);
+    } catch (error) {
+      console.error("Error connecting with alumni:", error);
+    }
+  }
 
   const mockEvents = [
     {

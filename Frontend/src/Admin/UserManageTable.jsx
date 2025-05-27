@@ -13,6 +13,7 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import AddUser from "./AddUser";
 import Skeleton from "react-loading-skeleton";
+import { FiEdit3 } from "react-icons/fi";
 
 export default function UserManageTable() {
   const navigate = useNavigate();
@@ -183,17 +184,18 @@ export default function UserManageTable() {
                   }
                 />
               </th>
-              {["id", "email", "name", "role", "status", "created_at"].map(
+              {["id", "email", "name", "role", "status", "created_at", "Action"].map(
                 (key) => (
                   <th
                     key={key}
                     className={`p-2 border-b text-left cursor-pointer ${
-                      key === "created_at" ? "rounded-tr-md" : ""
+                      key === "Action" ? "rounded-tr-md" : ""
                     }`}
-                    onClick={() => handleSort(key)}
+                    onClick={() => key !== "Action" && handleSort(key)}
                   >
                     <p className="flex items-center gap-2 capitalize">
-                      {key.replace("_", " ")} <BiSortAlt2 size={20} />
+                      {key.replace("_", " ")}
+                      {key !== "Action" && <BiSortAlt2 size={20} />}
                     </p>
                   </th>
                 )
@@ -203,7 +205,7 @@ export default function UserManageTable() {
           <tbody>
             {isLoading
               ? // Skeleton rows while loading
-                Array.from({ length: 11 }, (_, i) => (
+                Array.from({ length: itemsPerPage }, (_, i) => (
                   <tr key={i} className="border-b border-gray-100">
                     <td className="p-2 text-center">
                       <Skeleton circle height={16} width={16} />
@@ -229,19 +231,25 @@ export default function UserManageTable() {
                         checked={selectUser.includes(user.id)}
                       />
                     </td>
-                    <td className="px-2 py-3 text-left">
-                      <button onClick={() => handleViewUser(user)}>
-                        {user.id}
-                      </button>
-                    </td>
+                    <td className="px-2 py-3 text-left">{user.id}</td>
                     <td className="px-2 py-3 text-left">{user.email}</td>
                     <td className="px-2 py-3 text-left">{user.name}</td>
                     <td className="px-2 py-3 text-left">{user.role}</td>
                     <td className="px-2 py-3 text-left">
-                      {user.account_status}
+                      {
+                        user.account_status === "active" ? (
+                          <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">Active</span>
+                        ) : (
+                          <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">Inactive</span>
+                        )
+                      }
                     </td>
                     <td className="px-2 py-3 text-left">
                       {new Date(user.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="flex px-2 pt-3 gap-2">
+                      <button className="p-1 rounded border border-gray-300 shadow" onClick={() => handleViewUser(user)}><FiEdit3 /></button>
+                      <button className="p-1 rounded border border-gray-300 shadow"><MdDeleteOutline /></button>
                     </td>
                   </tr>
                 ))}
@@ -249,7 +257,7 @@ export default function UserManageTable() {
         </table>
       </div>
 
-      {!isLoading && (
+     
         <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2 ">
           <p className="text-sm text-gray-500">
             Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
@@ -286,7 +294,6 @@ export default function UserManageTable() {
             </button>
           </div>
         </div>
-      )}
 
       {showUserProfile && (
         <>

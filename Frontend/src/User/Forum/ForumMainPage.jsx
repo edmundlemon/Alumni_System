@@ -213,19 +213,30 @@ export default function ForumMainPage() {
               <>
                 {(showposted === true || showConnect) ===true? (
                 showConnect === true ? (
-                  <button
-                  className="flex-1 text-center py-3 font-semibold text-blue-600 border-b-2 border-blue-500 transition"
-                  onClick={() => {setShowPosted(false),setShowConnect(false)}}
+                  
+                  <div
+                  className="flex-1 flex text-center items-center px-8 py-3 font-semibold text-blue-600 border-b-2 border-blue-500 transition"
                   >
-                    Connect User
-                  </button>
+                    <button
+                    onClick={() => {setShowPosted(false),setShowConnect(false)}}
+                    className="p-1 text-gray-600"
+                    >
+                    <IoArrowBackOutline size={23} />
+                    </button>
+                        <p className="mx-auto">Connect User</p>
+                    </div>
                 ):(
-                  <button
-                  className="flex-1 text-center py-3 font-semibold text-blue-600 border-b-2 border-blue-500"
-                  onClick={() => {setShowPosted(false),setShowConnect(false)}}
+                  <div
+                  className="flex-1 flex item-center text-center px-8 py-3 font-semibold text-blue-600 border-b-2 border-blue-500"
                   >
-                    My Own Post
-                  </button>
+                    <button
+                    onClick={() => {setShowPosted(false),setShowConnect(false)}}
+                    className="p-1 text-gray-600"
+                    >
+                    <IoArrowBackOutline size={23} />
+                    </button>
+                    <p className="mx-auto">My Own Post</p>
+                  </div>
                 )
                 ) : (
                   
@@ -265,9 +276,9 @@ export default function ForumMainPage() {
                 {connectUser.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center gap-4 border-b p-4 w-full"
+                    className="flex items-center gap-4 border-b px-8 p-4 w-full"
                   >
-                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
                       {user.image ? (
                         <img
                           src={user.image}

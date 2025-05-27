@@ -35,12 +35,13 @@ import EventTable from "./Admin/EventTable";
 import ForumTable from "./Admin/ForumTable";
 import DonationTable from "./Admin/DonationTable";
 import MajorTable from "./Admin/MajorTable";
-import CommentTable from "./Admin/CommentTable";
+import ConnectStatus from "./User/Alumni/ConnectStatus";
+import Dashboard from "./Admin/Dashboard";
 
 function AppRoutes() {
   const location = useLocation();
 
-  // Only show header on these paths:
+  // Only show header/footer on these paths:
   const hideHeader = [
     "/userTable",
     "/eventTable",
@@ -50,7 +51,10 @@ function AppRoutes() {
     "/commentTable",
     "/majorTable",
     "/403",
+    "/404",
+    "/dashboard"
   ].includes(location.pathname);
+
   const hideFooter = [
     "/userTable",
     "/eventTable",
@@ -60,11 +64,22 @@ function AppRoutes() {
     "/forumMainPage",
     "/commentTable",
     "/majorTable",
-    "/403"
+    "/403",
+    "/404",
+    "/dashboard"
   ].includes(location.pathname);
+
+  // Hide header/footer for 404 and 403 wildcard routes
+  const isErrorPage =
+    location.pathname === "/403" ||
+    // If no route matches, react-router will render the "*" route
+    // so we check if the rendered element is the 404 page
+    // or you can use a state or context to indicate 404
+    false;
+
   return (
     <>
-      {!hideHeader && <Header />}
+      {!hideHeader && !isErrorPage && <Header />}
       <Routes>
         <Route path="/" element={<Navigate to="/userLogin" replace />} />
         <Route path="/userLogin" element={<Login />} />
@@ -94,25 +109,59 @@ function AppRoutes() {
         <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/policy" element={<Policy />} />
         <Route path="/updateProfile" element={<UpdateProfile />} />
+        <Route path="/connectStatus" element={<ConnectStatus />} />
+        {/* Admin Routes */}
         <Route element={<Sidebar />}>
           <Route path="/userTable" element={<UserManageTable />} />
           <Route path="/eventTable" element={<EventTable />} />
           <Route path="/forumTable" element={<ForumTable />} />
           <Route path="/donationTable" element={<DonationTable />} />
           <Route path="/majorTable" element={<MajorTable />} />
-          <Route path="/commentTable" element={<CommentTable />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Route>
         {/* 404 Not Found */}
         <Route
           path="/403"
           element={
-            <div className="flex justify-center items-center h-[100vh]">
-              <h1 className="text-2xl">403 Forbidden</h1>
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+              <div className="text-center px-6 py-12 bg-white shadow-lg rounded-xl max-w-md">
+                <h1 className="text-6xl font-bold text-red-500">403</h1>
+                <h2 className="text-2xl font-semibold mt-4">Access Denied</h2>
+                <p className="mt-2 text-gray-600">
+                  You do not have permission to view this page.
+                </p>
+                <a
+                  href="/"
+                  className="inline-block mt-6 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+                >
+                  Go Home
+                </a>
+              </div>
+            </div>
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+              <div className="text-center px-6 py-12 bg-white shadow-lg rounded-xl max-w-md">
+                <h1 className="text-6xl font-bold text-gray-800">404</h1>
+                <h2 className="text-2xl font-semibold mt-4">Page Not Found</h2>
+                <p className="mt-2 text-gray-600">
+                  Sorry, the page you’re looking for doesn’t exist.
+                </p>
+                <a
+                  href="/"
+                  className="inline-block mt-6 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+                >
+                  Return to Home
+                </a>
+              </div>
             </div>
           }
         />
       </Routes>
-      {!hideFooter && <Footer />}
+      {!hideFooter && !isErrorPage && <Footer />}
     </>
   );
 }

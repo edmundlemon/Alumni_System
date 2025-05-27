@@ -34,7 +34,7 @@ export default function ViewDonateDetails() {
         onClick={() => window.history.back()}
       >
         <IoReturnUpBackSharp size={18} />
-        Back to Events
+        Back to Donations
       </button>
       <div className="mx-auto max-w-7xl border bg-white/60 backdrop-blur shadow rounded-xl overflow-hidden lg:flex">
         <div className="flex-1 p-8 flex flex-col">

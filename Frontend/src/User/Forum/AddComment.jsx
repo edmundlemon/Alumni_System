@@ -2,6 +2,10 @@ import { MdClose } from "react-icons/md";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
 import { useState } from "react";
+import { PiGif } from "react-icons/pi";
+import { GoLocation } from "react-icons/go";
+import { CiImageOn } from "react-icons/ci";
+import { LiaPollSolid } from "react-icons/lia";
 
 const getInitial = (name = "") => name.charAt(0).toUpperCase();
 
@@ -76,27 +80,59 @@ export default function AddComment({ onClose, post }) {
               placeholder="Post your reply"
             />
 
-            <div className="flex items-center justify-between mt-3">
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowPicker(!showPicker)}
-                  className="p-2 text-blue-500 hover:bg-blue-900/20 rounded-full transition"
-                >
-                  <BsEmojiSmile size={20} />
-                </button>
+           <div className="flex items-center justify-between mt-3">
+                        {/* Action Icons */}
+                        <div className="flex items-center space-x-3 text-blue-500">
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <CiImageOn size={24} />
+                          </button>
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <PiGif size={24} />
+                          </button>
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <LiaPollSolid size={24} />
+                          </button>
+                          <div className="relative">
+                            <button
+                              className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setShowPicker(!showPicker);
+                              }}
+                            >
+                              <BsEmojiSmile size={19} />
+                            </button>
 
-                {showPicker && (
-                  <div className="absolute bottom-0 left-10 z-20">
-                    <EmojiPicker
-                      onEmojiClick={onEmojiClick}
-                      theme="dark"
-                      width={300}
-                      height={350}
-                    />
-                  </div>
-                )}
-              </div>
+                            {showPicker && (
+                              <div className="absolute top-10 left-0 z-10">
+                                <EmojiPicker
+                                  onEmojiClick={onEmojiClick}
+                                  width={300}
+                                  height={350}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
+                            title="Add Image"
+                          >
+                            <GoLocation size={19} />
+                          </button>
+                        </div>
 
               <button
                 disabled={!content.trim()}
