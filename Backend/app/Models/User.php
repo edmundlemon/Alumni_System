@@ -188,7 +188,7 @@ class User extends Authenticatable
 
     public function pendingConnectionsRequests()
     {
-        return $this->belongstoMany(User::class, 'connections', 'requesting_user_id', 'pending_user_id')->wherePivot('status', 'pending');
+        return $this->belongstoMany(User::class, 'connections', 'requesting_user_id', 'accepting_user_id')->wherePivot('status', 'pending');
     }
     public function requestedConnections()
     {
