@@ -176,4 +176,34 @@ class UserController extends Controller
             'connected_users' => $connectedUsers,
         ], 200);
     }
+    public function suggestedConnections()
+    {
+        $user = Auth::guard('sanctum')->user();
+        // Fetch suggested connections
+        $suggestedConnections = User::where('id', '!=', $user->id)
+            ->whereDoesntHave('acceptedConnections', function ($query) use ($user) {
+                $query->where('accepting_user_id', $user->id);
+            })
+            ->whereDoesntHave('requestedConnections', function ($query) use ($user) {
+                $query->where('requesting_user_id', $user->id);
+            })
+            ->where('major_id', $user->major_id)
+            ->where('role', 'student') // Assuming you want to suggest only students
+            ->orWhereHas('major', function ($query) use ($user) {
+                $query->where('faculty_id', $user->major->faculty_id);
+            })
+            ->whereDoesntHave('acceptedConnections', function ($query) use ($user) {
+                $query->where('accepting_user_id', $user->id);
+            })
+            ->whereDoesntHave('requestedConnections', function ($query) use ($user) {
+                $query->where('requesting_user_id', $user->id);
+            })
+            ->where('role', 'alumni') // Or alumni
+            ->get()
+            ->makeHidden(['pivot', 'major']);
+
+        return response()->json([
+            'suggested_connections' => $suggestedConnections,
+        ], 200);
+    }
 }
