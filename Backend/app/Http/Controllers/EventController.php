@@ -44,10 +44,19 @@ class EventController extends Controller
                 'message' => 'You are not authorized to create an event',
             ], 403);
         }
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('event_pictures'), $filename);
+            $photoPath = asset('event_pictures/'.$filename);
+        }
         $event = Event::create([
             'event_title' => $request->event_title,
             'description' => $request->description,
             'location' => $request->location,
+            'event_mode' => $request->event_mode ?? 'physical',
+            'photo' => $photoPath,
             'event_date' => $request->event_date,
             'event_time' => $request->event_time,
             'max_participant' => $request->max_participant,

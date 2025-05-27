@@ -170,12 +170,17 @@ class LoginController extends Controller
         // Check if the token is valid
         if (Password::tokenExists($user, $request->token)) {
             // Update the password
-            // $user->update(['password' => bcrypt($request->password)]);
             $user->password = bcrypt($request->password);
             $user->save();
             // Delete the token
+            Auth::guard('user')->attempt(['id' => $user->id, 'password' => $request->password]);
+            // Log the user in
+            $token = $user->createToken('userToken')->plainTextToken;
+            Log::channel('auth_activity')->info('User Password Reset: ', ['user_id' => $user->id]);
             Password::deleteToken($user);
             return response()->json([
+                'token' => $token,
+                'user' => $user->makeHidden(['password', 'remember_token', 'major']),
                 'message' => 'Password reset successfully'
             ], 200);
         }

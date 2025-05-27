@@ -47,6 +47,13 @@ class DonationPostController extends Controller
             'target_amount' => 'required|numeric',
             'end_date' => 'required|date|after:today',
         ]);
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('donation_posts'), $filename);
+            $photoPath = asset('donation_posts/'.$filename);
+        }
 
         $admin = Auth::guard('sanctum')->user();
         if (!$admin->hasRole('admin')) {
@@ -65,6 +72,7 @@ class DonationPostController extends Controller
             'donation_title' => $form_fields['donation_title'],
             'description' => $form_fields['description'],
             'target_amount' => $form_fields['target_amount'],
+            'photo' => $photoPath,
             'end_date' => $form_fields['end_date'],
         ]);
         return response()->json([

@@ -108,7 +108,7 @@ class UserController extends Controller
     {
         // Update user details
         $user = Auth::guard('sanctum')->user();
-        if (!$user || !$user->hasRole('admin')) {
+        if ($user->id !== $userToBeEdited->id && !$user->hasRole('admin')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
         Log::channel('auth_activity')->info('User to be edited: ', ['user' => $userToBeEdited]);

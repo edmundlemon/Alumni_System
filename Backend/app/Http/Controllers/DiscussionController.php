@@ -70,11 +70,19 @@ class DiscussionController extends Controller
             'subject' => 'required|string|max:255',
             'content' => 'required|string',
         ]);
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('discussion_pictures'), $filename);
+            $photoPath = asset('discussion_pictures/'.$filename);
+        }
 
         $discussion = Discussion::create([
             'user_id' => Auth::guard('sanctum')->user()->id,
             'subject' => $request->subject,
             'content' => $request->content,
+            'photo' => $photoPath,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
