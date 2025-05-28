@@ -17,7 +17,7 @@ export default function AddEvent() {
         event_date: '',
         event_time: '',
         registration_close_date: '',
-        max_participant: '',
+        max_participants: '',
         location: '',
         noLimit: false,
         photo: null
@@ -28,7 +28,7 @@ export default function AddEvent() {
     const eventTypeOptions = [
         { value: "Hybrid", label: "Hybrid" },
         { value: "Online", label: "Online" },
-        { value: "Offline", label: "Offline" },
+        { value: "Physical", label: "Physical" },
     ];
 
     const handleChange = (e) => {
@@ -69,50 +69,42 @@ export default function AddEvent() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const payload = new FormData();
-        payload.append("event_title", formData.event_title);
-        payload.append("event_mode", formData.event_mode);
-        payload.append("description", formData.description);
-        payload.append("event_date", formData.event_date);
-        payload.append("event_time", formData.event_time);
-        payload.append("registration_close_date", formData.registration_close_date);
-        payload.append("max_participant", formData.noLimit ? '' : formData.max_participant);
-        payload.append("location", formData.location);
-        if (formData.photo) {
-            payload.append("photo", formData.photo);
-        }
+  const payload = new FormData();
+  payload.append("event_title", formData.event_title);
+  payload.append("event_mode", formData.event_mode);
+  payload.append("description", formData.description);
+  payload.append("event_date", formData.event_date);
+  payload.append("event_time", formData.event_time);
+  payload.append("registration_close_date", formData.registration_close_date);
+  payload.append("max_participants", formData.noLimit ? '' : formData.max_participants);
+  payload.append("location", formData.location);
 
-        // ✅ Debug FormData
-        console.log("FormData Payload:");
-        for (let [key, value] of payload.entries()) {
-            console.log(`${key}:`, value);
-        }
+  if (formData.image) {
+    payload.append("image", formData.image);
+  }
 
-        try {
-            const response = await axios.post(
-                "http://localhost:8000/api/create_event",
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
-            navigate("/user/event");
-        } catch (error) {
-            console.error("Full error:", error);
-
-            if (error.response?.status === 422) {
-                console.log("Validation Errors:", error.response.data.errors);
-                alert("Validation failed. Check console for details.");
-            } else if (error.response?.data?.message) {
-                alert(`Error: ${error.response.data.message}`);
-            } else {
-                alert("An unexpected error occurred. Check the console.");
-            }
-        }
-    };
+  try {
+    const response = await axios.post(
+      "http://localhost:8000/api/create_event",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    navigate("/user/event");
+  } catch (error) {
+    setErrors(error.response?.data?.errors || []);
+    console.error("Full error:", error);
+    if (error.response?.data?.message) {
+      alert(`Error: ${error.response.data.message}`);
+    } else {
+      alert("An unexpected error occurred. Please check the console for details.");
+    }
+  }
+};
 
 
 
@@ -140,6 +132,7 @@ export default function AddEvent() {
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 required
                             />
+                            <p className="text-red-600 text-xs">{errors.event_title}</p>
                         </div>
 
                         {/* Event Type */}
@@ -156,6 +149,7 @@ export default function AddEvent() {
                                 classNamePrefix="select"
                                 required
                             />
+                            <p className="text-red-600 text-xs">{errors.event_mode}</p>
                         </div>
                     </div>
 
@@ -216,6 +210,7 @@ export default function AddEvent() {
                                 <p className="mt-2 text-xs text-gray-500">
                                     Recommended size: 1200x600 pixels
                                 </p>
+                                <p className="text-red-600 text-xs">{errors.image}</p>
                             </div>
                         </div>
                     </div>
@@ -235,6 +230,7 @@ export default function AddEvent() {
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                             required
                         />
+                        <p className="text-red-600 text-xs">{errors.description}</p>
                     </div>
 
                     {/* Event Date & Time */}
@@ -252,6 +248,7 @@ export default function AddEvent() {
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
+                                <p className="text-red-600 text-xs">{errors.event_date}</p>
                             </div>
                             <div className="w-full sm:w-1/3 space-y-2">
                                 <label htmlFor="event_time" className="block text-base font-medium text-gray-700">
@@ -265,6 +262,7 @@ export default function AddEvent() {
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
+                                <p className="text-red-600 text-xs">{errors.event_time}</p>
                             </div>
                             <div className="w-full sm:w-1/3 space-y-2">
                                 <label htmlFor="registration_close_date" className="block text-base font-medium text-gray-700">
@@ -278,6 +276,7 @@ export default function AddEvent() {
                                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                         required
                                     />
+                                    <p className="text-red-600 text-xs">{errors.registration_close_date}</p>
                             </div>
                         </div>
                 <div className="flex w-full gap-4 mt-1">
@@ -297,18 +296,19 @@ export default function AddEvent() {
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 required
                             />
+                            <p className="text-red-600 text-xs">{errors.location}</p>
                         </div>
 
                           {/* Max Attendees */}
                         <div className="w-full space-y-2 mt-1">
-                            <label htmlFor="max_participant" className="block text-base font-medium text-gray-700">
+                            <label htmlFor="max_participants" className="block text-base font-medium text-gray-700">
                                 Maximum Attendees
                             </label>
                             <div className="flex items-center gap-4">
                                 <input
                                     type="number"
-                                    name="max_participant"
-                                    value={formData.max_participant}
+                                    name="max_participants"
+                                    value={formData.max_participants}
                                     onChange={handleChange}
                                     disabled={formData.noLimit}
                                     placeholder="Enter maximum number of attendees"
