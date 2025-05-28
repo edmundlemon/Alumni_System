@@ -9,20 +9,20 @@ import Cookies from "js-cookie";
 export default function AddEvent() {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
+    const user_id = Cookies.get("userId");
     const [formData, setFormData] = useState({
         event_title: '',
-        event_type: '',
+        event_mode: '',
         description: '',
         event_date: '',
         event_time: '',
         registration_close_date: '',
-        max_attendees: '',
+        max_participant: '',
         location: '',
         noLimit: false,
-        image: null
+        photo: null
     });
     const token = Cookies.get("token");
-    const [errors, setErrors] = useState([]);
     const [imagePreview, setImagePreview] = useState(null);
 
     const eventTypeOptions = [
@@ -49,7 +49,7 @@ export default function AddEvent() {
    const handleImageChange = (e) => {
   const file = e.target.files[0];
   if (file) {
-    setFormData(prev => ({ ...prev, image: file }));
+    setFormData(prev => ({ ...prev, photo: file }));
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result);
     reader.readAsDataURL(file);
@@ -58,7 +58,7 @@ export default function AddEvent() {
 
 
     const removeImage = () => {
-        setFormData(prev => ({ ...prev, image: null }));
+        setFormData(prev => ({ ...prev, photo: null }));
         setImagePreview(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -66,44 +66,53 @@ export default function AddEvent() {
     };
 
 
-   const handleSubmit = async (e) => {
-  e.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-  const payload = new FormData();
-  payload.append("event_title", formData.event_title);
-  payload.append("event_type", formData.event_type);
-  payload.append("description", formData.description);
-  payload.append("event_date", formData.event_date);
-  payload.append("event_time", formData.event_time);
-  payload.append("registration_close_date", formData.registration_close_date);
-  payload.append("max_attendees", formData.noLimit ? '' : formData.max_attendees);
-  payload.append("location", formData.location);
+        const payload = new FormData();
+        payload.append("event_title", formData.event_title);
+        payload.append("event_mode", formData.event_mode);
+        payload.append("description", formData.description);
+        payload.append("event_date", formData.event_date);
+        payload.append("event_time", formData.event_time);
+        payload.append("registration_close_date", formData.registration_close_date);
+        payload.append("max_participant", formData.noLimit ? '' : formData.max_participant);
+        payload.append("location", formData.location);
+        if (formData.photo) {
+            payload.append("photo", formData.photo);
+        }
 
-  if (formData.image) {
-    payload.append("image", formData.image);
-  }
+        // ✅ Debug FormData
+        console.log("FormData Payload:");
+        for (let [key, value] of payload.entries()) {
+            console.log(`${key}:`, value);
+        }
 
-  try {
-    const response = await axios.post(
-      "http://localhost:8000/api/create_event",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    navigate("/user/event");
-  } catch (error) {
-    console.error("Full error:", error);
-    if (error.response?.data?.message) {
-      alert(`Error: ${error.response.data.message}`);
-    } else {
-      alert("An unexpected error occurred. Please check the console for details.");
-    }
-  }
-};
+        try {
+            const response = await axios.post(
+                "http://localhost:8000/api/create_event",
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            navigate("/user/event");
+        } catch (error) {
+            console.error("Full error:", error);
+
+            if (error.response?.status === 422) {
+                console.log("Validation Errors:", error.response.data.errors);
+                alert("Validation failed. Check console for details.");
+            } else if (error.response?.data?.message) {
+                alert(`Error: ${error.response.data.message}`);
+            } else {
+                alert("An unexpected error occurred. Check the console.");
+            }
+        }
+    };
 
 
 
@@ -135,11 +144,11 @@ export default function AddEvent() {
 
                         {/* Event Type */}
                         <div className="space-y-2">
-                            <label htmlFor="event_type" className="block text-base font-medium text-gray-700">
+                            <label htmlFor="event_mode" className="block text-base font-medium text-gray-700">
                                 Event Type <span className="text-red-500">*</span>
                             </label>
                             <Select
-                                name="event_type"
+                                name="event_mode"
                                 options={eventTypeOptions}
                                 placeholder="Select event type"
                                 onChange={handleSelectChange}
@@ -292,14 +301,14 @@ export default function AddEvent() {
 
                           {/* Max Attendees */}
                         <div className="w-full space-y-2 mt-1">
-                            <label htmlFor="max_attendees" className="block text-base font-medium text-gray-700">
+                            <label htmlFor="max_participant" className="block text-base font-medium text-gray-700">
                                 Maximum Attendees
                             </label>
                             <div className="flex items-center gap-4">
                                 <input
                                     type="number"
-                                    name="max_attendees"
-                                    value={formData.max_attendees}
+                                    name="max_participant"
+                                    value={formData.max_participant}
                                     onChange={handleChange}
                                     disabled={formData.noLimit}
                                     placeholder="Enter maximum number of attendees"
