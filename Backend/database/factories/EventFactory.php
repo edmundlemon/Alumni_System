@@ -24,7 +24,7 @@ class EventFactory extends Factory
             'event_mode' => $this->faker->randomElement(['physical', 'virtual']),
             'event_date' => $this->faker->dateTimeBetween('now', '+1 year')->format('Y-m-d'),
             'event_time' => $this->faker->time(),
-            'max_participant' => $this->faker->numberBetween(10, 100),
+            'max_participants' => $this->faker->numberBetween(10, 100),
             'registration_close_date' => $this->faker->dateTimeBetween('now', '+1 month')->format('Y-m-d'),
             'status' => 'upcoming',
             'user_id' => \App\Models\User::where('role', 'alumni')->inRandomOrder()->value('id'),

@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $predeterminedFaculties = [
-            ['faculty_name' => 'Faculty of Coputing and Informatics'],
+            ['faculty_name' => 'Faculty of Computing and Informatics'],
             ['faculty_name' => 'Faculty of Cinematic Arts'],
             ['faculty_name' => 'Faculty of Business'],
             ['faculty_name' => 'Faculty of Education'],

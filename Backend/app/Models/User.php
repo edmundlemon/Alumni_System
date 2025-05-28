@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -23,10 +24,27 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'faculty',
+        'major_id',
+        'photo',
+        'role',
+        'enrollment_year',
+        'graduation_year',
+        'bio',
+        'home_country',
+        'job_title',
+        'company',
+        'position',
+        'account_status',
+        'registration_date',
+        'admin_id',
+        'photo',
+        'first_login',
+
     ];
 
     protected $guard = 'user';
-    protected $role;
     protected $appends = [
         'major_name',
         'faculty',
@@ -117,7 +135,6 @@ class User extends Authenticatable
     {
         return $this->role;
     }
-
     public function hasRole(string $role)
     {
         return $this->role == $role;
