@@ -110,14 +110,14 @@ class LoginController extends Controller
         ]);
 
         // Check if the current password is correct
-        if (!Hash::check($request->current_password, Auth::user()->password)) {
+        if (!Hash::check($request->current_password, Auth::guard('sanctum')->user()->password)) {
             return response()->json([
                 'message' => 'Current password is incorrect'
             ], 400);
         }
 
         // Update the password
-        Auth::user()->update(['password' => Hash::make($request->new_password)]);
+        Auth::guard('sanctum')->user()->update(['password' => Hash::make($request->new_password)]);
 
         return response()->json([
             'message' => 'Password changed successfully'
