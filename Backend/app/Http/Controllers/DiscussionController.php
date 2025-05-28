@@ -69,10 +69,11 @@ class DiscussionController extends Controller
         $request->validate([
             'subject' => 'required|string|max:255',
             'content' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
         $photoPath = null;
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('discussion_pictures'), $filename);
             $photoPath = asset('discussion_pictures/'.$filename);

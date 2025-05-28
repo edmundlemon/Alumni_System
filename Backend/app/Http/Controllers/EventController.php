@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
@@ -32,12 +33,26 @@ class EventController extends Controller
             'event_title' => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'event_date' => 'required|date|format:Y-m-d|after:tomorrow',
+            'event_date' => 'required|date_format:Y-m-d|after:tomorrow',
             'event_time' => 'required|date_format:H:i',
             'max_participant' => 'nullable|integer',
             'registration_close_date' => 'required|date|after:today|before:event_date',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'event_mode' => 'required|in:Online,Physical,Hybrid',
+            'location' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (($request->event_mode ?? 'Physical') === 'Online' && !filter_var($value, FILTER_VALIDATE_URL)) {
+                        $fail('The location must be a valid URL when event mode is online.');
+                    }
+                },
+            ],
         ]);
-        $user = Auth::guard('user')->user();
+
+
+        $user = Auth::guard('sanctum')->user();
         if (!$user->hasRole('alumni')) {
             return response()->json([
                 'status' => false,
@@ -45,8 +60,8 @@ class EventController extends Controller
             ], 403);
         }
         $photoPath = null;
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('event_pictures'), $filename);
             $photoPath = asset('event_pictures/'.$filename);
@@ -59,7 +74,7 @@ class EventController extends Controller
             'photo' => $photoPath,
             'event_date' => $request->event_date,
             'event_time' => $request->event_time,
-            'max_participant' => $request->max_participant,
+            'max_participants' => $request->max_participants,
             'registration_close_date' => $request->registration_close_date,
             'user_id' => $user->id,
         ]);

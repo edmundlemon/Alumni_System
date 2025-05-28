@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('event_mode')->default('physical');
             $table->date('event_date');
             $table->time('event_time');
-            $table->bigInteger('max_participant')->nullable();
+            $table->bigInteger('max_participants')->nullable();
             $table->date('registration_close_date');
             $table->string('status')->default('upcoming');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');

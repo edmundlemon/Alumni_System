@@ -12,12 +12,14 @@ class Event extends Model
         'event_title',
         'description',
         'location',
+        'event_mode',
         'event_date',
         'event_time',
         'registration_close_date',
         'max_participants',
         'status',
         'user_id',
+        'photo',
     ];
     protected $casts = [
         'start_date' => 'datetime',

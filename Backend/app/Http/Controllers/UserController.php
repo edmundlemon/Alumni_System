@@ -106,16 +106,25 @@ class UserController extends Controller
     }
     public function update(Request $request, User $userToBeEdited)
     {
-        // Update user details
+        Log::channel('auth_activity')->info('User update request received', $request->all());
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,'.$userToBeEdited->id,
+            // 'password' => 'nullable|string|min:8|confirmed',
+            // 'faculty' => 'sometimes|string|max:255',
+            'major_id' => 'sometimes|integer|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'role' => 'sometimes|string|in:student,alumni',
+        ]);
         $user = Auth::guard('sanctum')->user();
         if ($user->id !== $userToBeEdited->id && !$user->hasRole('admin')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
         Log::channel('auth_activity')->info('User to be edited: ', ['user' => $userToBeEdited]);
-        dd($request->all());
+        // dd($request->all());
         $photoPath = $userToBeEdited->photo;
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('profile_pictures'), $filename);
             $photoPath = asset('profile_pictures/'.$filename);
