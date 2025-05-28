@@ -28,7 +28,7 @@ export default function AddEvent() {
     const eventTypeOptions = [
         { value: "Hybrid", label: "Hybrid" },
         { value: "Online", label: "Online" },
-        { value: "Offline", label: "Offline" },
+        { value: "Physical", label: "Physical" },
     ];
 
     const handleChange = (e) => {
@@ -78,6 +78,7 @@ export default function AddEvent() {
         payload.append("registration_close_date", formData.registration_close_date);
         payload.append("max_participant", formData.noLimit ? '' : formData.max_participant);
         payload.append("location", formData.location);
+        payload.append("user_id", user_id);
         if (formData.photo) {
             payload.append("photo", formData.photo);
         }
@@ -99,6 +100,8 @@ export default function AddEvent() {
                     },
                 }
             );
+            console.log("Event created successfully:", response.data);
+            alert("Event created successfully!");
             navigate("/user/event");
         } catch (error) {
             console.error("Full error:", error);

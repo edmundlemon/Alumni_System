@@ -25,6 +25,7 @@ export default function MajorTable() {
   const itemsPerPage = 10;
   const printRef = useRef();
   const token = Cookies.get("adminToken");
+  const [showAddMajor, setShowAddMajor] = useState(false);
 
   useEffect(() => {
     const fetchMajor = async () => {
@@ -152,7 +153,7 @@ export default function MajorTable() {
           </button>
           <button
             className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs"
-            onClick={() => setShowAddUser(true)}
+            onClick={() => setShowAddMajor(true)}
           >
             <FaPlus size={10} />
             <span>Add Major</span>
@@ -229,8 +230,7 @@ export default function MajorTable() {
                     <td className="px-2 py-3 text-left">
                       {major.faculty_name}
                     </td>
-                    <td className="flex px-2 pt-3 gap-2">
-                      <button className="p-1 rounded border border-gray-300 shadow" onClick={() => handleViewUser(user)}><FiEdit3 /></button>
+                    <td className="flex px-6 pt-3 gap-2">
                       <button className="p-1 rounded border border-gray-300 shadow"><MdDeleteOutline /></button>
                     </td>
                   </tr>
@@ -276,6 +276,48 @@ export default function MajorTable() {
           </button>
         </div>
       </div>
+      {showAddMajor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
+                <h2 className="text-xl font-semibold mb-4 rounded-t-md px-4 py-2 text-white bg-denim">Add Major</h2>
+                <form className="px-4 pb-4 space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Major Name</label>
+                        <input
+                            type="text"
+                            name="major_name"
+                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Faculty Name</label>
+                        <input
+                            type="text"
+                            name="faculty_name"
+                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                            required
+                        />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                        <button
+                            type="button"
+                            onClick={() => setShowAddMajor(false)}
+                            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 bg-[#1560bd] text-white rounded-md hover:bg-blue-600 transition-colors"
+                        >
+                            Add Major
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+      )}
     </div>
   );
 }

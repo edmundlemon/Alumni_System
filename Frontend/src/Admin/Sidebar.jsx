@@ -27,6 +27,7 @@ const Sidebar = () => {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [hoveredMenu, setHoveredMenu] = useState(null);
+  const token = Cookies.get("adminToken");
 
   useEffect(() => {
     if (!open) {
@@ -44,7 +45,6 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
-    const token = Cookies.get("adminToken");
 
     axios
       .post("http://localhost:8000/api/admin_logout", null, {
