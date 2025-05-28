@@ -27,7 +27,7 @@ class User extends Authenticatable
         'phone',
         'faculty',
         'major_id',
-        'photo',
+        'image',
         'role',
         'enrollment_year',
         'graduation_year',
