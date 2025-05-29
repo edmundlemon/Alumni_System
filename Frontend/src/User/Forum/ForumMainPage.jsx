@@ -20,6 +20,8 @@ import AddComment from "./AddComment";
 import AddPost from "./AddPost";
 import { LiaPollSolid } from "react-icons/lia";
 import { IoArrowBackOutline } from "react-icons/io5";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export default function ForumMainPage() {
   const getInitial = (name = "") => name.charAt(0).toUpperCase();
@@ -44,6 +46,9 @@ export default function ForumMainPage() {
   const [connectUser, setConnectUser] = useState([]);
   const [showposted, setShowPosted] = useState(false);
   const [ownPost, setOwnPost] = useState([]);
+  const [suggest, setSuggest] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showMore, setShowMore] = useState(false);
 
   const getTimeAgo = (dateString) => {
     const date = new Date(dateString);
@@ -87,15 +92,15 @@ export default function ForumMainPage() {
   };
 
   const menus = [
-    { text: "Home", onClick: () => {setShowPosted(false),setShowConnect(false)}, icon: GoHomeFill },
-    { text: "Connect", onClick: () => {setShowConnect(true),setShowPosted(false)}, icon: FiUsers },
-    { text: "My Posted", onClick: () => {setShowPosted(true),setShowConnect(false)}, icon: FaRegFile },
+    { text: "Home", onClick: () => {setShowPosted(false),setShowConnect(false),setShowMore(false)}, icon: GoHomeFill },
+    { text: "Connected", onClick: () => {setShowConnect(true),setShowPosted(false),setShowMore(false)}, icon: FiUsers },
+    { text: "My Posted", onClick: () => {setShowPosted(true),setShowConnect(false),setShowMore(false)}, icon: FaRegFile },
   ];
 
   useEffect(() => {
     const getPostsAndUsers = async () => {
       try {
-        const [postsRes, usersRes, mainRes, connectRes, ownPost, connectUserRes] = await Promise.all([
+        const [postsRes, usersRes, mainRes, connectRes, ownPost, connectUserRes, suggesRes] = await Promise.all([
           axios.get("http://localhost:8000/api/discussions", {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -122,6 +127,12 @@ export default function ForumMainPage() {
               headers: { Authorization: `Bearer ${token}` },
             }
           ),
+          axios.get(
+            "http://localhost:8000/api/suggested_connections",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          ),
         ]);
         setPosts(postsRes.data.discussions.data);
         setUsers(usersRes.data);
@@ -129,10 +140,8 @@ export default function ForumMainPage() {
         setConnectPost(connectRes.data.discussions.data);
         setConnectUser(connectUserRes.data);
         setOwnPost(ownPost.data.discussions.data);
-        console.log("Own Post:", ownPost.data.discussions.data);
-        console.log("Connected Posts:", connectRes.data);
-        console.log("Post:", postsRes.data.discussions.data);
-        console.log("Users:", usersRes.data);
+        setSuggest(suggesRes.data.suggested_connections);
+        console.log("suggested connections", suggesRes.data.suggested_connections);
         const map = {};
         usersRes.data.forEach((user) => {
           map[user.id] = user;
@@ -144,10 +153,13 @@ export default function ForumMainPage() {
         } else {
           console.error("Error:", error);
         }
+      } finally {
+        setLoading(false);
       }
     };
 
     if (token) {
+      setLoading(true);
       getPostsAndUsers();
     } else {
       console.error("No token found, user might not be authenticated");
@@ -161,6 +173,39 @@ export default function ForumMainPage() {
     setJoinComment(false);
   }
   }, [showPostDetails]);
+
+  // Skeleton for posts
+  const PostSkeleton = () => (
+    <div className="px-8 py-4 border-y flex gap-4">
+      <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center">
+        <Skeleton circle width={48} height={48} />
+      </div>
+      <div className="flex-1">
+        <Skeleton width={120} height={18} />
+        <Skeleton width={80} height={14} className="mt-1" />
+        <Skeleton count={2} height={16} className="mt-2" />
+        <div className="flex gap-2 mt-2">
+          <Skeleton width={32} height={32} circle />
+          <Skeleton width={32} height={32} circle />
+          <Skeleton width={32} height={32} circle />
+        </div>
+      </div>
+    </div>
+  );
+
+  // Skeleton for right sidebar "Who to Connect"
+  const ConnectSkeleton = () => (
+    <div className="p-4 flex items-center justify-between">
+      <div className="flex items-center">
+        <Skeleton circle width={40} height={40} className="mr-3" />
+        <div>
+          <Skeleton width={80} height={14} />
+          <Skeleton width={60} height={12} />
+        </div>
+      </div>
+      <Skeleton width={60} height={28} borderRadius={9999} />
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen bg-white px-20 relative">
@@ -209,66 +254,113 @@ export default function ForumMainPage() {
             </div>
             <div className="flex-1 border-x border-gray-200 border rounded ml-64 mr-80">
               <div className="sticky top-24 translate-y-[-9PX] bg-white border-gray-300 border-y z-10 flex bg-blur">
-              {showPostDetails === false ? (
-              <>
-                {(showposted === true || showConnect) ===true? (
-                showConnect === true ? (
-                  
+                {showMore === true ? (
                   <div
-                  className="flex-1 flex text-center items-center px-8 py-3 font-semibold text-blue-600 border-b-2 border-blue-500 transition"
-                  >
-                    <button
-                    onClick={() => {setShowPosted(false),setShowConnect(false)}}
-                    className="p-1 text-gray-600"
-                    >
-                    <IoArrowBackOutline size={23} />
-                    </button>
-                        <p className="mx-auto">Connect User</p>
-                    </div>
-                ):(
-                  <div
-                  className="flex-1 flex item-center text-center px-8 py-3 font-semibold text-blue-600 border-b-2 border-blue-500"
-                  >
-                    <button
-                    onClick={() => {setShowPosted(false),setShowConnect(false)}}
-                    className="p-1 text-gray-600"
-                    >
-                    <IoArrowBackOutline size={23} />
-                    </button>
-                    <p className="mx-auto">My Own Post</p>
-                  </div>
-                )
+                            className="flex-1 flex text-center items-center px-8 py-3 font-semibold text-blue-600 border-b-2 border-blue-500 transition"
+                          >
+                            <button
+                              onClick={() => setShowMore(false)}
+                              className="p-1 text-gray-600"
+                            >
+                              <IoArrowBackOutline size={23} />
+                            </button>
+                            <p className="mx-auto">Suggest connect</p>
+                      </div>
                 ) : (
-                  
-                ["For you", "Following"].map((tab, i) => (
-                  <button
-                  key={i}
-                  className={`flex-1 text-center py-3 font-semibold hover:bg-gray-100 transition ${
-                    (i === 0 && !showConnectPost) || (i === 1 && showConnectPost)
-                    ? "text-blue-600 border-b-2 border-blue-500"
-                    : "text-gray-600"
-                  }`}
-                  onClick={() => setShowConnectPost(i === 1)}
-                  >
-                  {tab}
-                  </button>
-                ))
+                  showPostDetails === false ? (
+                    <>
+                      {(showposted === true || showConnect === true) ? (
+                        showConnect === true ? (
+                          <div
+                            className="flex-1 flex text-center items-center px-8 py-3 font-semibold text-blue-600 border-b-2 border-blue-500 transition"
+                          >
+                            <button
+                              onClick={() => { setShowPosted(false); setShowConnect(false); }}
+                              className="p-1 text-gray-600"
+                            >
+                              <IoArrowBackOutline size={23} />
+                            </button>
+                            <p className="mx-auto">Connect User</p>
+                          </div>
+                        ) : (
+                          <div
+                            className="flex-1 flex item-center text-center px-8 py-3 font-semibold text-blue-600 border-b-2 border-blue-500"
+                          >
+                            <button
+                              onClick={() => { setShowPosted(false); setShowConnect(false); }}
+                              className="p-1 text-gray-600"
+                            >
+                              <IoArrowBackOutline size={23} />
+                            </button>
+                            <p className="mx-auto">My Own Post</p>
+                          </div>
+                        )
+                      ) : (
+                        ["For you", "connecting"].map((tab, i) => (
+                          <button
+                            key={i}
+                            className={`flex-1 text-center py-3 font-semibold hover:bg-gray-100 transition ${
+                              (i === 0 && !showConnectPost) || (i === 1 && showConnectPost)
+                                ? "text-blue-600 border-b-2 border-blue-500"
+                                : "text-gray-600"
+                            }`}
+                            onClick={() => setShowConnectPost(i === 1)}
+                          >
+                            {tab}
+                          </button>
+                        ))
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-7 py-3 px-8 ">
+                      <button
+                        onClick={() => setShowPostDetails(!showPostDetails)}
+                        className="p-1 text-gray-600"
+                      >
+                        <IoArrowBackOutline size={23} />
+                      </button>
+                      <p className="text-lg font-semibold">Post</p>
+                    </div>
+                  )
                 )}
-              </>
-              ) : (
-              <div className="flex items-center gap-7 py-3 px-8 ">
-                <button
-                onClick={() => setShowPostDetails(!showPostDetails)}
-                className="p-1 text-gray-600"
-                >
-                <IoArrowBackOutline size={23} />
-                </button>
-                <p className="text-lg font-semibold">Post</p>
+              
               </div>
-              )}
-              </div>
+
               {/* Posts */}
-        {showPostDetails === false ? (
+              {showMore === true ? (
+                <div className="flex flex-col gap-4">
+                  {suggest.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center gap-4 border-b px-8 p-4 w-full"
+                  >
+                    <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
+                      {user.image ? (
+                        <img
+                          src={user.image}
+                          alt="Profile"
+                          className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-full h-full text-2xl font-medium flex items-center justify-center rounded-full border-4 border-blue-200 shadow-sm">
+                          {getInitial(user.name)}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h1 className="text-lg font-bold">{user.name}</h1>
+                      <p>
+                        {user.major_name} | {user.faculty}
+                      </p>
+                    </div>
+                    <div className="ml-auto">
+                      <button className="bg-gray-200 px-3 py-1 rounded-full text-sm font-semibold">Connect</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              ) : 
+                showPostDetails === false ? (
           <>
             {(showposted === true || showConnect === true) ? (
               showConnect === true ? (
@@ -286,7 +378,7 @@ export default function ForumMainPage() {
                           className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
                         />
                       ) : (
-                        <div className="w-full h-full text-3xl font-medium flex items-center justify-center rounded-full border-4 border-blue-200 shadow-sm">
+                        <div className="w-full h-full text-2xl font-medium flex items-center justify-center rounded-full border-4 border-blue-200 shadow-sm">
                           {getInitial(user.name)}
                         </div>
                       )}
@@ -441,7 +533,8 @@ export default function ForumMainPage() {
                           </div>
                         </div>
                       );
-                    })}
+                    })
+              }
                   </div>
               )
             ) : (
@@ -545,97 +638,107 @@ export default function ForumMainPage() {
                 {/* Posts List */}
                 {showConnectPost === true ? (
                   <div>
-                    {connectPost.map((post, i) => {
-                      const user = userMap[post.user_id];
-                      return (
-                        <div
-                          key={i}
-                          onClick={() => handlePostDetails(post)}
-                          className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
-                        >
-                          {/* Avatar */}
-                          <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
-                            {user ? user.name[0] : "?"}
-                          </div>
-                          {/* Post Content */}
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-900">
-                                {user ? user.name : "Unknown User"}
-                              </span>
-                              <span className="text-gray-400 text-xs">
-                                · {getTimeAgo(post.created_at)}
-                              </span>
-                            </div>
-                            <p>{post.subject}</p>
-                            <div className="text-gray-800 text-base pt-3 pb-1">
-                              {post.content}
-                            </div>
-                            <div className="flex items-center gap-2 mt-2">
-                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
-                                <FaRegHeart size={15} />
-                              </div>
-                              <div
-                                onClick={() => handleClickComment(post)}
-                                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
-                              >
-                                <FaRegComment size={15} />
-                              </div>
-                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
-                                <PiShareFatBold size={15} />
-                              </div>
-                            </div>
-                          </div>
+                    {loading
+                      ? Array.from({ length: 5 }).map((_, i) => <PostSkeleton key={i} />)
+                      : connectPost.length === 0 ? (
+                        <div className="text-center text-gray-500 py-10 text-lg">
+                          No connect post yet.
                         </div>
-                      );
-                    })}
+                      ) : (
+                          connectPost.map((post, i) => {
+                            const user = userMap[post.user_id];
+                            return (
+                              <div
+                                key={i}
+                                onClick={() => handlePostDetails(post)}
+                                className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                              >
+                                {/* Avatar */}
+                                <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
+                                  {user ? user.name[0] : "?"}
+                                </div>
+                                {/* Post Content */}
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-gray-900">
+                                      {user ? user.name : "Unknown User"}
+                                    </span>
+                                    <span className="text-gray-400 text-xs">
+                                      · {getTimeAgo(post.created_at)}
+                                    </span>
+                                  </div>
+                                  <p>{post.subject}</p>
+                                  <div className="text-gray-800 text-base pt-3 pb-1">
+                                    {post.content}
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                      <FaRegHeart size={15} />
+                                    </div>
+                                    <div
+                                      onClick={() => handleClickComment(post)}
+                                      className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
+                                    >
+                                      <FaRegComment size={15} />
+                                    </div>
+                                    <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                      <PiShareFatBold size={15} />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
                   </div>
                 ) : (
                   <div>
-                    {posts.map((post, i) => {
-                      const user = userMap[post.user_id];
-                      return (
-                        <div
-                          key={i}
-                          onClick={() => handlePostDetails(post)}
-                          className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
-                        >
-                          {/* Avatar */}
-                          <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
-                            {user ? user.name[0] : "?"}
-                          </div>
-                          {/* Post Content */}
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-900">
-                                {user ? user.name : "Unknown User"}
-                              </span>
-                              <span className="text-gray-400 text-xs">
-                                · {getTimeAgo(post.created_at)}
-                              </span>
-                            </div>
-                            <p>{post.subject}</p>
-                            <div className="text-gray-800 text-base pt-3 pb-1">
-                              {post.content}
-                            </div>
-                            <div className="flex items-center gap-2 mt-2">
-                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
-                                <FaRegHeart size={15} />
+                    {loading
+                      ? Array.from({ length: 5 }).map((_, i) => <PostSkeleton key={i} />)
+                      : posts.map((post, i) => {
+                          const user = userMap[post.user_id];
+                          return (
+                            <div
+                              key={i}
+                              onClick={() => handlePostDetails(post)}
+                              className="px-8 py-4 border-y flex gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                            >
+                              {/* Avatar */}
+                              <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
+                                {user ? user.name[0] : "?"}
                               </div>
-                              <div
-                                onClick={() => handleClickComment(post)}
-                                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
-                              >
-                                <FaRegComment size={15} />
-                              </div>
-                              <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
-                                <PiShareFatBold size={15} />
+                              {/* Post Content */}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-gray-900">
+                                    {user ? user.name : "Unknown User"}
+                                  </span>
+                                  <span className="text-gray-400 text-xs">
+                                    · {getTimeAgo(post.created_at)}
+                                  </span>
+                                </div>
+                                <p>{post.subject}</p>
+                                <div className="text-gray-800 text-base pt-3 pb-1">
+                                  {post.content}
+                                </div>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                    <FaRegHeart size={15} />
+                                  </div>
+                                  <div
+                                    onClick={() => handleClickComment(post)}
+                                    className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
+                                  >
+                                    <FaRegComment size={15} />
+                                  </div>
+                                  <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
+                                    <PiShareFatBold size={15} />
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
                   </div>
                 )}
               </>
@@ -791,31 +894,39 @@ export default function ForumMainPage() {
 
         {/* Who to follow */}
         <div className="bg-gray-100 rounded-2xl">
-          <h2 className="text-xl font-bold p-4">Who to follow</h2>
-          {[
-            { name: "React", handle: "@reactjs", avatar: "R" },
-            { name: "Tailwind CSS", handle: "@tailwindcss", avatar: "T" },
-            { name: "Next.js", handle: "@nextjs", avatar: "N" },
-          ].map((user, i) => (
-            <div
-              key={i}
-              className="p-4 hover:bg-gray-700/50 flex items-center justify-between"
-            >
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center mr-3">
-                  {user.avatar}
+          <h2 className="text-xl font-bold p-4">Who to Connect</h2>
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => <ConnectSkeleton key={i} />)
+            : suggest.slice(0, 4).map((user, i) => (
+                <div
+                  key={i}
+                  className="p-4 hover:bg-gray-700/50 flex items-center justify-between"
+                >
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center mr-3">
+                      {user.image ? (
+                        <img
+                          src={user.image}
+                          alt="Profile"
+                          className="w-full h-full object-cover rounded-full border-2 border-blue-200 shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-full h-full text-lg font-semibold flex items-center justify-center rounded-full border-2 shadow-sm">
+                          {getInitial(user.name)}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm over w-28">{user.name}</div>
+                      <div className="text-gray-500">{user.handle}</div>
+                    </div>
+                  </div>
+                  <button className="bg-white text-black font-semibold text-sm px-3 py-1 rounded-full hover:bg-gray-200">
+                    Connect
+                  </button>
                 </div>
-                <div>
-                  <div className="font-bold">{user.name}</div>
-                  <div className="text-gray-500">{user.handle}</div>
-                </div>
-              </div>
-              <button className="bg-white text-black font-bold px-4 py-1 rounded-full hover:bg-gray-200">
-                Follow
-              </button>
-            </div>
-          ))}
-          <div className="p-4 text-blue-500 hover:bg-gray-700/50 rounded-b-2xl cursor-pointer">
+              ))}
+          <div onClick={()=>setShowMore(true)} className="p-4 text-blue-500 hover:bg-gray-700/50 rounded-b-2xl cursor-pointer">
             Show more
           </div>
         </div>

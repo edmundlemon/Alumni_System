@@ -7,7 +7,6 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\CommentController;
-use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Api\AdminController;
@@ -65,7 +64,6 @@ Route::middleware('auth:sanctum')->post('/create_event', [EventController::class
 Route::middleware('auth:sanctum')->put('/edit_event/{event}', [EventController::class, 'update']);
 Route::middleware('auth:sanctum')->delete('/cancel_event/{event}', [EventController::class, 'cancelEvent']);
 Route::middleware('auth:sanctum')->get('/view_event/{event}', [EventController::class, 'viewSingleEvent']);
-Route::middleware('auth:sanctum')->get('/view_my_upcoming_events', [EventController::class, 'myUpcomingEvents']);
 Route::middleware('auth:sanctum')->get('/search_events', [EventController::class, 'search']);
 // Registration Routes
 Route::middleware('auth:sanctum')->get('/view_my_registrations', [RegistrationController::class, 'index']);
@@ -81,14 +79,6 @@ Route::middleware('auth:sanctum')->post('/connect/{acceptingUser}', [ConnectionC
 Route::middleware('auth:sanctum')->get('/view_pending_connections', [ConnectionController::class, 'viewPendingConnections']);
 Route::middleware('auth:sanctum')->get('/view_pending_to_accept_connections', [ConnectionController::class, 'viewPendingToAcceptConnections']);
 Route::middleware('auth:sanctum')->get('/update_connection', [ConnectionController::class, 'edit']);
-// Major Routes
-Route::middleware('auth:sanctum')->post('/create_major', [MajorController::class, 'create']);
-Route::middleware('auth:sanctum')->put('/edit_major/{major}', [MajorController::class, 'update']);
-// Faculty Routes
-Route::middleware('auth:sanctum')->get('/view_all_faculties', [FacultyController::class, 'index']);
-Route::middleware('auth:sanctum')->post('/create_faculty', [FacultyController::class, 'create']);
-Route::middleware('auth:sanctum')->put('/edit_faculty/{faculty}', [FacultyController::class, 'update']);
-Route::middleware('auth:sanctum')->delete('/delete_faculty/{faculty}', [FacultyController::class, 'destroy']);
 
 
 // Routes for logged in users

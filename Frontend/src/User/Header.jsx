@@ -53,6 +53,8 @@ function Header() {
     setLogInOut(token ? "Log Out" : "Login");
   }, [token]);
 
+  // Cookies.remove("token");
+
   const handleLoginLogout = () => {
     if (token) {
       axios
@@ -210,15 +212,15 @@ function Header() {
                 onClick={() => setProfileMenuOpen((prev) => !prev)}
               >
                 {userPhoto === null ? (
-                  <img
+                   <div className="w-11 h-11 rounded-full bg-blue-900 flex items-center justify-center text-white text-2xl font-semibold">
+                        {getInitial(userName)}
+                    </div>
+                ) : (
+                    <img
                     src={userPhoto}
                     alt="Profile"
                     className="w-11 h-11 rounded-full border-2 border-blue-300 object-cover"
                   />
-                ) : (
-                    <div className="w-11 h-11 rounded-full bg-blue-900 flex items-center justify-center text-white text-2xl font-semibold">
-                        {getInitial(userName)}
-                    </div>
                 )}
               </button>
 

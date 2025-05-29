@@ -11,15 +11,18 @@ import { BiCategory } from "react-icons/bi";
 import { IoTimeOutline } from "react-icons/io5";
 import { TiChevronLeft, TiChevronRight } from "react-icons/ti";
 import { IoReturnUpBackSharp } from "react-icons/io5";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 export default function ViewEventDetails() {
+    const token = Cookies.get('token');
     const { state } = useLocation();
     const event = state?.event;
     const eventUrl = window.location.href;
     const value = window.location.href;
     const [copied, setCopied] = useState(false);
     const [timeLeft, setTimeLeft] = useState(null);
-    const [status, setStatus] = useState(event?.status || "upcoming");
+    const [status, setStatus] = useState("");
     const [feedback, setFeedback] = useState("");
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);

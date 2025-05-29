@@ -5,10 +5,9 @@ import { FaUser } from "react-icons/fa";
 import { PiUploadThin } from "react-icons/pi";
 import Select from "react-select";
 import countryList from "react-select-country-list";
-
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-
+import { BsInfoSquareFill } from "react-icons/bs";
 // Import profile images (preset picks)
 import img from "../assets/profile/img_1.jpeg";
 import img1 from "../assets/profile/img_2.jpeg";
@@ -116,6 +115,18 @@ export default function UpdateProfile() {
     }
   };
 
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Success tips content
+  const successTips = [
+    "Use a clear profile picture for better recognition",
+    "Keep your bio concise but informative",
+    "Update your current position for networking opportunities",
+    "Add your education details to connect with alumni",
+    "Include your country to help with location-based networking",
+    "Verify your contact information is up-to-date"
+  ];
+
   const updateProfile = async (e) => {
     e.preventDefault();
     const payload = new FormData();
@@ -185,9 +196,30 @@ export default function UpdateProfile() {
             )}
             <p className="text-red-600 text-xs">{errors.image}</p>
           </div>
-          <h1 className="text-4xl font-semibold absolute top-0 left-10">
-            {loading ? <Skeleton width={250} /> : "UPDATE PROFILE"}
-          </h1>
+           <div className="absolute top-0 left-10 flex items-center gap-4 font-semibold">
+            <h1 className="text-4xl font-semibold">UPDATE PROFILE</h1>
+            <div 
+              className="relative group"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <BsInfoSquareFill 
+                className="text-blue-900 cursor-pointer hover:text-blue-700 transition-colors" 
+                size={29} 
+              />
+              {/* Tooltip */}
+              {showTooltip && (
+                <div className="absolute top-0 left-full ml-2 w-72 p-4 bg-white border border-blue-200 rounded-lg shadow-xl z-50">
+                  <h3 className="font-bold text-blue-800 mb-2">Profile Success Tips:</h3>
+                  <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                    {successTips.map((tip, index) => (
+                      <li key={index}>{tip}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Upload Button */}
@@ -222,15 +254,25 @@ export default function UpdateProfile() {
 
         {/* Form Content */}
         {loading ? (
-          <div className="px-10 mt-10">
-            <Skeleton count={10} height={40} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-10 mt-10">
+          {[...Array(12)].map((_, i) => (
+            <Skeleton key={i} height={40} />
+          ))}
+          <div className="md:col-span-2">
+            <Skeleton height={100} /> {/* Bio field */}
           </div>
+          <div className="md:col-span-2 flex justify-end gap-4 mt-4">
+            <Skeleton width={100} height={40} />
+            <Skeleton width={150} height={40} />
+          </div>
+        </div>
         ) : (
           <form onSubmit={updateProfile}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-10">
               <Input label="Full Name" value={user?.name} readOnly />
               <Input label="Email Address" value={user?.email} readOnly />
-              <Input
+              <div>
+                <Input
                 label="Phone Number"
                 value={changeUserData.phone}
                 onChange={(e) =>
@@ -241,6 +283,7 @@ export default function UpdateProfile() {
                 }
               />
               <p className="text-red-600 text-xs">{errors.phone}</p>
+              </div>
               <Input label="Role" value={user?.role} readOnly />
 
               <div className="flex flex-col gap-2">
@@ -286,7 +329,7 @@ export default function UpdateProfile() {
                 )}
                 <p className="text-red-600 text-xs">{errors.home_country}</p>
               </div>
-
+                
               <div className="flex flex-col gap-2">
                 <label className="py-0">Education Level</label>
                 <Select
@@ -301,12 +344,13 @@ export default function UpdateProfile() {
                     }))
                   }
                 />
-                <p className="text-red-600 text-xs">{errors.education_level}</p>
+                <p className="text-red-600 text-xs">{errors.educationLevel}</p>
               </div>
 
               <Input label="Major" value={user?.major_name} readOnly />
               <Input label="Faculty" value={user?.faculty} readOnly />
-              <Input
+             <div>
+               <Input
                 label="Company Name"
                 value={changeUserData.company}
                 onChange={(e) =>
@@ -317,7 +361,9 @@ export default function UpdateProfile() {
                 }
               />
               <p className="text-red-600 text-xs">{errors.company}</p>
-              <Input
+             </div>
+              <div>
+                <Input
                 label="Position"
                 value={changeUserData.position}
                 onChange={(e) =>
@@ -328,6 +374,7 @@ export default function UpdateProfile() {
                 }
               />
               <p className="text-red-600 text-xs">{errors.position}</p>
+              </div>
               <Input
                 label="Job Title"
                 value={changeUserData.job_title}
@@ -340,7 +387,23 @@ export default function UpdateProfile() {
               />
               <p className="text-red-600 text-xs">{errors.job_title}</p>
             </div>
-
+                {/* Bio field - spans two columns */}
+          <div className=" px-10">
+            <label className="block mb-2 font-medium">Bio</label>
+            <textarea
+              rows={4}
+              value={changeUserData.bio}
+              onChange={(e) =>
+                setChangeUserData((prev) => ({
+                  ...prev,
+                  bio: e.target.value,
+                }))
+              }
+              className="w-full border border-gray-300 rounded px-4 py-2 resize-none"
+              placeholder="Write something about yourself..."
+            />
+            <p className="text-red-600 text-xs">{errors.bio}</p>
+          </div>
             {/* Buttons */}
             <div className="flex gap-6 justify-end w-full font-semibold px-10 mt-7">
               <button
@@ -357,6 +420,7 @@ export default function UpdateProfile() {
                 Save & Change
               </button>
             </div>
+            
           </form>
         )}
 
