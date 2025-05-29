@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { FaUser } from "react-icons/fa";
@@ -25,6 +26,7 @@ import img11 from "../assets/profile/img_12.jpeg";
 import img12 from "../assets/profile/img_13.jpeg";
 import img13 from "../assets/profile/img_14.jpeg";
 import img14 from "../assets/profile/img_15.jpeg";
+import { redirect } from "react-router-dom";
 
 export default function UpdateProfile() {
   const profileImages = [
@@ -32,6 +34,8 @@ export default function UpdateProfile() {
     img8, img9, img10, img11, img12, img13, img14,
   ];
 
+  const navigate = useNavigate();
+  const location = useLocation();
   const token = Cookies.get("token");
   const userId = Cookies.get("userId");
   const fileInputRef = useRef(null);
@@ -157,6 +161,8 @@ export default function UpdateProfile() {
       console.log("Profile updated successfully:", response.data);
       setUser((prev) => ({ ...prev, ...changeUserData }));
       alert("Profile updated!");
+      // Redirect to forum main page
+      navigate("/forumMainPage");
     } catch (error) {
       setErrors(error.response?.data?.errors || []);
       console.error("Error updating profile:", error);

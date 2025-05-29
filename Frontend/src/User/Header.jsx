@@ -69,9 +69,9 @@ function Header() {
         .catch((error) => {
           console.error("Logout error:", error);
         });
-    } else {
-      navigate("/userLogin");
     }
+    Cookies.remove("token");
+    navigate("/userLogin");
   };
 
   const handleResetSubmit = (event) => {

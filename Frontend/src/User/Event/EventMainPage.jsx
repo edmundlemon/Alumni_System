@@ -152,8 +152,10 @@ export default function EventMainPage() {
           },
         }
       );
+      alert("Successfully registered for the event!");
       console.log("Register successful:", response.data);
     } catch (error) {
+      alert(error.response?.data?.message || "Error registering for event");
       console.error("Error connecting with alumni:", error);
     }
   }

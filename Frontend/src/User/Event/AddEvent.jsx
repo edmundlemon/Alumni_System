@@ -10,6 +10,7 @@ export default function AddEvent() {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
     const user_id = Cookies.get("userId");
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         event_title: '',
         event_mode: '',
