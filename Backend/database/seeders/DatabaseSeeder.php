@@ -100,13 +100,13 @@ class DatabaseSeeder extends Seeder
             'user_id' => User::inRandomOrder()->first()->id,
             'discussion_id' => Discussion::inRandomOrder()->value('id'),
         ]);
-        Event::factory()->count(10)->create([
-            'user_id' => User::inRandomOrder()->value('id'),
-        ]);
-        Event::factory()->count(5)->create([
+        Event::factory()->count(5)->withRegistrations(2)->create([
             'user_id' => 1221, // Admin user
             // Seed date where its past events
             'event_date' => now()->subDays(rand(1, 30)),
+        ]);
+        Event::factory()->count(10)->withRegistrations(2)->create([
+            'user_id' => User::inRandomOrder()->value('id'),
         ]);
 
         DonationPost::factory()->count(2)->create();
