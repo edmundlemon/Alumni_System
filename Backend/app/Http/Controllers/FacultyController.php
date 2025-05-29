@@ -41,7 +41,7 @@ class FacultyController extends Controller
 
         $faculty = faculty::create([
             'faculty_name' => $request->faculty_name,
-            'admin_id' => $admin->id,
+            // 'admin_id' => $admin->id,
         ]);
 
         return response()->json([

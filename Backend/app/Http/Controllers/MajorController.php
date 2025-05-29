@@ -71,6 +71,21 @@ class MajorController extends Controller
     public function update(Request $request, Major $major)
     {
         //
+        $user = Auth::guard('sanctum')->user();
+        if(!$user->hasRole('admin')) {
+            return response()->json([
+                'error' => 'You are not authorized to perform this action',
+            ], 403);
+        }
+
+        $request->validate([
+            'major_name' => 'required|string|max:255',
+        ]);
+
+        $major->major_name = $request->major_name;
+        $major->save();
+
+        return response()->json($major, 200);
     }
 
     /**
@@ -79,5 +94,6 @@ class MajorController extends Controller
     public function destroy(Major $major)
     {
         //
+
     }
 }

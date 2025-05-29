@@ -140,7 +140,17 @@ class EventController extends Controller
             'events' => $events,
         ], 200);
     }
+    public function myUpcomingEvents()
+    {
+        $user = Auth::guard('sanctum')->user();
+        $events = Event::where('user_id', $user->id)->latest()->get();
 
+        return response()->json([
+            'status' => true,
+            'message' => 'Your events fetched successfully',
+            'events' => $events,
+        ], 200);
+    }
     public function viewSingleEvent(Event $event)
     {
         $event = Event::where('id', $event->id)->with('attendees')->first();
