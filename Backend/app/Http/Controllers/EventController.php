@@ -6,6 +6,7 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendEventCancelledEmail;
 
 class EventController extends Controller
 {
@@ -210,7 +211,12 @@ class EventController extends Controller
                 'message' => 'You are not authorized to delete this event',
             ], 403);
         }
-        $event->delete();
+        $affectedAttendees = $event->attendees()->with('user')->get();
+        $event->update(['status' => 'cancelled']);
+        // Dispatch job to send cancellation email
+        // Dispatch job to send cancellation email
+        SendEventCancelledEmail::dispatch($affectedAttendees, $event);
+        // Log::info("Cancellation email sent to: {$attendee->user->email} for event: {$event->event_title}");
         return response()->json([
             'status' => true,
             'message' => 'Event deleted successfully',

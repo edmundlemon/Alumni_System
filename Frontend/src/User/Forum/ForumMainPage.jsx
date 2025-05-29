@@ -46,6 +46,7 @@ export default function ForumMainPage() {
   const [connectUser, setConnectUser] = useState([]);
   const [showposted, setShowPosted] = useState(false);
   const [ownPost, setOwnPost] = useState([]);
+  const hasFetched = useRef(false);
   const [suggest, setSuggest] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
@@ -158,6 +159,9 @@ export default function ForumMainPage() {
       }
     };
 
+    if (!hasFetched.current) {
+    hasFetched.current = true;
+
     if (token) {
       setLoading(true);
       getPostsAndUsers();
@@ -165,6 +169,7 @@ export default function ForumMainPage() {
       console.error("No token found, user might not be authenticated");
       navigate("/403");
     }
+  }
   }, [token, navigate]);
 
   useEffect(() => {

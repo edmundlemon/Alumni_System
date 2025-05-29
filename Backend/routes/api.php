@@ -62,12 +62,12 @@ Route::middleware('auth:sanctum')->get('/view_past_events', [EventController::cl
 Route::middleware('auth:sanctum')->get('/view_upcoming_events', [EventController::class, 'viewUpcomingEvents']);
 Route::middleware('auth:sanctum')->post('/create_event', [EventController::class, 'create']);
 Route::middleware('auth:sanctum')->put('/edit_event/{event}', [EventController::class, 'update']);
-Route::middleware('auth:sanctum')->delete('/cancel_event/{event}', [EventController::class, 'cancelEvent']);
+Route::middleware('auth:sanctum')->delete('/cancel_event/{event}', [EventController::class, 'destroy']);
 Route::middleware('auth:sanctum')->get('/view_event/{event}', [EventController::class, 'viewSingleEvent']);
 Route::middleware('auth:sanctum')->get('/search_events', [EventController::class, 'search']);
 // Registration Routes
 Route::middleware('auth:sanctum')->get('/view_my_registrations', [RegistrationController::class, 'index']);
-Route::middleware('auth:sanctum')->post('/register_for_event/{$event}', [RegistrationController::class, 'create']);
+Route::middleware('auth:sanctum')->post('/register_for_event/{event}', [RegistrationController::class, 'create']);
 Route::middleware('auth:sanctum')->delete('/delete_registration/{registration}', [RegistrationController::class, 'destroy']);
 // Feedback Routes
 Route::middleware('auth:sanctum')->post('/give_feedback/{event}', [FeedbackController::class, 'create']);
