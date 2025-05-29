@@ -44,6 +44,7 @@ export default function ForumMainPage() {
   const [connectUser, setConnectUser] = useState([]);
   const [showposted, setShowPosted] = useState(false);
   const [ownPost, setOwnPost] = useState([]);
+  const hasFetched = useRef(false);
 
   const getTimeAgo = (dateString) => {
     const date = new Date(dateString);
@@ -147,12 +148,16 @@ export default function ForumMainPage() {
       }
     };
 
+    if (!hasFetched.current) {
+    hasFetched.current = true;
+
     if (token) {
       getPostsAndUsers();
     } else {
       console.error("No token found, user might not be authenticated");
       navigate("/403");
     }
+  }
   }, [token, navigate]);
 
   useEffect(() => {
