@@ -1,31 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"
+import axios from "axios"
+import Cookies from "js-cookie"
 import { FaUpload, FaTimes } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { IoInformationCircle } from "react-icons/io5";
 
-export default function AddDonation({ onClose }) {
-  const [formData, setFormData] = useState({
-    donation_title: "",
-    description: "",
-    target_amount: "",
-    end_date: "",
-    photo: null,
-    previewImage: null,
-    fileName: "",
-  });
+export default  function EditDonation({onClose, donation}){
+    const [formData, setFormData] = useState({
+        donation_title: donation.donation_title || "",
+        description: donation.description || "",
+        target_amount: donation.target_amount || "",
+        end_date: donation.end_date || "",
+        photo: null,
+        previewImage: null,
+        fileName: donation.photo || "",
+    });
+    const donationId = donation.id; 
+    const token = Cookies.get("adminToken");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Submitted Donation Data:", formData);
-    // TODO: Add your API submission logic
-  };
-
-  const handleImageChange = (e) => {
+    const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFormData((prev) => ({
@@ -45,14 +43,52 @@ export default function AddDonation({ onClose }) {
       fileName: "",
     }));
   };
+  useEffect(() => {
+    console.log("Donation photo changed:", donation.photo);
+  if (donation.photo && !formData.previewImage) {
+    setFormData((prev) => ({
+      ...prev,
+      previewImage: `http://localhost:8000/storage/${donation.photo}`, // adjust if your URL is different
+      fileName: donation.photo,
+    }));
+  }
+}, [donation.photo]);
 
-  return (
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const formDataToSend = new FormData();
+        formDataToSend.append("donation_title", formData.donation_title);
+        formDataToSend.append("description", formData.description);
+        formDataToSend.append("target_amount", formData.target_amount);
+        formDataToSend.append("end_date", formData.end_date);
+        formDataToSend.append("_method", "PUT");
+        if (formData.photo) {
+            formDataToSend.append("photo", formData.photo);
+        }
+
+        axios.post(`http://localhost:8000/api/edit_donation_post/${donationId}`, formDataToSend, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+            },
+        })
+        .then(response => {
+            console.log("Donation updated successfully:", response.data);
+            onClose();
+        })
+        .catch(error => {
+            console.error("Error updating donation:", error);
+        });
+    }
+
+    return (
     <div className="flex flex-col justify-between h-full">
       <form onSubmit={handleSubmit} className="flex flex-col justify-between h-full">
         <div className="space-y-2 ">
             <div className="flex items-center justify-between mb-4">
                 <h1 className="font-bold text-2xl flex gap-2 items-center">
-                Create Donation
+                Edit Donation
                 <div className="relative group">
                     <IoInformationCircle className="text-blue-900 cursor-pointer" />
                     <div className="absolute -top-2 left-8 w-64 z-50 hidden group-hover:block">
@@ -175,7 +211,7 @@ export default function AddDonation({ onClose }) {
             type="submit"
             className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-md"
           >
-            Create Donation
+            Save & Change
           </button>
         </div>
       </form>

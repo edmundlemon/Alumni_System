@@ -36,7 +36,7 @@ export default function DonationMainPage() {
 
     const fetchDonations = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/view_all_donations', {
+        const response = await axios.get('http://localhost:8000/api/view_all_donation_posts', {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log(response.data);

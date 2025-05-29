@@ -10,7 +10,8 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
 import { FiEdit3 } from "react-icons/fi";
-
+import AddDonation from "./AddDonation";
+import EditDonation from "./EditDonation";
 
 export default function DonationTable() {
   const navigate = useNavigate();
@@ -23,6 +24,10 @@ export default function DonationTable() {
   const itemsPerPage = 10;
   const printRef = useRef();
   const token = Cookies.get("adminToken");
+  const [showAddDonation, setShowAddDonation] = useState(false);
+  const [showEditDonation, setShowEditDonation] = useState(false);
+  const [selectedDonationId, setSelectedDonationId] = useState(null);
+  const viewportHeight = window.innerHeight;
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -52,9 +57,16 @@ export default function DonationTable() {
     }
   }, [token, navigate]);
 
+  const handleViewDonation = (donation) => {
+    setSelectedDonationId(donation);
+    setShowEditDonation(true);
+  };
+
   const filteredDonations = donations.filter(
     (donation) =>
-      donation.donation_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      donation.donation_title
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       donation.status?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -143,7 +155,10 @@ export default function DonationTable() {
             <BiExport size={16} />
             Export
           </button>
-          <button className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs">
+          <button
+            onClick={() => setShowAddDonation(!showAddDonation)}
+            className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs"
+          >
             <FaPlus size={10} />
             <span>Add Donation</span>
           </button>
@@ -160,28 +175,33 @@ export default function DonationTable() {
                   onChange={(e) => handleSelectAll(e.target.checked)}
                   checked={
                     displayDonations.length > 0 &&
-                    displayDonations.every((d) =>
-                      selectDonation.includes(d.id)
-                    )
+                    displayDonations.every((d) => selectDonation.includes(d.id))
                   }
                 />
               </th>
-              {["id", "admin_id", "donation_title", "Raise" ,"Target", "status", "created_at","Action"].map(
-                (key) => (
-                  <th
-                    key={key}
-                    className={`p-2 border-b text-left cursor-pointer ${
-                      key === "Action" ? "rounded-tr-md" : ""
-                    }`}
-                    onClick={() => handleSort(key)}
-                  >
-                    <p className="flex items-center gap-2 capitalize">
-                      {key.replace("_", " ")} 
-                      {key !== "Action" && <BiSortAlt2 size={20} />}
-                    </p>
-                  </th>
-                )
-              )}
+              {[
+                "id",
+                "admin_id",
+                "donation_title",
+                "Raise",
+                "Target",
+                "created_at",
+                "status",
+                "Action",
+              ].map((key) => (
+                <th
+                  key={key}
+                  className={`p-2 border-b text-left cursor-pointer ${
+                    key === "Action" ? "rounded-tr-md" : ""
+                  }`}
+                  onClick={() => handleSort(key)}
+                >
+                  <p className="flex items-center gap-2 capitalize">
+                    {key.replace("_", " ")}
+                    {key !== "Action" && <BiSortAlt2 size={20} />}
+                  </p>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -214,26 +234,42 @@ export default function DonationTable() {
                     </td>
                     <td className="px-2 py-3 text-left">{donation.id}</td>
                     <td className="px-2 py-3 text-left">{donation.admin_id}</td>
-                    <td className="px-2 py-3 text-left">{donation.donation_title}</td>
-                    <td className="px-2 py-3 text-left">{donation.current_amount}</td>
-                    <td className="px-2 py-3 text-left">{donation.target_amount}</td>
-                    {
-                      donation.status === "completed" ? (
-                        <td>
-                          <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">Close</span>
-                        </td>
-                      ) : (
-                        <td >
-                           <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">{donation.status}</span>
-                        </td>
-                      )
-                    }
+                    <td className="px-2 py-3 text-left">
+                      {donation.donation_title}
+                    </td>
+                    <td className="px-2 py-3 text-left">
+                      {donation.current_amount}
+                    </td>
+                    <td className="px-2 py-3 text-left">
+                      {donation.target_amount}
+                    </td>
                     <td className="px-2 py-3 text-left">
                       {new Date(donation.created_at).toLocaleDateString()}
                     </td>
+
+                    {donation.status === "completed" ? (
+                      <td>
+                        <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">
+                          Close
+                        </span>
+                      </td>
+                    ) : (
+                      <td>
+                        <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">
+                          {donation.status}
+                        </span>
+                      </td>
+                    )}
                     <td className="flex px-2 pt-3 gap-2">
-                      <button className="p-1 rounded border border-gray-300 shadow" onClick={() => handleViewUser(user)}><FiEdit3 /></button>
-                      <button className="p-1 rounded border border-gray-300 shadow"><MdDeleteOutline /></button>
+                      <button
+                        className="p-1 rounded border border-gray-300 shadow"
+                        onClick={() => handleViewDonation(donation)}
+                      >
+                        <FiEdit3 />
+                      </button>
+                      <button className="p-1 rounded border border-gray-300 shadow">
+                        <MdDeleteOutline />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -277,6 +313,29 @@ export default function DonationTable() {
           </button>
         </div>
       </div>
+      {showAddDonation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
+          <div
+            className="bg-[#F8FAFC] rounded-lg p-6 w-[50%] "
+            style={{ height: `${viewportHeight-30}px` }}
+          >
+            <AddDonation onClose={() => setShowAddDonation(false)} />
+          </div>
+        </div>
+      )}
+      {showEditDonation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
+          <div
+            className="bg-[#F8FAFC] rounded-lg p-6 w-[50%] "
+            style={{ height: `${viewportHeight - 30}px` }}
+          >
+            <EditDonation
+              onClose={() => setShowEditDonation(false)}
+              donation={selectedDonationId}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

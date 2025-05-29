@@ -69,42 +69,50 @@ export default function AddEvent() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-  const payload = new FormData();
-  payload.append("event_title", formData.event_title);
-  payload.append("event_mode", formData.event_mode);
-  payload.append("description", formData.description);
-  payload.append("event_date", formData.event_date);
-  payload.append("event_time", formData.event_time);
-  payload.append("registration_close_date", formData.registration_close_date);
-  payload.append("max_participants", formData.noLimit ? '' : formData.max_participants);
-  payload.append("location", formData.location);
+        const payload = new FormData();
+        payload.append("event_title", formData.event_title);
+        payload.append("event_mode", formData.event_mode);
+        payload.append("description", formData.description);
+        payload.append("event_date", formData.event_date);
+        payload.append("event_time", formData.event_time);
+        payload.append("registration_close_date", formData.registration_close_date);
+        payload.append("max_participant", formData.noLimit ? '' : formData.max_participant);
+        payload.append("location", formData.location);
+        if (formData.photo) {
+            payload.append("photo", formData.photo);
+        }
 
-  if (formData.image) {
-    payload.append("image", formData.image);
-  }
+        // ✅ Debug FormData
+        console.log("FormData Payload:");
+        for (let [key, value] of payload.entries()) {
+            console.log(`${key}:`, value);
+        }
 
-  try {
-    const response = await axios.post(
-      "http://localhost:8000/api/create_event",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    navigate("/user/event");
-  } catch (error) {
-    setErrors(error.response?.data?.errors || []);
-    console.error("Full error:", error);
-    if (error.response?.data?.message) {
-      alert(`Error: ${error.response.data.message}`);
-    } else {
-      alert("An unexpected error occurred. Please check the console for details.");
-    }
-  }
-};
+        try {
+            const response = await axios.post(
+                "http://localhost:8000/api/create_event",
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            navigate("/user/event");
+        } catch (error) {
+            console.error("Full error:", error);
+
+            if (error.response?.status === 422) {
+                console.log("Validation Errors:", error.response.data.errors);
+                alert("Validation failed. Check console for details.");
+            } else if (error.response?.data?.message) {
+                alert(`Error: ${error.response.data.message}`);
+            } else {
+                alert("An unexpected error occurred. Check the console.");
+            }
+        }
+    };
 
 
 

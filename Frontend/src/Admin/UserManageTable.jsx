@@ -30,6 +30,7 @@ export default function UserManageTable() {
   const [showAddUser, setShowAddUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const printRef = useRef();
+  const viewportHeight = window.innerHeight;
 
   useEffect(() => {
     const getUsers = async () => {
@@ -297,17 +298,17 @@ export default function UserManageTable() {
 
       {showUserProfile && (
         <>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
           <div
-            className="fixed inset-0 bg-black bg-opacity-70 z-40"
-            onClick={() => setShowUserProfile(false)}
-          ></div>
-          <div
-            className={`fixed top-0 right-0 h-screen w-[50%] z-50 bg-white shadow-lg rounded-l-xl transform transition-transform duration-100 ease-in-out translate-x-0`}
+            className="bg-[#F8FAFC] rounded-lg w-[50%] "
+            style={{ height: `${viewportHeight - 30}px` }}
           >
             <UserProfile
+            height= {viewportHeight}
               user={selectedUserId}
               onClose={() => setShowUserProfile(false)}
             />
+          </div>
           </div>
         </>
       )}

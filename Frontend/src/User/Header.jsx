@@ -368,8 +368,8 @@ function Header() {
       onSubmit={handleResetSubmit}
       className="bg-white p-6 rounded-lg shadow-lg w-96"
     >
-      <h2 className="text-xl font-semibold mb-2">Request OTP Link</h2>
-      <p className="mb-4 text-sm text-gray-600">Enter your email to receive an OTP.</p>
+      <h2 className="text-xl font-semibold mb-2">Request Reset Password Link</h2>
+      <p className="mb-4 text-sm text-gray-600">Enter your email to receive a reset link.</p>
 
       <input
         type="email"
@@ -400,7 +400,7 @@ function Header() {
           type="submit"
           className="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800"
         >
-          Send OTP Link
+          Send Link
         </button>
       </div>
     </form>

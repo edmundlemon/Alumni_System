@@ -11,7 +11,7 @@ import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { FiEdit3 } from "react-icons/fi";
-
+import ViewForum from "./ViewForum";
 
 export default function ForumTable() {
   const navigate = useNavigate();
@@ -24,6 +24,9 @@ export default function ForumTable() {
   const itemsPerPage = 10;
   const printRef = useRef();
   const token = Cookies.get("adminToken");
+  const viewportHeight = window.innerHeight;
+  const [showForum, setShowForum] = useState(false);
+  const [selectedForumID, setSelectedForumID] = useState(null);
 
   useEffect(() => {
     const fetchForum = async () => {
@@ -50,6 +53,11 @@ export default function ForumTable() {
       navigate("/403");
     }
   }, [token, navigate]);
+
+  const handleViewForum = (forum) => {
+    setSelectedForumID(forum);
+    setShowForum(true);
+  };
 
   // Table columns for forums
   const columns = [
@@ -224,7 +232,7 @@ export default function ForumTable() {
                         : ""}
                     </td>
                     <td className="flex px-2 pt-3 gap-2">
-                                          <button className="p-1 rounded border border-gray-300 shadow" onClick={() => handleViewUser(user)}><FiEdit3 /></button>
+                                          <button className="p-1 rounded border border-gray-300 shadow" onClick={() => handleViewForum(forum)}><FiEdit3 /></button>
                                           <button className="p-1 rounded border border-gray-300 shadow"><MdDeleteOutline /></button>
                                         </td>
                   </tr>
@@ -270,7 +278,19 @@ export default function ForumTable() {
             </button>
           </div>
         </div>
-
+             {showForum && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
+                      <div
+                        className="bg-[#F8FAFC] rounded-lg w-[50%] "
+                        style={{ height: `${viewportHeight - 30}px` }}
+                      >
+                        <ViewForum
+                          onClose={() => setShowForum(false)}
+                          forum={selectedForumID}
+                        />
+                      </div>
+                    </div>
+                  )}
     </div>
   );
 }

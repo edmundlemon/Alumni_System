@@ -12,7 +12,8 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-
+import { FiEdit3 } from "react-icons/fi";
+import ViewEventA from "./ViewEvent";
 
 export default function EventTable() {
   const navigate = useNavigate();
@@ -25,6 +26,14 @@ export default function EventTable() {
   const itemsPerPage = 10;
   const printRef = useRef();
   const token = Cookies.get("adminToken");
+  const [showEvent, setShowEvent] = useState(false);
+  const [selectEventId, setSelectEventId] = useState(null);
+  const viewportHeight = window.innerHeight;
+
+  const handleViewEvent = (event) => {
+    setSelectEventId(event);
+    setShowEvent(true);
+  };
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -57,11 +66,11 @@ export default function EventTable() {
     }
   }, [token, navigate]);
 
-  const filteredEvent = events.filter(
-    (user) =>
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEvent = events.filter((event) =>
+  event.event_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  event.host_name?.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
 
   const sortedEvent = [...filteredEvent].sort((a, b) => {
     const aValue = a[sortCriteria.key];
@@ -173,7 +182,7 @@ export default function EventTable() {
                   }
                 />
               </th>
-              {["id", "email", "name", "role", "status", "created_at","Action"].map(
+              {["id", "event_title", "host_name", "location", "created_at", "status", "Action"].map(
                 (key) => (
                   <th
                     key={key}
@@ -224,21 +233,32 @@ export default function EventTable() {
                         {event.id}
                       </button>
                     </td>
-                    <td className="px-2 py-3 text-left">{event.email}</td>
-                    <td className="px-2 py-3 text-left">{event.name}</td>
-                    <td className="px-2 py-3 text-left">{event.role}</td>
-                    <td className="px-2 py-3 text-left">
-                      {
-                        event.account_status === "active" ? (
-                          <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">Active</span>
-                        ) : (
-                          <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">Inactive</span>
-                        )
-                      }
-                    </td>
+                    <td className="px-2 py-3 text-left">{event.event_title}</td>
+                    <td className="px-2 py-3 text-left">{event.host_name}</td>
+                    <td className="px-2 py-3 text-left">{event.location}</td>
                     <td className="px-2 py-3 text-left">
                       {new Date(event.created_at).toLocaleDateString()}
                     </td>
+                    <td className="px-2 py-3 text-left">
+                      {
+                        event.status === "upcoming" ? (
+                          <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">{event.status}</span>
+                        ) : (
+                          <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">{event.status}</span>
+                        )
+                      }
+                    </td>
+                     <td className="flex px-2 pt-3 gap-2">
+                                          <button
+                                            className="p-1 rounded border border-gray-300 shadow"
+                                            onClick={() => handleViewEvent(event)}
+                                          >
+                                            <FiEdit3 />
+                                          </button>
+                                          <button className="p-1 rounded border border-gray-300 shadow">
+                                            <MdDeleteOutline />
+                                          </button>
+                                        </td>
                   </tr>
                 ))}
           </tbody>
@@ -281,6 +301,19 @@ export default function EventTable() {
           </button>
         </div>
       </div>
+      {showEvent && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
+                <div
+                  className="bg-[#F8FAFC] rounded-lg p-6 w-[50%] "
+                  style={{ height: `${viewportHeight - 30}px` }}
+                >
+                  <ViewEventA
+                    onClose={() => setShowEvent(false)}
+                    event={selectEventId}
+                  />
+                </div>
+              </div>
+            )}
     </div>
   );
 }
