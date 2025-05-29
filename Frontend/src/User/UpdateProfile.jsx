@@ -38,7 +38,8 @@ export default function UpdateProfile() {
 
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [chnageUserData, setChangeUserData] = useState({
+  const [errors, setErrors] = useState([]);
+  const [changeUserData, setChangeUserData] = useState({
     image: "",
     imageFile: null,
     bio: "",
@@ -119,21 +120,31 @@ export default function UpdateProfile() {
     e.preventDefault();
     const payload = new FormData();
 
-    payload.append("bio", chnageUserData.bio);
-    payload.append("phone", chnageUserData.phone);
-    payload.append("home_country", chnageUserData.home_country);
-    payload.append("internationality", chnageUserData.internationality);
-    payload.append("educationLevel", chnageUserData.educationLevel);
-    payload.append("company", chnageUserData.company);
-    payload.append("position", chnageUserData.position);
-    payload.append("job_title", chnageUserData.job_title);
+    payload.append("bio", changeUserData.bio);
+    payload.append("phone", changeUserData.phone);
+    payload.append("home_country", changeUserData.home_country);
+    payload.append("internationality", changeUserData.internationality);
+    payload.append("educationLevel", changeUserData.educationLevel);
+    payload.append("company", changeUserData.company);
+    payload.append("position", changeUserData.position);
+    payload.append("job_title", changeUserData.job_title);
+    payload.append("default_image", profileImages); // Default image if none selected
+    payload.append("_method", "PUT");
 
-    if (chnageUserData.imageFile) {
-      payload.append("image", chnageUserData.imageFile);
+    if (changeUserData.imageFile) {
+      payload.append("image", changeUserData.imageFile);
     }
-
+    else{
+      payload.append("image", changeUserData.image || ""); // Ensure image is always set
+    }
+    console.log("User ID:", userId);
+    console.log("Updating profile with data:", changeUserData);
+    // Printing all FormData entries for debugging
+    for (let pair of payload.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
     try {
-      const response = await axios.put(
+      const response = await axios.post(
         `http://localhost:8000/api/edit_users/${userId}`,
         payload,
         {
@@ -144,9 +155,10 @@ export default function UpdateProfile() {
         }
       );
       console.log("Profile updated successfully:", response.data);
-      setUser((prev) => ({ ...prev, ...chnageUserData }));
+      setUser((prev) => ({ ...prev, ...changeUserData }));
       alert("Profile updated!");
     } catch (error) {
+      setErrors(error.response?.data?.errors || []);
       console.error("Error updating profile:", error);
       alert("Failed to update profile. Check console.");
     }
@@ -160,9 +172,9 @@ export default function UpdateProfile() {
           <div className="w-44 h-44 rounded-full bg-blue-100 overflow-hidden border-4 border-blue-300 shadow">
             {loading ? (
               <Skeleton height="100%" width="100%" className="rounded-full" />
-            ) : chnageUserData.image ? (
+            ) : changeUserData.image ? (
               <img
-                src={chnageUserData.image}
+                src={changeUserData.image}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -171,6 +183,7 @@ export default function UpdateProfile() {
                 <FaUser size={100} />
               </div>
             )}
+            <p className="text-red-600 text-xs">{errors.image}</p>
           </div>
           <h1 className="text-4xl font-semibold absolute top-0 left-10">
             {loading ? <Skeleton width={250} /> : "UPDATE PROFILE"}
@@ -219,7 +232,7 @@ export default function UpdateProfile() {
               <Input label="Email Address" value={user?.email} readOnly />
               <Input
                 label="Phone Number"
-                value={chnageUserData.phone}
+                value={changeUserData.phone}
                 onChange={(e) =>
                   setChangeUserData((prev) => ({
                     ...prev,
@@ -227,6 +240,7 @@ export default function UpdateProfile() {
                   }))
                 }
               />
+              <p className="text-red-600 text-xs">{errors.phone}</p>
               <Input label="Role" value={user?.role} readOnly />
 
               <div className="flex flex-col gap-2">
@@ -234,7 +248,7 @@ export default function UpdateProfile() {
                 <Select
                   options={internationality}
                   value={internationality.find(
-                    (opt) => opt.value === chnageUserData.internationality
+                    (opt) => opt.value === changeUserData.internationality
                   )}
                   onChange={(selected) =>
                     setChangeUserData((prev) => ({
@@ -249,7 +263,7 @@ export default function UpdateProfile() {
 
               <div className="flex flex-col gap-2">
                 <label className="py-0">Home Country</label>
-                {chnageUserData.internationality === "malaysia" ? (
+                {changeUserData.internationality === "malaysia" ? (
                   <input
                     type="text"
                     value="Malaysia"
@@ -260,7 +274,7 @@ export default function UpdateProfile() {
                   <Select
                     options={countryOptions}
                     value={countryOptions.find(
-                      (c) => c.value === chnageUserData.home_country
+                      (c) => c.value === changeUserData.home_country
                     )}
                     onChange={(selected) =>
                       setChangeUserData((prev) => ({
@@ -270,6 +284,7 @@ export default function UpdateProfile() {
                     }
                   />
                 )}
+                <p className="text-red-600 text-xs">{errors.home_country}</p>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -277,7 +292,7 @@ export default function UpdateProfile() {
                 <Select
                   options={educationLevel}
                   value={educationLevel.find(
-                    (opt) => opt.value === chnageUserData.educationLevel
+                    (opt) => opt.value === changeUserData.educationLevel
                   )}
                   onChange={(selected) =>
                     setChangeUserData((prev) => ({
@@ -286,13 +301,14 @@ export default function UpdateProfile() {
                     }))
                   }
                 />
+                <p className="text-red-600 text-xs">{errors.education_level}</p>
               </div>
 
               <Input label="Major" value={user?.major_name} readOnly />
               <Input label="Faculty" value={user?.faculty} readOnly />
               <Input
                 label="Company Name"
-                value={chnageUserData.company}
+                value={changeUserData.company}
                 onChange={(e) =>
                   setChangeUserData((prev) => ({
                     ...prev,
@@ -300,9 +316,10 @@ export default function UpdateProfile() {
                   }))
                 }
               />
+              <p className="text-red-600 text-xs">{errors.company}</p>
               <Input
                 label="Position"
-                value={chnageUserData.position}
+                value={changeUserData.position}
                 onChange={(e) =>
                   setChangeUserData((prev) => ({
                     ...prev,
@@ -310,9 +327,10 @@ export default function UpdateProfile() {
                   }))
                 }
               />
+              <p className="text-red-600 text-xs">{errors.position}</p>
               <Input
                 label="Job Title"
-                value={chnageUserData.job_title}
+                value={changeUserData.job_title}
                 onChange={(e) =>
                   setChangeUserData((prev) => ({
                     ...prev,
@@ -320,6 +338,7 @@ export default function UpdateProfile() {
                   }))
                 }
               />
+              <p className="text-red-600 text-xs">{errors.job_title}</p>
             </div>
 
             {/* Buttons */}
@@ -355,7 +374,7 @@ export default function UpdateProfile() {
                       src={image}
                       alt={`Profile ${index + 1}`}
                       className={`w-24 h-24 object-cover rounded-full border-4 cursor-pointer transition-all duration-200 ${
-                        chnageUserData.image === image
+                        changeUserData.image === image
                           ? "border-blue-600 ring-2 ring-blue-300"
                           : "border-gray-300 hover:border-blue-400"
                       }`}

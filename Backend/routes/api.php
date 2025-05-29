@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->get('/view_all_students', [UserController::cl
 Route::middleware('auth:sanctum')->get('/view_all_alumni', [UserController::class, 'viewAllAlumni']);
 Route::middleware('auth:sanctum')->get('/view_all_users', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->put('/edit_users/{userToBeEdited}', [UserController::class, 'update']);
+Route::middleware('auth:sanctum')->put('/change_password', [UserController::class, 'changePassword']);
 Route::middleware('auth_sanctum')->put('/deactivate_user/{user}', [UserController::class, 'deactivate']);
 Route::middleware('auth:sanctum')->delete('/delete_user/{user}', [UserController::class, 'destroy']);
 
