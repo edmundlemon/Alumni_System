@@ -8,8 +8,9 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
-class EventCancelledNotification extends Mailable
+class EventCancelledNotification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -56,6 +57,10 @@ class EventCancelledNotification extends Mailable
     }
     public function build()
     {
+        Log::channel('auth_activity')->info('Building EventCancelledNotification email', [
+            'user_id' => $this->user->id,
+            'event_title' => $this->event->event_title,
+        ]);
         return $this->subject('Important Notification')
                     ->markdown('emails.event-cancelled')
                     ->with([
