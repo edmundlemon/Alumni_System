@@ -81,8 +81,9 @@ const toggleResetPassConfirmVisibility = () => {
            Cookies.set("photo", null);
         }
         else{
-          Cookies.set("photo", response.data.photo);
+          Cookies.set("photo", response.data.user.image);
         }
+        console.log("User Image:", response.data.user.image);
         Cookies.set("userRole", userRole);
         console.log("Login successful:", response.data);
         if(response.data.user.first_login===1){

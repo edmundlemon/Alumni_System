@@ -19,7 +19,7 @@ export default function AddEvent() {
         event_date: '',
         event_time: '',
         registration_close_date: '',
-        max_participant: '',
+        max_participants: '',
         location: '',
         noLimit: false,
         photo: null
