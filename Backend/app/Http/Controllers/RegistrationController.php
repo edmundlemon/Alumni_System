@@ -51,7 +51,7 @@ class RegistrationController extends Controller
             ], 403);
         }
         $attendeeCount = Registration::where('event_id', $event->id)->count();
-        if ($attendeeCount >= $event->max_attendees) {
+        if ($attendeeCount >= $event->max_attendees && $event->max_attendees != null) {
             return response()->json([
                 'status' => false,
                 'message' => 'Event is full',

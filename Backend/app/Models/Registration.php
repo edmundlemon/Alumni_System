@@ -20,7 +20,7 @@ class Registration extends Model
         'attendee_name',
     ];
 
-    public function getAttendedNameAttribute()
+    public function getAttendeeNameAttribute()
     {
         return $this->user->name;
     }
