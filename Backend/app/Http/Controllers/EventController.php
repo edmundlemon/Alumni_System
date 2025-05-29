@@ -211,12 +211,14 @@ class EventController extends Controller
                 'message' => 'You are not authorized to delete this event',
             ], 403);
         }
-        $affectedAttendees = $event->attendees()->with('user')->get();
+        $affectedAttendees = $event->attendees()->get();
+        foreach ($affectedAttendees as $attendee) {
+            // Detach each attendee from the event
+            Log::channel('auth_activity')->info("Attendee {$attendee->email} with email {$attendee->email} is being detached from event: {$event->event_title}");
+        }
+        // Dispatch job to send cancellation email
         $event->update(['status' => 'cancelled']);
-        // Dispatch job to send cancellation email
-        // Dispatch job to send cancellation email
         SendEventCancelledEmail::dispatch($affectedAttendees, $event);
-        // Log::info("Cancellation email sent to: {$attendee->user->email} for event: {$event->event_title}");
         return response()->json([
             'status' => true,
             'message' => 'Event deleted successfully',
