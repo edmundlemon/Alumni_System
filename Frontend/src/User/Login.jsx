@@ -76,13 +76,14 @@ const toggleResetPassConfirmVisibility = () => {
         Cookies.set("token", token);
         Cookies.set("userId", userId);
         Cookies.set("email", response.data.user.email);
-        if( response.data.photo === null){
+        if( response.data.image === null){
           Cookies.set("name", response.data.user.name);
            Cookies.set("photo", null);
         }
         else{
-          Cookies.set("photo", response.data.photo);
+          Cookies.set("photo", response.data.user.image);
         }
+        console.log("User Image:", response.data.user.image);
         Cookies.set("userRole", userRole);
         console.log("Login successful:", response.data);
         if(response.data.user.first_login===1){
