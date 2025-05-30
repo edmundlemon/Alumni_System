@@ -5,6 +5,7 @@ import { IoMdAdd, IoMdClose } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { BsInfoSquareFill } from "react-icons/bs";
 
 export default function AddEvent() {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function AddEvent() {
         event_date: '',
         event_time: '',
         registration_close_date: '',
-        max_participants: '',
+        max_participant: '',
         location: '',
         noLimit: false,
         photo: null
@@ -31,6 +32,23 @@ export default function AddEvent() {
         { value: "Online", label: "Online" },
         { value: "Physical", label: "Physical" },
     ];
+
+     const [showTooltip, setShowTooltip] = useState(false);
+
+    // Success tips content
+    const successTips = [
+    "Keep the title concise and eye-catching to attract participants",
+    "Choose the correct event type based on the nature of the activity (Online/Offline/Hybrid)",
+    "Upload clear and high-quality event images (recommended size: 1200x600 pixels)",
+    "Include key details in the event description such as time, topic, agenda, and target audience",
+    "Ensure the event date and registration deadline are properly spaced; it's recommended to close registration at least 3 days in advance",
+    "For offline events, provide a detailed address including floor, unit number, and nearby landmarks",
+    "For online events, include the platform name (e.g., Zoom, Teams) and the meeting link",
+    "If there’s no participant limit, check 'Unlimited'; otherwise, specify the maximum number of attendees",
+    "Enter accurate event time, avoiding dates earlier than today or conflicting times",
+    "Double-check all entered information to ensure nothing is missing or incorrect"
+    ];
+
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -79,6 +97,7 @@ export default function AddEvent() {
         payload.append("registration_close_date", formData.registration_close_date);
         payload.append("max_participant", formData.noLimit ? '' : formData.max_participant);
         payload.append("location", formData.location);
+        payload.append("user_id", user_id);
         if (formData.photo) {
             payload.append("photo", formData.photo);
         }
@@ -100,6 +119,8 @@ export default function AddEvent() {
                     },
                 }
             );
+            console.log("Event created successfully:", response.data);
+            alert("Event created successfully!");
             navigate("/user/event");
         } catch (error) {
             console.error("Full error:", error);
@@ -121,7 +142,30 @@ export default function AddEvent() {
         <section className="min-h-screen  px-4 sm:px-6 lg:px-8 py-10 bg-[#f7f9f9]">
             <div className="bg-white mx-10 rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                 <div className="px-8 pt-6 border-gray-200">
-                    <h1 className="text-3xl font-bold text-gray-900">Create New Event</h1>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-3xl font-bold text-gray-900">Create New Event</h1>
+                                <div 
+                                    className="relative group"
+                                    onMouseEnter={() => setShowTooltip(true)}
+                                    onMouseLeave={() => setShowTooltip(false)}
+                                    >
+                                    <BsInfoSquareFill 
+                                        className="text-blue-900 cursor-pointer hover:text-blue-700 transition-colors" 
+                                        size={29} 
+                                    />
+                                    {/* Tooltip */}
+                                    {showTooltip && (
+                                        <div className="absolute top-0 left-full ml-2 w-[750px] p-4 bg-white border border-blue-200 rounded-lg shadow-xl z-50">
+                                        <h3 className="font-bold text-blue-800 mb-2">Profile Success Tips:</h3>
+                                        <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                                            {successTips.map((tip, index) => (
+                                            <li key={index}>{tip}</li>
+                                            ))}
+                                        </ul>
+                                        </div>
+                                    )}
+                                </div>
+                        </div>
                     <p className="mt-1 text-gray-600">Fill in the details below to create your event</p>
                 </div>
 
@@ -141,7 +185,6 @@ export default function AddEvent() {
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 required
                             />
-                            <p className="text-red-600 text-xs">{errors.event_title}</p>
                         </div>
 
                         {/* Event Type */}
@@ -158,7 +201,6 @@ export default function AddEvent() {
                                 classNamePrefix="select"
                                 required
                             />
-                            <p className="text-red-600 text-xs">{errors.event_mode}</p>
                         </div>
                     </div>
 
@@ -219,7 +261,6 @@ export default function AddEvent() {
                                 <p className="mt-2 text-xs text-gray-500">
                                     Recommended size: 1200x600 pixels
                                 </p>
-                                <p className="text-red-600 text-xs">{errors.image}</p>
                             </div>
                         </div>
                     </div>
@@ -239,7 +280,6 @@ export default function AddEvent() {
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                             required
                         />
-                        <p className="text-red-600 text-xs">{errors.description}</p>
                     </div>
 
                     {/* Event Date & Time */}
@@ -257,7 +297,6 @@ export default function AddEvent() {
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
-                                <p className="text-red-600 text-xs">{errors.event_date}</p>
                             </div>
                             <div className="w-full sm:w-1/3 space-y-2">
                                 <label htmlFor="event_time" className="block text-base font-medium text-gray-700">
@@ -271,7 +310,6 @@ export default function AddEvent() {
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
-                                <p className="text-red-600 text-xs">{errors.event_time}</p>
                             </div>
                             <div className="w-full sm:w-1/3 space-y-2">
                                 <label htmlFor="registration_close_date" className="block text-base font-medium text-gray-700">
@@ -285,7 +323,6 @@ export default function AddEvent() {
                                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                         required
                                     />
-                                    <p className="text-red-600 text-xs">{errors.registration_close_date}</p>
                             </div>
                         </div>
                 <div className="flex w-full gap-4 mt-1">
@@ -305,19 +342,18 @@ export default function AddEvent() {
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 required
                             />
-                            <p className="text-red-600 text-xs">{errors.location}</p>
                         </div>
 
                           {/* Max Attendees */}
                         <div className="w-full space-y-2 mt-1">
-                            <label htmlFor="max_participants" className="block text-base font-medium text-gray-700">
+                            <label htmlFor="max_participant" className="block text-base font-medium text-gray-700">
                                 Maximum Attendees
                             </label>
                             <div className="flex items-center gap-4">
                                 <input
                                     type="number"
-                                    name="max_participants"
-                                    value={formData.max_participants}
+                                    name="max_participant"
+                                    value={formData.max_participant}
                                     onChange={handleChange}
                                     disabled={formData.noLimit}
                                     placeholder="Enter maximum number of attendees"

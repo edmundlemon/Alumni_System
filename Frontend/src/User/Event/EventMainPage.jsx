@@ -144,7 +144,7 @@ export default function EventMainPage() {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/register_for_event/${eventId}`,{},
+        `http://localhost:8000/api/register_for_event/{$event}${eventId}`,{},
         {
           headers: {
             Authorization: `Bearer ${token}`,
