@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ConnectionRequest;
 use App\Models\User;
 use App\Models\Connection;
 use Illuminate\Http\Request;
@@ -46,6 +47,7 @@ class ConnectionController extends Controller
         $connection->requesting_user_id = $user->id;
         $connection->accepting_user_id = $acceptingUser->id;
         $connection->status = 'pending';
+        ConnectionRequest::dispatch($user, $acceptingUser);
         $connection->save();
         return response()->json([
             'message' => 'Connection request sent successfully',
