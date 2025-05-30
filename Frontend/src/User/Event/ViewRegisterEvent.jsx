@@ -50,7 +50,10 @@ export default function ViewEvent() {
             "Content-Type": "application/json",
           },
         });
-        console.log(response.data);
+        console.log(response.data.registrations
+);
+        console.log(response.data.registrations.event);
+        console.log(response.data.event);
         setEvents(response.data.events);
       } catch (error) {
         console.error("Error fetching events:", error);

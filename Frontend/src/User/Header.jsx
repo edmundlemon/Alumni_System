@@ -35,7 +35,7 @@ function Header() {
       dropdown: [
         { name: "Register Events", path: "/viewEvent" },
         ...(userRole === "alumni"
-          ? [{ name: "Create Events", path: "/addEvent" }]
+          ? [{ name: "Create Events", path: "/addEvent" },{ name: "View Create Events", path: "/viewCreateEvent" }]
           : []),
       ],
     },
