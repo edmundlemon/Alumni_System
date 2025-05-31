@@ -38,6 +38,7 @@ import MajorTable from "./Admin/MajorTable";
 import ConnectStatus from "./User/Alumni/ConnectStatus";
 import Dashboard from "./Admin/Dashboard";
 import ViewCreateEvent from "./User/Event/ViewCreateEvent";
+import EditEvent from "./User/Event/EditEvent";
 
 function AppRoutes() {
   const location = useLocation();
@@ -112,6 +113,7 @@ function AppRoutes() {
         <Route path="/updateProfile" element={<UpdateProfile />} />
         <Route path="/connectStatus" element={<ConnectStatus />} />
         <Route path="/viewCreateEvent" element={<ViewCreateEvent />} />
+        <Route path="/editEvent" element={<EditEvent />} />
         {/* Admin Routes */}
         <Route element={<Sidebar />}>
           <Route path="/userTable" element={<UserManageTable />} />

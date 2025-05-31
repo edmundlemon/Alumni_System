@@ -5,8 +5,11 @@ import axios from "axios";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { FiChevronDown } from "react-icons/fi";
 import MMULOGO from "../assets/MMULOGO.png";
+import { useRef } from "react";
 
 function Header() {
+  const menuRef = useRef();
+  const buttonRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const token = Cookies.get("token");
@@ -35,7 +38,7 @@ function Header() {
       dropdown: [
         { name: "Register Events", path: "/viewEvent" },
         ...(userRole === "alumni"
-          ? [{ name: "Create Events", path: "/addEvent" },{ name: "View Create Events", path: "/viewCreateEvent" }]
+          ? [{ name: "Create New Events", path: "/addEvent" },{ name: "View Create Events", path: "/viewCreateEvent" }]
           : []),
       ],
     },
@@ -46,6 +49,26 @@ function Header() {
       dropdown: [{ name: "Connect Status", path: "/connectStatus" }],
     },
   ];
+
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
 
   useEffect(() => {
     setLogInOut(token ? "Log Out" : "Login");
@@ -223,6 +246,7 @@ function Header() {
               // Profile Avatar Dropdown
               <div className="relative">
                 <button
+                  ref={buttonRef}
                   className="flex items-center focus:outline-none"
                   onMouseEnter={() => setProfileMenuOpen(true)}
                   onClick={() => setProfileMenuOpen((prev) => !prev)}
@@ -246,6 +270,7 @@ function Header() {
                   <div
                     onMouseLeave={() => setProfileMenuOpen(false)}
                     className="absolute right-0 mt-4 w-48 border border-gray-200 bg-white rounded-md shadow-lg py-1 z-50"
+                    ref={menuRef}
                   >
                     {/* Dropdown arrow */}
                     <div className="absolute -top-2 right-3 w-4 h-4 bg-white transform rotate-45"></div>

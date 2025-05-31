@@ -5,8 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function RazorPay() {
   const token = Cookies.get("token");
-  const [amount, setAmount] = useState("");       // amount in SGD dollars
-  const [orderId, setId] = useState("");         // order ID from Razorpay
+  const [amount, setAmount] = useState("");       // amount in SGD dollars// order ID from Razorpay
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [isPaying,  setIsPaying]  = useState(false);
 

@@ -75,6 +75,7 @@ const toggleResetPassConfirmVisibility = () => {
         const userRole = response.data.user.role;
         Cookies.set("token", token);
         Cookies.set("userId", userId);
+        Cookies.set("userName", response.data.user.name);
         Cookies.set("email", response.data.user.email);
         Cookies.set("userRole", userRole);
         console.log("Login successful:", response.data);

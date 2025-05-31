@@ -9,7 +9,6 @@ import { MdOutlineLocationOn } from "react-icons/md";
 import { FaShare, FaCopy, FaUser, FaStar } from "react-icons/fa";
 import { BiCategory } from "react-icons/bi";
 import { IoTimeOutline } from "react-icons/io5";
-import { TiChevronLeft, TiChevronRight } from "react-icons/ti";
 import { IoReturnUpBackSharp } from "react-icons/io5";
 
 export default function ViewEventDetails() {
