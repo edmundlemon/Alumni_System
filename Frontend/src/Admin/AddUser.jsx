@@ -14,8 +14,7 @@ export default function AddUser({onClose}) {
         faculty: "",
     });
     const [majors, setMajors] = useState([]);
-
-   
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const majorOptions = majors.map(major => ({
         value: major.id,

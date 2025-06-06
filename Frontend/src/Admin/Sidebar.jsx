@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Outlet } from "react-router-dom";
 import {
   HiMenuAlt3,
   HiOutlineLogout,
-  HiOutlineUser,
   HiOutlineCog,
 } from "react-icons/hi";
 import {
   MdOutlineDashboard,
   MdOutlineMessage,
   MdStorage,
-  MdOutlineBusiness,
 } from "react-icons/md";
-import { TbReportAnalytics } from "react-icons/tb";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { Outlet } from "react-router-dom";
 import { BiDonateHeart } from "react-icons/bi";
-import { BiMessageRoundedDots } from "react-icons/bi";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { LuUsers } from "react-icons/lu";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { ImSpinner2 } from "react-icons/im";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -27,6 +23,7 @@ const Sidebar = () => {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [hoveredMenu, setHoveredMenu] = useState(null);
+  const [loggingOut, setLoggingOut] = useState(false);
   const token = Cookies.get("adminToken");
 
   useEffect(() => {
@@ -41,25 +38,32 @@ const Sidebar = () => {
     { name: "Event", link: "/eventTable", icon: FaRegCalendarAlt },
     { name: "Donation", link: "/donationTable", icon: BiDonateHeart },
     { name: "Forum", link: "/forumTable", icon: MdOutlineMessage },
-    { name: "Major", link: "/majorTable", icon: MdStorage  },
+    { name: "Major", link: "/majorTable", icon: MdStorage },
   ];
 
   const handleLogout = () => {
-
+    setLoggingOut(true); // Start loading
     axios
-      .post("http://localhost:8000/api/admin_logout", null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-      .then((response) => {
-        console.log(response.data);
+      .post(
+        "http://localhost:8000/api/admin_logout",
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then(() => {
         Cookies.remove("adminToken");
         navigate("/adminLogin");
       })
       .catch((error) => {
         console.error("Logout error:", error);
+        alert("Logout failed, please try again.");
+      })
+      .finally(() => {
+        setLoggingOut(false); // Stop loading
       });
   };
 
@@ -118,13 +122,12 @@ const Sidebar = () => {
                   {menu.name}
                 </span>
 
-
                 {/* Tooltip */}
                 {!open && hoveredMenu === menu.name && (
                   <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 z-50">
                     <div className="px-3 py-1 text-sm bg-white text-gray-900 rounded shadow-lg border border-gray-300 whitespace-nowrap">
                       {menu.name}
-                      <div className="absolute right-full top-1/2 -mt-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent "></div>
+                      <div className="absolute right-full top-1/2 -mt-1 w-0 h-0 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent"></div>
                     </div>
                   </div>
                 )}
@@ -141,9 +144,7 @@ const Sidebar = () => {
               open ? "justify-between" : "justify-center"
             }`}
           >
-            <div
-              className={`flex items-center ${open ? "" : "justify-center"}`}
-            >
+            <div className={`flex items-center ${open ? "" : "justify-center"}`}>
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium border border-gray-400">
                 A
               </div>
@@ -166,7 +167,9 @@ const Sidebar = () => {
           {/* Profile Dropdown */}
           <div
             className={`overflow-hidden transition-all duration-200 ease-linear ${
-              showProfileMenu && open ? "max-h-40 opacity-100 mt-2" : "max-h-0 opacity-0"
+              showProfileMenu && open
+                ? "max-h-40 opacity-100 mt-2"
+                : "max-h-0 opacity-0"
             }`}
           >
             <div className="ml-2 pl-6 border-l border-gray-400 space-y-1">
@@ -175,12 +178,26 @@ const Sidebar = () => {
                   <button
                     key={index}
                     onClick={menu.action}
-                    className="flex items-center w-full p-2 text-sm rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
+                    disabled={loggingOut}
+                    className={`flex items-center w-full p-2 text-sm rounded-lg transition-colors text-gray-700 ${
+                      loggingOut
+                        ? "bg-gray-100 cursor-not-allowed opacity-70"
+                        : "hover:bg-gray-100"
+                    }`}
                   >
                     <span className="text-lg">
                       {React.createElement(menu.icon, { "aria-hidden": true })}
                     </span>
-                    <span className="ml-3">{menu.name}</span>
+                    <span className="ml-3 flex items-center">
+                      {loggingOut ? (
+                        <>
+                          <ImSpinner2 className="animate-spin mr-2" />
+                          Logging out...
+                        </>
+                      ) : (
+                        menu.name
+                      )}
+                    </span>
                   </button>
                 ) : (
                   <Link
