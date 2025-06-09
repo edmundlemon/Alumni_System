@@ -42,7 +42,7 @@ export default function AdminLogin() {
         .then((response) => {
             const token = response.data.token;
             Cookies.set("adminToken", token);
-            navigate("/userTable");
+            navigate("/dashboard");
         })
         .catch((error) => {
             if (error.response && error.response.status === 401) {

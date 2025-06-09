@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, Outlet } from "react-router-dom";
-import {
-  HiMenuAlt3,
-  HiOutlineLogout,
-  HiOutlineCog,
-} from "react-icons/hi";
+import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
+import { HiMenuAlt3, HiOutlineLogout, HiOutlineCog } from "react-icons/hi";
 import {
   MdOutlineDashboard,
   MdOutlineMessage,
@@ -19,8 +15,9 @@ import { ImSpinner2 } from "react-icons/im";
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(true);
-  const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [activeMenu, setActiveMenu] = useState("");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [hoveredMenu, setHoveredMenu] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -41,19 +38,20 @@ const Sidebar = () => {
     { name: "Major", link: "/majorTable", icon: MdStorage },
   ];
 
+  // Find the menu whose link matches the current path
+  const currentMenu =
+    menus.find((menu) => location.pathname.startsWith(menu.link))?.name ||
+    "Dashboard";
+
   const handleLogout = () => {
     setLoggingOut(true); // Start loading
     axios
-      .post(
-        "http://localhost:8000/api/admin_logout",
-        null,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      )
+      .post("http://localhost:8000/api/admin_logout", null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
       .then(() => {
         Cookies.remove("adminToken");
         navigate("/adminLogin");
@@ -71,6 +69,11 @@ const Sidebar = () => {
     { name: "Settings", link: "/settings", icon: HiOutlineCog },
     { name: "Log Out", action: handleLogout, icon: HiOutlineLogout },
   ];
+
+  // Update activeMenu when the path changes
+  useEffect(() => {
+    setActiveMenu(currentMenu);
+  }, [location.pathname]);
 
   return (
     <div className="flex h-screen bg-gray-200">
@@ -144,7 +147,9 @@ const Sidebar = () => {
               open ? "justify-between" : "justify-center"
             }`}
           >
-            <div className={`flex items-center ${open ? "" : "justify-center"}`}>
+            <div
+              className={`flex items-center ${open ? "" : "justify-center"}`}
+            >
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium border border-gray-400">
                 A
               </div>
@@ -218,7 +223,7 @@ const Sidebar = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-gray-100 m-4 rounded-md">
+      <div className="flex-1 bg-gray-100 m-4 rounded-md ">
         <Outlet />
       </div>
     </div>

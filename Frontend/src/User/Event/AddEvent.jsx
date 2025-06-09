@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { BsInfoSquareFill } from "react-icons/bs";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AddEvent() {
     const navigate = useNavigate();
@@ -120,19 +122,10 @@ export default function AddEvent() {
                 }
             );
             console.log("Event created successfully:", response.data);
-            alert("Event created successfully!");
-            navigate("/user/event");
+            toast.success("Event created successfully!");
         } catch (error) {
             console.error("Full error:", error);
-
-            if (error.response?.status === 422) {
-                console.log("Validation Errors:", error.response.data.errors);
-                alert("Validation failed. Check console for details.");
-            } else if (error.response?.data?.message) {
-                alert(`Error: ${error.response.data.message}`);
-            } else {
-                alert("An unexpected error occurred. Check the console.");
-            }
+            toast.error("Failed to create event. Please check the console for details.");
         }
     };
 
@@ -397,6 +390,8 @@ export default function AddEvent() {
                     </div>
                 </form>
             </div>
+            {/* Toast notifications container */}
+            <ToastContainer position="top-right" autoClose={3000} />
         </section>
     );
 }

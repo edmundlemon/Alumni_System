@@ -12,7 +12,7 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
 import { FiEdit3 } from "react-icons/fi";
-
+import Select from "react-select";
 
 export default function MajorTable() {
   const navigate = useNavigate();
@@ -26,21 +26,38 @@ export default function MajorTable() {
   const printRef = useRef();
   const token = Cookies.get("adminToken");
   const [showAddMajor, setShowAddMajor] = useState(false);
+  const [falcuty, setFaculty] = useState([]);
+  const [formData, setFormData] = useState({
+    major_name: "",
+    faculty_id: "",
+    faculty_name: "",
+  });
+
+  const facultyOptions = falcuty.map((f) => ({
+    value: f.id,
+    label: f.faculty_name,
+  }));
 
   useEffect(() => {
     const fetchMajor = async () => {
       try {
         console.log("Token:", token);
-        const response = await axios.get(
-          "http://localhost:8000/api/view_all_majors",
-          {
+        const [majorRes, facultyRes] = await Promise.all([
+          axios.get("http://localhost:8000/api/view_all_majors", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
-        );
-        console.log(response.data);
-        setMajors(response.data);
+          }),
+          axios.get("http://localhost:8000/api/view_all_faculties", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
+        console.log(majorRes.data);
+        console.log(facultyRes.data.faculties);
+        setMajors(majorRes.data);
+        setFaculty(facultyRes.data.faculties);
       } catch (error) {
         console.error("Error Response:", error.response);
         console.error("There was an error!", error.message);
@@ -59,11 +76,10 @@ export default function MajorTable() {
   }, [token, navigate]);
 
   const filteredMajors = majors.filter(
-  (user) =>
-    user.major_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.id?.toString().includes(searchTerm)
+    (user) =>
+      user.major_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.id?.toString().includes(searchTerm)
   );
-
 
   const sortedMajors = [...filteredMajors].sort((a, b) => {
     const aValue = a[sortCriteria.key];
@@ -117,6 +133,33 @@ export default function MajorTable() {
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save("majors_report.pdf");
+  };
+
+  const handleAddMajor = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        "http://localhost:8000/api/create_major",
+        {
+          major_name: formData.major_name,
+          faculty_id: formData.faculty_id,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setShowAddMajor(false);
+      setFormData({ major_name: "", faculty_id: "", faculty_name: "" });
+      const majorRes = await axios.get(
+        "http://localhost:8000/api/view_all_majors",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setMajors(majorRes.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -231,16 +274,17 @@ export default function MajorTable() {
                       {major.faculty_name}
                     </td>
                     <td className="flex px-6 pt-3 gap-2">
-                      <button className="p-1 rounded border border-gray-300 shadow"><MdDeleteOutline /></button>
+                      <button className="p-1 rounded border border-gray-300 shadow">
+                        <MdDeleteOutline />
+                      </button>
                     </td>
                   </tr>
                 ))}
           </tbody>
         </table>
       </div>
-    
- 
-        <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2 ">
+
+      <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2 ">
         <p className="text-sm text-gray-500">
           Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
           {Math.min(currentPage * itemsPerPage, sortedMajors.length)} of{" "}
@@ -278,44 +322,73 @@ export default function MajorTable() {
       </div>
       {showAddMajor && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
-                <h2 className="text-xl font-semibold mb-4 rounded-t-md px-4 py-2 text-white bg-denim">Add Major</h2>
-                <form className="px-4 pb-4 space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Major Name</label>
-                        <input
-                            type="text"
-                            name="major_name"
-                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Faculty Name</label>
-                        <input
-                            type="text"
-                            name="faculty_name"
-                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
-                            required
-                        />
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                        <button
-                            type="button"
-                            onClick={() => setShowAddMajor(false)}
-                            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-[#1560bd] text-white rounded-md hover:bg-blue-600 transition-colors"
-                        >
-                            Add Major
-                        </button>
-                    </div>
-                </form>
-            </div>
+          <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
+            <h2 className="text-xl font-semibold mb-4 rounded-t-md px-4 py-2 text-white bg-denim">
+              Add Major
+            </h2>
+            <form className="px-4 pb-4 space-y-4" onSubmit={handleAddMajor}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Major Name
+                </label>
+                <input
+                  type="text"
+                  name="major_name"
+                  value={formData.major_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, major_name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Faculty Name
+                </label>
+                <Select
+                  name="faculty"
+                  options={facultyOptions}
+                  onChange={(selectedOption) =>
+                    setFormData({
+                      ...formData,
+                      faculty_id: selectedOption.value,
+                      faculty_name: selectedOption.label,
+                    })
+                  }
+                  value={
+                    facultyOptions.find(
+                      (option) => option.value === formData.faculty_id
+                    ) || null
+                  }
+                  placeholder="Select Faculty"
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddMajor(false);
+                    setFormData({
+                      major_name: "",
+                      faculty_id: "",
+                      faculty_name: "",
+                    });
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#1560bd] text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Add Major
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
