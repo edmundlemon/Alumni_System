@@ -38,7 +38,6 @@ export default function UpdateProfile() {
   const token = Cookies.get("token");
   const userId = Cookies.get("userId");
   const fileInputRef = useRef(null);
-
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [errors, setErrors] = useState([]);
