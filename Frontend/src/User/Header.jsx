@@ -38,7 +38,10 @@ function Header() {
       dropdown: [
         { name: "Register Events", path: "/viewEvent" },
         ...(userRole === "alumni"
-          ? [{ name: "Create New Events", path: "/addEvent" },{ name: "View Create Events", path: "/viewCreateEvent" }]
+          ? [
+              { name: "Create New Events", path: "/addEvent" },
+              { name: "View Create Events", path: "/viewCreateEvent" },
+            ]
           : []),
       ],
     },
@@ -49,7 +52,6 @@ function Header() {
       dropdown: [{ name: "Connect Status", path: "/connectStatus" }],
     },
   ];
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -68,7 +70,6 @@ function Header() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
 
   useEffect(() => {
     setLogInOut(token ? "Log Out" : "Login");
@@ -91,7 +92,7 @@ function Header() {
     } else {
       setProfileLoading(false);
     }
-  }, [token]);
+  }, [token, location.pathname, userId]);
 
   const handleLoginLogout = () => {
     if (token) {
