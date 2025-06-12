@@ -41,6 +41,7 @@ import Dashboard from "./Admin/Dashboard";
 import ViewCreateEvent from "./User/Event/ViewCreateEvent";
 import EditEvent from "./User/Event/EditEvent";
 import Sidebar from "./Admin/Sidebar";
+import ScrollToTop from "./ScrollToTop";
 
 // 🔒 Protected Routes
 function ProtectedRoute({ children }) {
@@ -158,6 +159,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AppRoutes />
     </BrowserRouter>
   );

@@ -9,6 +9,8 @@ import countryList from "react-select-country-list";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { BsInfoSquareFill } from "react-icons/bs";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // Import profile images (preset picks)
 import img from "../assets/profile/img_1.jpeg";
 import img1 from "../assets/profile/img_2.jpeg";
@@ -25,7 +27,6 @@ import img11 from "../assets/profile/img_12.jpeg";
 import img12 from "../assets/profile/img_13.jpeg";
 import img13 from "../assets/profile/img_14.jpeg";
 import img14 from "../assets/profile/img_15.jpeg";
-import { redirect } from "react-router-dom";
 
 export default function UpdateProfile() {
   const profileImages = [
@@ -34,7 +35,6 @@ export default function UpdateProfile() {
   ];
 
   const navigate = useNavigate();
-  const location = useLocation();
   const token = Cookies.get("token");
   const userId = Cookies.get("userId");
   const fileInputRef = useRef(null);
@@ -95,6 +95,7 @@ export default function UpdateProfile() {
         });
       } catch (error) {
         console.error("Error fetching alumni data:", error);
+        toast.error("Failed to fetch profile data.");
       } finally {
         setLoading(false);
       }
@@ -105,6 +106,7 @@ export default function UpdateProfile() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    console.log("Selected file:", file);
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -476,6 +478,10 @@ export default function UpdateProfile() {
           </div>
         )}
       </section>
+      {/* Toast notifications container */}
+      <ToastContainer position="top-center" autoClose={3000} toastClassName={(context) =>
+        `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+      }/>
     </div>
   );
 }

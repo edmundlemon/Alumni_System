@@ -50,6 +50,7 @@ export default function ForumMainPage() {
   const [suggest, setSuggest] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const getTimeAgo = (dateString) => {
     const date = new Date(dateString);

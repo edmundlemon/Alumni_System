@@ -10,6 +10,8 @@ import axios from "axios";
 import { FaSearch } from "react-icons/fa";
 import { FaRegHeart } from "react-icons/fa";
 import { FaRegComment } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ViewProfile() {
   const { state } = useLocation();
@@ -20,22 +22,27 @@ export default function ViewProfile() {
   const [activeTab, setActiveTab] = useState("about");
 
   const [connect, setconnect] = useState([]);
-  const [event, setEvent] = useState([]);
+  const [forum, setForum] = useState([]);
   const token = Cookies.get("token");
 
   useEffect(() => {
     const fetchAlumni = async () => {
       try {
-        const [connectRes, eventRes] = await Promise.all([
+        const [connectRes, forumRes] = await Promise.all([
           axios.get("http://localhost:8000/api/view_all_alumni", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`http://localhost:8000/api/view_event/${alumni.id}`, {
+          axios.get(`http://localhost:8000/api/view_user/${alumni.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`http://localhost:8000/api/view_user/${alumni.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
         setconnect(connectRes.data);
-        console.log("Alumni events:", eventRes.data);
+        setForum(forumRes.data.discussions);
+        console.log("Connected alumni:", connectRes.data);
+        console.log("Alumni forum:", forumRes.data.discussions);
       } catch (error) {
         if (error.response && error.response.status === 404) {
           console.error("Event not found for this alumni.");
@@ -45,7 +52,7 @@ export default function ViewProfile() {
       }
     };
 
-    if (token && alumni?.id) {
+    if (token) {
       fetchAlumni();
     } else {
       console.error("Token or alumni ID not found");
@@ -69,8 +76,14 @@ export default function ViewProfile() {
         }
       );
       console.log("Connection successful:", response.data);
+      toast.success("Connection request sent successfully!");
     } catch (error) {
       console.error("Error connecting with alumni:", error);
+      if (error.response && error.response.status === 400) {
+        toast.error("You already connected this alumni.");
+      } else {
+        toast.error("Failed to send connection request");
+      }
     }
   }
 
@@ -170,7 +183,9 @@ export default function ViewProfile() {
             </p>
           </div>
           <div className="flex justify-end items-start flex-0">
-            <button className="border border-white text-white px-4 py-2 rounded-md ml-auto">
+            <button 
+              onClick={() => handleConnect(alumni.id)}
+              className="border border-white text-white px-4 py-2 rounded-md ml-auto">
               Connect
             </button>
           </div>
@@ -183,19 +198,19 @@ export default function ViewProfile() {
             <div className="flex w-full justify-between">
               <p>Connections</p>
               <button className="rounded-full text-xs px-3 text-medium text-white bg-blue-500">
-                215
+                {alumni.connections_count}
               </button>
             </div>
             <div className="flex w-full justify-between">
               <p>Events Organize</p>
               <button className="rounded-full text-xs px-3 text-medium text-white bg-blue-500">
-                34
+                {alumni.events_count}
               </button>
             </div>
             <div className="flex w-full justify-between">
               <p>Forum Posts</p>
               <button className="rounded-full text-xs px-3 text-medium text-white bg-blue-500">
-                2195
+                {alumni.discussions_count}
               </button>
             </div>
           </div>
@@ -207,7 +222,7 @@ export default function ViewProfile() {
             </p>
             <p className="flex items-center gap-3">
               <FaPhoneAlt />
-              (555) 123-4567
+              {alumni.phone_number || "No phone number provided"}
             </p>
             <p className="flex items-center gap-3">
               <BsLinkedin />
@@ -362,7 +377,7 @@ export default function ViewProfile() {
             <div className="p-6">
               <h1 className="font-bold text-xl">Forum Posts</h1>
               <div className="flex flex-col gap-4 mt-4">
-                {mokForum.map((forum) => (
+                {forum.map((forum) => (
                   <div
                     key={forum.id}
                     className="flex items-center gap-4 w-full"
@@ -386,6 +401,10 @@ export default function ViewProfile() {
           )}    
         </div>
       </div>
+      {/* Toast notifications container */}
+      <ToastContainer position="top-center" autoClose={3000} toastClassName={(context) =>
+        `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+      }/>
     </section>
   );
 }

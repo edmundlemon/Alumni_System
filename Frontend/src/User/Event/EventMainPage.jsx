@@ -12,7 +12,10 @@ import event from "../../assets/event.jpg";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { FaMapLocationDot } from "react-icons/fa6";
+import { useMemo } from "react";
+import fallbackImage from '../../assets/fallback-image.jpg';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function EventMainPage() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -31,7 +34,9 @@ export default function EventMainPage() {
 
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const currentEvents = useMemo(() => {
+    return filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  }, [filteredEvents, currentPage]);
   const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
   const getStartOfWeek = (date) => {
@@ -82,7 +87,7 @@ export default function EventMainPage() {
           date: e.event_date,
           time: e.event_time,
           location: e.location,
-          image: e.photo || "https://picsum.photos/400/250?random=" + e.id,
+          image: e.photo || fallbackImage,
           type: e.event_mode,
           status: e.status,
           created_at: e.created_at,
@@ -100,22 +105,55 @@ export default function EventMainPage() {
     if (token) fetchData();
   }, [token]);
 
+  const handleSearchSubmit = async (e) => {
+  e.preventDefault();
+  if (searchQuery.trim() === "") {
+    setFilteredEvents(events);
+    setCurrentPage(1);
+    return;
+  }
+
+  try {
+    const response = await axios.get("http://localhost:8000/api/search_events", {
+      params: { query: searchQuery, status: activeTab },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const mappedEvents = (response.data.events || []).map((e) => ({
+      id: e.id,
+      title: e.event_title,
+      description: e.description,
+      date: e.event_date,
+      time: e.event_time,
+      location: e.location,
+      image: e.photo || `https://picsum.photos/400/250?random=${e.id}`,
+      type: e.event_mode,
+      status: e.status,
+      created_at: e.created_at,
+      host_name: e.host_name,
+    }));
+
+    setFilteredEvents(mappedEvents);
+    setCurrentPage(1);
+  } catch (error) {
+    console.error("Error searching events:", error);
+  }
+};
+
+
   useEffect(() => {
     const filtered = events.filter((event) => {
       const matchesStatus = event.status === activeTab;
-      const matchesSearch =
-        (event.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-        (event.description?.toLowerCase() || "").includes(searchQuery.toLowerCase());
 
       const matchesType =
         typeFilter === "" ||
         (typeFilter === "physical" && event.type?.toLowerCase() === "physical") ||
-        (typeFilter === "online" && event.type?.toLowerCase() === "online") ||
+        (typeFilter === "virtual" && event.type?.toLowerCase() === "virtual") ||
         (typeFilter === "hybrid" && event.type?.toLowerCase() === "hybrid");
 
       const matchesDayTime = filterByDayTime(event, dayTimeFilter);
 
-      return matchesStatus && matchesSearch && matchesType && matchesDayTime;
+      return matchesStatus && matchesType && matchesDayTime;
     });
 
     setFilteredEvents(filtered);
@@ -144,7 +182,7 @@ export default function EventMainPage() {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/register_for_event/{$event}${eventId}`,{},
+        `http://localhost:8000/api/register_for_event/${eventId}`,{},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -152,11 +190,11 @@ export default function EventMainPage() {
           },
         }
       );
-      alert("Successfully registered for the event!");
       console.log("Register successful:", response.data);
+      toast.success("Successfully registered for the event!");
     } catch (error) {
-      alert(error.response?.data?.message || "Error registering for event");
       console.error("Error connecting with alumni:", error);
+      toast.error(error.response?.data?.message || "Failed to register for the event");
     }
   }
    
@@ -211,9 +249,12 @@ export default function EventMainPage() {
                   placeholder="Search events..."
                   className="py-3 px-5 pr-12 rounded-lg shadow-md w-[350px]"
                   value={searchQuery}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit(e)}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaSearch 
+                onClick={(e)=>handleSearchSubmit(e)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" />
               </div>
               <div className="relative">
                 <select
@@ -243,7 +284,7 @@ export default function EventMainPage() {
                   >
                     <option value="">All Types</option>
                     <option value="physical">Physical</option>
-                    <option value="online">Online</option>
+                    <option value="virtual">Virtual</option>
                     <option value="hybrid">Hybrid</option>
                   </select>
                 <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -411,6 +452,10 @@ export default function EventMainPage() {
           )}
         </div>
       </div>
+      {/* Toast notifications container */}
+      <ToastContainer position="top-center" autoClose={3000} toastClassName={(context) =>
+        `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+      }/>
     </section>
   );
 }

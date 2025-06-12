@@ -13,6 +13,7 @@ function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const token = Cookies.get("token");
+  const AdminToken = Cookies.get("adminToken");
   const [logInOut, setLogInOut] = useState("Login");
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
@@ -36,6 +37,7 @@ function Header() {
       name: "Events",
       path: "/eventMainPage",
       dropdown: [
+        { name: "All Events", path: "/eventMainPage" },
         { name: "Register Events", path: "/viewEvent" },
         ...(userRole === "alumni"
           ? [
@@ -49,8 +51,12 @@ function Header() {
     {
       name: "Alumni",
       path: "/alumniMainPage",
-      dropdown: [{ name: "Connect Status", path: "/connectStatus" }],
+      dropdown: [
+        { name: "All Alumni", path: "/alumniMainPage" },
+        { name: "Connect Status", path: "/connectStatus" }
+      ],
     },
+    { name: "Admin Portal", path: AdminToken ? "/dashboard" : "/adminLogin" },
   ];
 
   useEffect(() => {

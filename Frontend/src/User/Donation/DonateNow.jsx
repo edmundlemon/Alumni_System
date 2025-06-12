@@ -139,7 +139,7 @@ export default function DonateNow({ donate, onClose }) {
   const calcProgress = (raised, goal) =>
     Math.min(Math.round((raised / goal) * 100), 100);
 
-  const progress = calcProgress(donate.raised, donate.goal);
+  const progress = calcProgress(donate.current_amount, donate.target_amount);
 
   const choose = (val) => {
     setChosen(val);
@@ -166,8 +166,8 @@ export default function DonateNow({ donate, onClose }) {
       {/* Progress Bar */}
       <div className="mt-6">
         <div className="flex justify-between text-sm font-medium text-gray-600 mb-1">
-          <span>Raised {formatCurrency(donate.raised)}</span>
-          <span>Goal {formatCurrency(donate.goal)}</span>
+          <span>Raised {formatCurrency(donate.current_amount)}</span>
+          <span>Goal {formatCurrency(donate.target_amount)}</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
           <div

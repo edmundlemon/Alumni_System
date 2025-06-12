@@ -96,7 +96,7 @@ Route::middleware('auth:sanctum')->delete('/delete_faculty/{faculty}', [FacultyC
 Route::middleware('auth:sanctum')->get('/view_all_majors', [MajorController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/discussions', [DiscussionController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/view_user/{user}', [UserController::class, 'show']);
-Route::middleware('auth:sanctum')->get('/suggested_connections', [UserController::class, 'sugg~estedConnections']);
+Route::middleware('auth:sanctum')->get('/suggested_connections', [UserController::class, 'suggestedConnections']);
 
 // Payment Gateway Routes
 Route::prefix('donations')->group(function () {

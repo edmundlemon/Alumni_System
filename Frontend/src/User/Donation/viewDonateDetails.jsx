@@ -4,6 +4,7 @@ import { MdAttachMoney } from "react-icons/md";
 import { IoReturnUpBackSharp } from "react-icons/io5";
 import axios from "axios";
 import Cookies from "js-cookie";
+import fallbackImage from '../../assets/fallback-image.jpg';
 
 export default function ViewDonateDetails() {
   const { state } = useLocation();
@@ -142,7 +143,7 @@ export default function ViewDonateDetails() {
   const calcProgress = (raised, goal) =>
     Math.min(Math.round((raised / goal) * 100), 100);
 
-  const progress = calcProgress(dnt.raised, dnt.goal);
+  const progress = calcProgress(dnt.current_amount, dnt.target_amount);
 
   /* ---------- pick‑an‑amount state ---------- */
   const choose = (val) => {
@@ -164,8 +165,8 @@ export default function ViewDonateDetails() {
 
           <div className="mt-6">
             <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
-              <span>Raised&nbsp;{formatCurrency(dnt.raised)}</span>
-              <span>Goal&nbsp;{formatCurrency(dnt.goal)}</span>
+              <span>Raised&nbsp;{formatCurrency(dnt.current_amount)}</span>
+              <span>Goal&nbsp;{formatCurrency(dnt.target_amount)}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
               <div
@@ -242,7 +243,7 @@ export default function ViewDonateDetails() {
 
         <div className="flex-1 relative">
           <img
-            src={dnt.image}
+            src={dnt.image ? dnt.image : fallbackImage}
             alt={`${dnt.name} visual`}
             className="object-cover w-full h-72 lg:h-full"
           />
