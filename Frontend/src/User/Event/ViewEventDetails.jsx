@@ -9,10 +9,11 @@ import { MdOutlineLocationOn } from "react-icons/md";
 import { FaShare, FaCopy, FaUser, FaStar } from "react-icons/fa";
 import { BiCategory } from "react-icons/bi";
 import { IoTimeOutline } from "react-icons/io5";
-import { TiChevronLeft, TiChevronRight } from "react-icons/ti";
 import { IoReturnUpBackSharp } from "react-icons/io5";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ViewEventDetails() {
     const token = Cookies.get('token');
@@ -31,6 +32,7 @@ export default function ViewEventDetails() {
 
     // Mock feedback data - replace with actual API calls
     useEffect(() => {
+        setStatus(event?.status || "upcoming");
         if (event?.id) {
             // Fetch feedback for this event from API
             const mockFeedbacks = [
@@ -77,6 +79,30 @@ export default function ViewEventDetails() {
         setRating(0);
         setShowFeedbackForm(false);
     };
+
+    const handleRegister = async (eventId) => {
+    if (!token) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/register_for_event/${eventId}`,{},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Register successful:", response.data);
+      toast.success("Successfully registered for the event!");
+    } catch (error) {
+      console.error("Error connecting with alumni:", error);
+      toast.error(error.response?.data?.message || "Failed to register for the event");
+    }
+  }
 
     if (!event) return <div className="text-center py-10 text-gray-600">No event found</div>;
 
@@ -294,7 +320,9 @@ export default function ViewEventDetails() {
                                 </div>
                             </div>                   
                         {/* Register Button */}
-                        <button className=" w-full bg-denim hover:bg-denim-dark text-white font-medium py-3 px-4 rounded transition duration-200 shadow-md hover:shadow-lg">
+                        <button 
+                            onClick={() => handleRegister(event.id)}
+                            className=" w-full bg-denim hover:bg-denim-dark text-white font-medium py-3 px-4 rounded transition duration-200 shadow-md hover:shadow-lg">
                             Register Now
                         </button>
                         
@@ -589,6 +617,10 @@ export default function ViewEventDetails() {
                     </div>
                 </div>
             )}
+            {/* Toast notifications container */}
+            <ToastContainer position="top-center" autoClose={3000} toastClassName={(context) =>
+                `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+            }/>
         </section>
     );
 }

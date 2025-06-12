@@ -26,6 +26,7 @@ class MajorController extends Controller
         //
         $request->validate([
             'major_name' => 'required|string|max:255',
+            'faculty_id' => 'required|exists:faculties,id',
         ]);
 
         $user = Auth::guard('sanctum')->user();
@@ -36,6 +37,7 @@ class MajorController extends Controller
         }
         $major = new Major();
         $major->major_name = $request->major_name;
+        $major->faculty_id = $request->faculty_id;
         $major->save();
 
         return response()->json($major, 201);

@@ -9,8 +9,10 @@ import {
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function ViewEvent() {
+export default function ViewCreateEvent() {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -18,6 +20,7 @@ export default function ViewEvent() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const calendarRef = useRef();
+  const popupRef = useRef();
   const token = Cookies.get("token");
 
   const getDaysInMonth = (month, year) => {
@@ -28,14 +31,14 @@ export default function ViewEvent() {
 
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => {
     const date = new Date(currentYear, currentMonth, i + 1);
-    const formatted = date.toLocaleDateString("en-CA"); 
+    // Use local time, not UTC
+    const formatted = date.toLocaleDateString("en-CA"); // 'YYYY-MM-DD'
     return {
       day: i + 1,
       date: formatted,
       events: events.filter((ev) => ev.event_date === formatted),
     };
   });
-  
   const years = Array.from({ length: 20 }, (_, i) => currentYear - 10 + i);
 
   const handleEventClick = (event, dayElement) => {
@@ -52,7 +55,7 @@ export default function ViewEvent() {
     const fetchEvents = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/view_my_registrations",
+          "http://localhost:8000/api/view_my_upcoming_events",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -60,9 +63,8 @@ export default function ViewEvent() {
             },
           }
         );
-        const allEvents = response.data.registrations.map(reg => reg.event);
-        console.log(allEvents); 
-        setEvents(allEvents);
+        console.log(response.data.events);
+        setEvents(response.data.events);
       } catch (error) {
         console.error("Error fetching events:", error);
       }
@@ -106,16 +108,29 @@ export default function ViewEvent() {
     "December",
   ];
 
+  // Close popup when clicking outside
+  useEffect(() => {
+    if (!selectedEvent) return;
+    const handleClick = (e) => {
+      if (popupRef.current && !popupRef.current.contains(e.target)) {
+        setSelectedEvent(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [selectedEvent]);
+
   return (
     <div
       className="px-4 sm:px-8 lg:px-20 py-8 bg-[#f7f9f9] min-h-screen"
       ref={calendarRef}
     >
+      {/* Header Section */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-denim mb-1">My Registers Events</h1>
+          <h1 className="text-3xl font-bold text-denim mb-1">My Created Events</h1>
           <p className="text-gray-500 text-base">
-            View, manage, and register upcoming events.
+            View, manage, and create your upcoming events.
           </p>
         </div>
         <button
@@ -123,7 +138,7 @@ export default function ViewEvent() {
           className="flex items-center gap-2 px-6 py-3 bg-denim text-white rounded-lg hover:bg-blue-700 transition-colors text-base font-semibold shadow"
         >
           <FiCalendar size={20} />
-          <span>Register Event</span>
+          <span>Create Event</span>
         </button>
       </div>
       <div className="bg-white shadow-lg rounded-xl overflow-hidden">
@@ -258,7 +273,7 @@ export default function ViewEvent() {
             {events.map((event) => (
               <div
                 key={event.id}
-                className="p-6 hover:bg-gray-50 transition-colors border-b border-gray-200"
+                className="p-6 hover:bg-gray-50 transition-colors  border-b border-gray-200"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-2 flex-1">
@@ -287,11 +302,11 @@ export default function ViewEvent() {
                           })}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-400">
+                      <div className="flex items-center gap-2">
                         {event.event_mode === "online" ? (
-                          <FiGlobe/>
+                          <FiGlobe className="text-blue-400" />
                         ) : (
-                          <FiMapPin/>
+                          <FiMapPin className="text-red-400" />
                         )}
                         <span>
                           {event.event_mode === "online" ? (
@@ -323,8 +338,16 @@ export default function ViewEvent() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
+                    <button
+                      onClick={() =>
+                        navigate("/editEvent", { state: { event } })
+                      }
+                      className="px-4 py-2 bg-denim text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                      Edit Event
+                    </button>
                     <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
-                      Cancel 
+                      Cancel Event
                     </button>
                   </div>
                 </div>
@@ -342,8 +365,11 @@ export default function ViewEvent() {
             <p className="mt-1 text-gray-500">
               You don't have any events scheduled for this period.
             </p>
-            <button className="mt-4 px-6 py-2 bg-denim text-white rounded-lg hover:bg-blue-700 transition-colors">
-              Register An Event
+            <button
+              onClick={() => navigate("/addEvent")}
+              className="mt-4 px-6 py-2 bg-denim text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Create New Event
             </button>
           </div>
         )}
@@ -356,6 +382,7 @@ export default function ViewEvent() {
             top: `${popupPosition.top}px`,
             left: `${popupPosition.left}px`,
           }}
+          ref={popupRef}
         >
           <div className="flex items-start gap-2 mb-2">
             <span

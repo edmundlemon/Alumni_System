@@ -1,25 +1,11 @@
 import mapImage from "../../assets/alumni.jpeg";
 import { FaChevronLeft, FaChevronRight, FaSearch } from "react-icons/fa";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect} from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-// Import profile images
-import img from "../../assets/profile/img_1.jpeg";
-import img1 from "../../assets/profile/img_2.jpeg";
-import img2 from "../../assets/profile/img_3.jpeg";
-import img3 from "../../assets/profile/img_4.jpeg";
-import img4 from "../../assets/profile/img_5.jpeg";
-import img5 from "../../assets/profile/img_6.jpeg";
-import img6 from "../../assets/profile/img_7.jpeg";
-import img7 from "../../assets/profile/img_8.jpeg";
-import img8 from "../../assets/profile/img_9.jpeg";
-import img9 from "../../assets/profile/img_10.jpeg";
-import img10 from "../../assets/profile/img_11.jpeg";
-import img11 from "../../assets/profile/img_12.jpeg";
-import img12 from "../../assets/profile/img_13.jpeg";
-import img13 from "../../assets/profile/img_14.jpeg";
-import img14 from "../../assets/profile/img_15.jpeg";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AlumniMainPage() {
   const navigate = useNavigate();
@@ -29,6 +15,31 @@ export default function AlumniMainPage() {
   const [alumni, setAlumni] = useState([]);
   const token = Cookies.get("token");
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredAlumni, setFilteredAlumni] = useState([]);
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+
+    if (searchQuery.trim() === '') {
+      setFilteredAlumni(alumni); 
+      setCurrentPage(1);
+      return;
+    }
+
+    try {
+      const response = await axios.get('http://localhost:8000/api/search_users', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { query: searchQuery }
+      });
+      console.log('Search results:', response.data);
+      const results = response.data || [];
+      setFilteredAlumni(results);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error('Error searching donations:', error);
+      setFilteredAlumni([]);
+    }
+  };
 
   useEffect(() => {
     const fetchAlumni = async () => {
@@ -42,6 +53,7 @@ export default function AlumniMainPage() {
           }
         );
         setAlumni(response.data);
+        setFilteredAlumni(response.data);
       } catch (error) {
         console.error("Error fetching alumni data:", error);
       } finally {
@@ -74,40 +86,15 @@ export default function AlumniMainPage() {
         }
       );
       console.log("Connection successful:", response.data);
+      toast.success("Connection request sent successfully!");
     } catch (error) {
       console.error("Error connecting with alumni:", error);
-    }
-  }
-
-  const profileImages = [
-    img,
-    img1,
-    img2,
-    img3,
-    img4,
-    img5,
-    img6,
-    img7,
-    img8,
-    img9,
-    img10,
-    img11,
-    img12,
-    img13,
-    img14,
-  ];
-
-  function getRandomProfileImage(seed) {
-    let hash = 0;
-    if (typeof seed === "string") {
-      for (let i = 0; i < seed.length; i++) {
-        hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+      if (error.response && error.response.status === 400) {
+        toast.error("You already connected this alumni.");
+      } else {
+        toast.error("Failed to send connection request.");
       }
-    } else if (typeof seed === "number") {
-      hash = seed;
     }
-    const index = Math.abs(hash) % profileImages.length;
-    return profileImages[index];
   }
 
   const SkeletonCard = () => (
@@ -132,9 +119,9 @@ export default function AlumniMainPage() {
     </div>
   );
 
-  const totalPages = Math.ceil(alumni.length / ALUMNI_PER_PAGE);
+  const totalPages = Math.ceil(filteredAlumni.length / ALUMNI_PER_PAGE);
   const firstIndex = (currentPage - 1) * ALUMNI_PER_PAGE;
-  const currentAlumni = alumni.slice(firstIndex, firstIndex + ALUMNI_PER_PAGE);
+  const currentAlumni = filteredAlumni.slice(firstIndex, firstIndex + ALUMNI_PER_PAGE);
 
   const goToPage = (page) =>
     setCurrentPage(Math.min(Math.max(page, 1), totalPages || 1));
@@ -167,6 +154,9 @@ export default function AlumniMainPage() {
             <input
               type="text"
               placeholder="Search alumni…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
               className="py-3 px-5 pr-12 border rounded-lg shadow-md w-[300px] sm:w-[420px] lg:w-[550px] focus:outline-denim"
             />
             <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -193,11 +183,9 @@ export default function AlumniMainPage() {
                           className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
                         />
                       ) : (
-                        <img
-                          src={getRandomProfileImage(alumni.id)}
-                          alt="profile"
-                          className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
-                        />
+                        <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-blue-900">
+                          {getInitial(alumni.name)}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -289,6 +277,10 @@ export default function AlumniMainPage() {
           </div>
         </div>
       </div>
+      {/* Toast notifications container */}
+      <ToastContainer position="top-center" autoClose={3000} toastClassName={(context) =>
+        `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+      }/>
     </section>
   );
 }

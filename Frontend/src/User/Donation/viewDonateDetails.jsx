@@ -1,10 +1,18 @@
 import { useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MdAttachMoney } from "react-icons/md";
 import { IoReturnUpBackSharp } from "react-icons/io5";
+import axios from "axios";
+import Cookies from "js-cookie";
+import fallbackImage from '../../assets/fallback-image.jpg';
 
 export default function ViewDonateDetails() {
   const { state } = useLocation();
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const userName = Cookies.get("userName");
+  const email = Cookies.get("email");
+
   const dnt = state?.dnt;
   const formatCurrency = (amt) =>
     new Intl.NumberFormat("en-MY", {
@@ -13,16 +21,131 @@ export default function ViewDonateDetails() {
       maximumFractionDigits: 0,
     }).format(amt);
 
-  const calcProgress = (raised, goal) =>
-    Math.min(Math.round((raised / goal) * 100), 100);
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setScriptLoaded(true);
+    document.body.appendChild(script);
+    return () => document.body.removeChild(script);
+  }, []);
 
-  const progress = calcProgress(dnt.raised, dnt.goal);
-
-  /* ---------- pick‑an‑amount state ---------- */
   const preset = [50, 100, 150, 200, 250, 300];
   const [chosen, setChosen] = useState(null);
   const [custom, setCustom] = useState("");
+  const amount = chosen ? chosen : custom ? Number(custom) : null;
 
+  const handlePayment = async () => {
+    if (!amount || isNaN(amount)) {
+      alert("Enter a valid amount (e.g. 5 or 12.50)");
+      return;
+    }
+
+    if (!scriptLoaded) {
+      alert("Gateway script still loading - try again in a moment.");
+      return;
+    }
+
+    setIsPaying(true);
+
+    try {
+      // 🔥 Call your Laravel backend to create an order
+      const response = await axios
+        .post("http://localhost:8000/api/donations/create-donation/2", {
+          amount: amount, // in SGD
+          currency: "SGD",
+        })
+        .then((response) => {
+          console.log("Order created successfully:", response.data);
+          return response;
+        })
+        .catch((error) => {
+          console.error("Error creating order:", error);
+          alert("An error occurred. Please try again.");
+          setIsPaying(false);
+        });
+
+      const { order_id, key, currency } = response.data;
+
+      if (!order_id) {
+        alert("Failed to create order. Please try again.");
+        setIsPaying(false);
+        return;
+      }
+
+      const options = {
+        key: key, // from backend
+        amount: amount * 100, // in subunits
+        currency: currency || "SGD",
+        name: "Donation",
+        description: "Thank you for your support!",
+        image: "https://example.com/your_logo",
+        order_id: order_id,
+        handler: async function (response) {
+          alert(
+            "Payment successful! Payment ID: " + response.razorpay_payment_id
+          );
+          setIsPaying(false);
+          setCustom("");
+          setChosen(null);
+          try {
+            const paymentData = {
+              order_id: response.razorpay_order_id,
+              payment_id: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              amount: amount * 100,
+            };
+
+            await axios.post(
+              "http://localhost:8000/api/donations/verify-payment/2",
+              paymentData,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            alert("✅ Payment successful and recorded!");
+              setCustom("");
+              setChosen(null);  
+          } catch (error) {
+            console.error("❌ Failed to record payment:", error);
+            alert(
+              "Payment was successful but failed to save. Contact support."
+            );
+          } finally {
+            setIsPaying(false);
+          }
+        },
+        prefill: {
+          name: userName,
+          email: email,
+        },
+        notes: {
+          address: "note value",
+        },
+        theme: {
+          color: "#1560bd",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  const calcProgress = (raised, goal) =>
+    Math.min(Math.round((raised / goal) * 100), 100);
+
+  const progress = calcProgress(dnt.current_amount, dnt.target_amount);
+
+  /* ---------- pick‑an‑amount state ---------- */
   const choose = (val) => {
     setChosen(val);
     setCustom("");
@@ -42,8 +165,8 @@ export default function ViewDonateDetails() {
 
           <div className="mt-6">
             <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
-              <span>Raised&nbsp;{formatCurrency(dnt.raised)}</span>
-              <span>Goal&nbsp;{formatCurrency(dnt.goal)}</span>
+              <span>Raised&nbsp;{formatCurrency(dnt.current_amount)}</span>
+              <span>Goal&nbsp;{formatCurrency(dnt.target_amount)}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
               <div
@@ -104,7 +227,10 @@ export default function ViewDonateDetails() {
               </span>
             </div>
 
-            <button className="mt-5 w-full h-11 bg-denim hover:bg-denim/90 text-white font-semibold rounded-lg transition">
+            <button
+              onClick={handlePayment}
+              className="mt-5 w-full h-11 bg-denim hover:bg-denim/90 text-white font-semibold rounded-lg transition"
+            >
               Donate&nbsp;
               {chosen
                 ? formatCurrency(chosen)
@@ -117,7 +243,7 @@ export default function ViewDonateDetails() {
 
         <div className="flex-1 relative">
           <img
-            src={dnt.image}
+            src={dnt.image ? dnt.image : fallbackImage}
             alt={`${dnt.name} visual`}
             className="object-cover w-full h-72 lg:h-full"
           />

@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { useNavigate  } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { ImSpinner2 } from "react-icons/im";
 
 export default function AdminLogin() {
-    const navigate = useNavigate ();
+    const navigate = useNavigate();
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [loginPost, setLoginPost] = useState({ id: "", password: "" });
     const [formError, setFormError] = useState({ id: "", password: "" });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
@@ -19,49 +22,58 @@ export default function AdminLogin() {
     };
 
     const handleSubmit = (event) => {
-        event.preventDefault();
+    event.preventDefault();
 
-        let inputError = { id: "", password: "" };
+    let inputError = { id: "", password: "" };
 
-        if (!loginPost.id) inputError.id = "* id is required";
-        if (!loginPost.password) inputError.password = "* Password is required";
-        // else if (loginPost.password.length < 6) inputError.password = "* Password must be at least 6 characters";
-        // else if (!/[A-Z]/.test(loginPost.password)) inputError.password = "* Password must contain at least one uppercase letter";
-        // else if (!/[0-9]/.test(loginPost.password)) inputError.password = "* Password must contain at least one number";
-        // else if (!/[!@#$%^&*]/.test(loginPost.password)) inputError.password = "* Password must contain at least one special character";
-        // else if (!/[a-z]/.test(loginPost.password)) inputError.password = "* Password must contain at least one lowercase letter";
-        // else if (/\s/.test(loginPost.password)) {inputError.password = "* Password cannot contain spaces";}
+    if (!loginPost.id) inputError.id = "* Admin ID is required";
+    if (!loginPost.password) inputError.password = "* Password is required";
 
-        if (inputError.id || inputError.password) {
-            setFormError(inputError);
-            return;
-        }
+    if (inputError.id || inputError.password) {
+        setFormError(inputError);
+        return;
+    }
 
-        setFormError({ id: "", password: "" });
+    setFormError({ id: "", password: "" });
+    setIsSubmitting(true); // Start loading
 
-        axios.post('http://localhost:8000/api/admin_login', loginPost)
-        .then(response => {
-            console.log(response);
-            const token = response.data.token; 
-                Cookies.set('adminToken', token); 
-                console.log(token);
-                navigate('/userTable');
+    axios
+        .post("http://localhost:8000/api/admin_login", loginPost)
+        .then((response) => {
+            const token = response.data.token;
+            Cookies.set("adminToken", token);
+            navigate("/dashboard");
         })
-        .catch(error => {
-            console.log(error);
-            if (error.response.status === 401) {
-                setFormError({ email: 'Invalid email or password', password: 'Invalid email or password' });
+        .catch((error) => {
+            if (error.response && error.response.status === 401) {
+                setFormError({
+                    id: "Invalid ID or password",
+                    password: "Invalid ID or password",
+                });
+            } else {
+                console.error("Login error:", error);
             }
+        })
+        .finally(() => {
+            setIsSubmitting(false); // End loading
         });
-    };
+};
+
 
     return (
-        <section className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-cyan-100">
-            <div className="w-[350px] max-w-md bg-white shadow-xl rounded-xl p-8">
-                <h1 className="text-3xl font-bold text-center text-gray-700 mb-6">Admin Login</h1>
+        <section className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-cyan-100 via-blue-100 to-blue-200">
+            <div className="w-full max-w-sm bg-white shadow-2xl rounded-2xl p-8 sm:p-10 animate-fade-in">
+                <div className="text-center mb-6">
+                    <div className="w-14 h-14 mx-auto bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-md">
+                        <MdOutlineAdminPanelSettings    className="text-4xl" />
+                    </div>
+                    <h1 className="text-3xl font-bold text-gray-700 mt-4">Admin Login</h1>
+                    <p className="text-base font-light text-gray-500">Welcome back! Please log in.</p>
+                </div>
+
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-1">
+                        <label htmlFor="id" className="block text-sm font-medium text-gray-600 mb-1">
                             Admin ID
                         </label>
                         <input
@@ -69,9 +81,12 @@ export default function AdminLogin() {
                             name="id"
                             value={loginPost.id}
                             onChange={handleInput}
+                            placeholder="Enter your admin ID"
                             className={`w-full border ${
                                 formError.id ? "border-red-500" : "border-gray-300"
-                            } rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                            } rounded-md px-4 py-2 focus:outline-none focus:ring-2 ${
+                                formError.id ? "focus:ring-red-400" : "focus:ring-cyan-500"
+                            }`}
                         />
                         {formError.id && <p className="text-red-500 text-xs mt-1">{formError.id}</p>}
                     </div>
@@ -86,9 +101,12 @@ export default function AdminLogin() {
                                 name="password"
                                 value={loginPost.password}
                                 onChange={handleInput}
+                                placeholder="Enter your password"
                                 className={`w-full border ${
                                     formError.password ? "border-red-500" : "border-gray-300"
-                                } rounded-md px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                                } rounded-md px-4 py-2 pr-10 focus:outline-none focus:ring-2 ${
+                                    formError.password ? "focus:ring-red-400" : "focus:ring-cyan-500"
+                                }`}
                             />
                             <span
                                 onClick={togglePasswordVisibility}
@@ -102,9 +120,21 @@ export default function AdminLogin() {
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-500 hover:bg-blue-700 text-white py-2 rounded-md transition"
+                        disabled={isSubmitting}
+                        className={`w-full py-2 font-bold rounded-md transition duration-300 shadow-md flex justify-center items-center ${
+                            isSubmitting
+                                ? "bg-cyan-400 cursor-not-allowed"
+                                : "bg-cyan-500 hover:bg-cyan-600 text-white"
+                        }`}
                     >
-                        Login
+                        {isSubmitting ? (
+                            <>
+                                <ImSpinner2 className="animate-spin mr-2" />
+                                Logging in...
+                            </>
+                        ) : (
+                            "Login"
+                        )}
                     </button>
                 </form>
             </div>

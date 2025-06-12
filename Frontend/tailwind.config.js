@@ -22,6 +22,7 @@ export default {
           "100%": { transform: "translateX(0%)" },
         },
       },
+      
     },
   },
   plugins: [require('@tailwindcss/line-clamp'),],

@@ -56,7 +56,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="p-6 bg-gray-50 max-h-[666px] overflow-y-auto rounded-lg"
+    <div className="p-6 bg-gray-50 max-h-[666px]  rounded-lg overflow-y-auto"
          style={{
         boxShadow:
           "0 4px 6px rgba(0,0,0,0.1), 0 -4px 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1)",
@@ -65,7 +65,7 @@ export default function Dashboard() {
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ">
         <StatCard icon={<FaUsers />} label="Total Users" value={stats.users} />
         <StatCard
           icon={<FaCalendarAlt />}

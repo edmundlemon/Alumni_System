@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Select from "react-select";
 import { RxImage } from "react-icons/rx";
 import { IoMdAdd, IoMdClose } from "react-icons/io";
@@ -6,33 +6,45 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { BsInfoSquareFill } from "react-icons/bs";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useLocation } from "react-router-dom";
+import { IoReturnUpBackSharp } from "react-icons/io5";
 
 export default function AddEvent() {
+  const { state } = useLocation();
+  const event = state?.event;
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const user_id = Cookies.get("userId");
-  const [errors, setErrors] = useState({});
+  const eventId = event ? event.id : null;
+
+  // Initialize formData with event values if editing
   const [formData, setFormData] = useState({
-    event_title: "",
-    event_mode: "",
-    description: "",
-    event_date: "",
-    event_time: "",
-    registration_close_date: "",
-    max_participants: "",
-    location: "",
-    noLimit: false,
+    event_title: event?.event_title || "",
+    event_mode: event?.event_mode || "",
+    description: event?.description || "",
+    event_date: event?.event_date || "",
+    event_time: event?.event_time || "",
+    registration_close_date: event?.registration_close_date || "",
+    max_participant: event?.max_participant || "",
+    location: event?.location || "",
+    noLimit:
+      event?.max_participant === null || event?.max_participant === "" || false,
     photo: null,
   });
   const token = Cookies.get("token");
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState(event?.photo || null);
+
+  // Set image preview if editing and event has a photo URL
+  useEffect(() => {
+    if (event?.photo) {
+      setImagePreview(event.photo);
+    }
+  }, [event]);
 
   const eventTypeOptions = [
-    { value: "Physical", label: "Physical" },
-    { value: "Vitual", label: "Vitual" },
     { value: "Hybrid", label: "Hybrid" },
+    { value: "Online", label: "Online" },
+    { value: "Physical", label: "Physical" },
   ];
 
   const [showTooltip, setShowTooltip] = useState(false);
@@ -68,7 +80,6 @@ export default function AddEvent() {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    console.log("Selected file:", file);
     if (file) {
       setFormData((prev) => ({ ...prev, photo: file }));
       const reader = new FileReader();
@@ -96,8 +107,8 @@ export default function AddEvent() {
     payload.append("event_time", formData.event_time);
     payload.append("registration_close_date", formData.registration_close_date);
     payload.append(
-      "max_participants",
-      formData.noLimit ? "" : formData.max_participants
+      "max_participant",
+      formData.noLimit ? "" : formData.max_participant
     );
     payload.append("location", formData.location);
     payload.append("user_id", user_id);
@@ -105,7 +116,6 @@ export default function AddEvent() {
       payload.append("photo", formData.photo);
     }
 
-    // ✅ Debug FormData
     console.log("FormData Payload:");
     for (let [key, value] of payload.entries()) {
       console.log(`${key}:`, value);
@@ -113,7 +123,7 @@ export default function AddEvent() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/create_event",
+        `http://localhost:8000/api/edit_event/${eventId}`,
         payload,
         {
           headers: {
@@ -123,25 +133,18 @@ export default function AddEvent() {
         }
       );
       console.log("Event created successfully:", response.data);
-      toast.success("Event created successfully!");
-      setErrors({}); // Clear errors on success
+      alert("Event created successfully!");
+      navigate("/user/event");
     } catch (error) {
       console.error("Full error:", error);
-      if (error.response && error.response.data) {
-        // Laravel validation errors
-        if (error.response.data.errors) {
-          setErrors(error.response.data.errors);
-        } else if (error.response.data.message) {
-          toast.error(error.response.data.message);
-        } else {
-          toast.error(
-            "Failed to create event. Please check the console for details."
-          );
-        }
+
+      if (error.response?.status === 422) {
+        console.log("Validation Errors:", error.response.data.errors);
+        alert("Validation failed. Check console for details.");
+      } else if (error.response?.data?.message) {
+        alert(`Error: ${error.response.data.message}`);
       } else {
-        toast.error(
-          "Failed to create event. Please check the console for details."
-        );
+        alert("An unexpected error occurred. Check the console.");
       }
     }
   };
@@ -150,18 +153,17 @@ export default function AddEvent() {
     <section className="min-h-screen  px-4 sm:px-6 lg:px-8 py-10 bg-[#f7f9f9]">
       <div className="bg-white mx-10 rounded-lg shadow-lg border border-gray-200 overflow-hidden">
         <div className="px-8 pt-6 border-gray-200">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Create New Event
-            </h1>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900">Edit Event</h1>
             <div
               className="relative group"
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
             >
               <BsInfoSquareFill
-                className="text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
-                size={29}
+                className="text-denim cursor-pointer hover:text-blue-700 transition-colors"
+                size={27}
               />
               {/* Tooltip */}
               {showTooltip && (
@@ -177,6 +179,14 @@ export default function AddEvent() {
                 </div>
               )}
             </div>
+          </div>
+          <button 
+                className="flex items-center rounded px-4 py-1 text-white bg-denim font-medium gap-2 text-base" 
+                onClick={() => window.history.back()}
+            >
+                <IoReturnUpBackSharp size={18} />
+                Back to View Creted Events
+            </button>
           </div>
           <p className="mt-1 text-gray-600">
             Fill in the details below to create your event
@@ -199,12 +209,12 @@ export default function AddEvent() {
                 value={formData.event_title}
                 onChange={handleChange}
                 placeholder="Enter event title"
-                className={`block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border
-    ${errors.event_title ? "border-red-500" : "border-gray-300"}`}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                required
               />
-              <p className="text-red-600 text-xs">{errors.event_title}</p>
             </div>
 
+            {/* Event Type */}
             <div className="space-y-2">
               <label
                 htmlFor="event_mode"
@@ -212,21 +222,20 @@ export default function AddEvent() {
               >
                 Event Type <span className="text-red-500">*</span>
               </label>
-              <div
-                className={
-                  errors.event_mode ? "border border-red-500 rounded-md " : ""
+              <Select
+                name="event_mode"
+                options={eventTypeOptions}
+                placeholder="Select event type"
+                onChange={handleSelectChange}
+                className="basic-single"
+                classNamePrefix="select"
+                required
+                value={
+                  eventTypeOptions.find(
+                    (opt) => opt.value === formData.event_mode
+                  ) || null
                 }
-              >
-                <Select
-                  name="event_mode"
-                  options={eventTypeOptions}
-                  placeholder="Select event type"
-                  onChange={handleSelectChange}
-                  className="basic-single"
-                  classNamePrefix="select"
-                />
-              </div>
-              <p className="text-red-600 text-xs">{errors.event_mode}</p>
+              />
             </div>
           </div>
 
@@ -274,7 +283,7 @@ export default function AddEvent() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  name="photo"
+                  name="image"
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
@@ -292,7 +301,6 @@ export default function AddEvent() {
                 <p className="mt-2 text-xs text-gray-500">
                   Recommended size: 1200x600 pixels
                 </p>
-                <p className="text-red-600 text-xs">{errors.image}</p>
               </div>
             </div>
           </div>
@@ -312,10 +320,9 @@ export default function AddEvent() {
               value={formData.description}
               onChange={handleChange}
               placeholder="Write a detailed description about your event..."
-              className={`block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border
-    ${errors.description ? "border-red-500" : "border-gray-300"}`}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+              required
             />
-            <p className="text-red-600 text-xs">{errors.description}</p>
           </div>
 
           {/* Event Date & Time */}
@@ -333,10 +340,9 @@ export default function AddEvent() {
                   name="event_date"
                   value={formData.event_date}
                   onChange={handleChange}
-                  className={`block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border
-    ${errors.event_date ? "border-red-500" : "border-gray-300"}`}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                  required
                 />
-                <p className="text-red-600 text-xs">{errors.event_date}</p>
               </div>
               <div className="w-full sm:w-1/3 space-y-2">
                 <label
@@ -350,10 +356,9 @@ export default function AddEvent() {
                   name="event_time"
                   value={formData.event_time}
                   onChange={handleChange}
-                  className={`block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border
-    ${errors.event_time ? "border-red-500" : "border-gray-300"}`}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                  required
                 />
-                <p className="text-red-600 text-xs">{errors.event_time}</p>
               </div>
               <div className="w-full sm:w-1/3 space-y-2">
                 <label
@@ -367,12 +372,9 @@ export default function AddEvent() {
                   name="registration_close_date"
                   value={formData.registration_close_date}
                   onChange={handleChange}
-                  className={`block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border
-    ${errors.registration_close_date ? "border-red-500" : "border-gray-300"}`}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                  required
                 />
-                <p className="text-red-600 text-xs">
-                  {errors.registration_close_date}
-                </p>
               </div>
             </div>
             <div className="flex w-full gap-4 mt-1">
@@ -391,16 +393,15 @@ export default function AddEvent() {
                   value={formData.location}
                   onChange={handleChange}
                   placeholder="Enter event location or online meeting link"
-                  className={`block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border
-    ${errors.location ? "border-red-500" : "border-gray-300"}`}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                  required
                 />
-                <p className="text-red-600 text-xs">{errors.location}</p>
               </div>
 
               {/* Max Attendees */}
               <div className="w-full space-y-2 mt-1">
                 <label
-                  htmlFor="max_participants"
+                  htmlFor="max_participant"
                   className="block text-base font-medium text-gray-700"
                 >
                   Maximum Attendees
@@ -408,13 +409,12 @@ export default function AddEvent() {
                 <div className="flex items-center gap-4">
                   <input
                     type="number"
-                    name="max_participants"
-                    value={formData.max_participants}
+                    name="max_participant"
+                    value={formData.max_participant}
                     onChange={handleChange}
                     disabled={formData.noLimit}
                     placeholder="Enter maximum number of attendees"
-                    className={`block w-72 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500
-    ${errors.max_participants ? "border-red-500" : "border-gray-300"}`}
+                    className="block w-72 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border disabled:bg-gray-100 disabled:text-gray-500"
                     min="1"
                   />
                   <div className="flex items-center">
@@ -456,14 +456,6 @@ export default function AddEvent() {
           </div>
         </form>
       </div>
-      {/* Toast notifications container */}
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        toastClassName={(context) =>
-          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
-        }
-      />
     </section>
   );
 }
