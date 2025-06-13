@@ -406,7 +406,7 @@ export default function UpdateProfile() {
                   bio: e.target.value,
                 }))
               }
-              className="w-full border border-gray-300 rounded px-4 py-2 resize-none"
+              className="w-full border border-gray-300 rounded px-4 py-2 resize-none focus:outline-denim"
               placeholder="Write something about yourself..."
             />
             <p className="text-red-600 text-xs">{errors.bio}</p>

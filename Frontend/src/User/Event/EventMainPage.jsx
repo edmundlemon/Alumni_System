@@ -222,7 +222,7 @@ export default function EventMainPage() {
         <div className="flex flex-wrap justify-center mb-12 border-b border-gray-200">
           <button
             className={`px-6 py-3 font-medium ${
-              activeTab === "upcoming" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"
+              activeTab === "upcoming" ? "text-denim border-b-2 border-denim" : "text-gray-500"
             }`}
             onClick={() => setActiveTab("upcoming")}
           >
@@ -230,7 +230,7 @@ export default function EventMainPage() {
           </button>
           <button
             className={`px-6 py-3 font-medium ${
-              activeTab === "past" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"
+              activeTab === "past" ? "text-denim border-b-2 border-denim" : "text-gray-500"
             }`}
             onClick={() => setActiveTab("past")}
           >
@@ -247,18 +247,18 @@ export default function EventMainPage() {
                 <input
                   type="text"
                   placeholder="Search events..."
-                  className="py-3 px-5 pr-12 rounded-lg shadow-md w-[350px]"
+                  className="py-3 px-5 pr-12 rounded-lg shadow-md w-[380px] focus:outline-denim"
                   value={searchQuery}
                   onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit(e)}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <FaSearch 
                 onClick={(e)=>handleSearchSubmit(e)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" />
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer " />
               </div>
               <div className="relative">
                 <select
-                  className="appearance-none py-3 px-4 pr-10 rounded-lg border select-none bg-white text-gray-700 shadow-md cursor-pointer hover:border-gray-400"
+                  className="focus:outline-denim appearance-none py-3 w-[170px] px-4 pr-10 rounded-lg border select-none bg-white text-gray-700 shadow-md cursor-pointer hover:border-gray-400"
                   onChange={(e) => setDayTimeFilter(e.target.value)}
                    style={{ backgroundImage: "none" }}
                   value={dayTimeFilter}
@@ -275,7 +275,7 @@ export default function EventMainPage() {
               </div>
               <div className="relative">
                 <select
-                    className="appearance-none py-3 px-4 pr-10 rounded-lg border bg-white text-gray-700 shadow-md cursor-pointer hover:border-gray-400"
+                    className="focus:outline-denim appearance-none w-[170px] py-3 px-4 pr-10 rounded-lg border bg-white text-gray-700 shadow-md cursor-pointer hover:border-gray-400"
                     style={{ backgroundImage: "none" }}
                     onChange={(e) => setTypeFilter(e.target.value)}
                     value={typeFilter}
