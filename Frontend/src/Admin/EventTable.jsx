@@ -14,6 +14,8 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { FiEdit3 } from "react-icons/fi";
 import ViewEventA from "./ViewEvent";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function EventTable() {
   const navigate = useNavigate();

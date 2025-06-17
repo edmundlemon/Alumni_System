@@ -1,22 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Cookies from "js-cookie";
 import { FaPlus } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
 import { IoSearchSharp } from "react-icons/io5";
-import { BiExport } from "react-icons/bi";
-import { BiSortAlt2 } from "react-icons/bi";
+import { BiExport, BiSortAlt2 } from "react-icons/bi";
 import UserProfile from "./UserProfileTable";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import AddUser from "./AddUser";
 import Skeleton from "react-loading-skeleton";
 import { FiEdit3 } from "react-icons/fi";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import CustomToast from "../CustomToast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function UserManageTable() {
   const navigate = useNavigate();
@@ -26,15 +24,41 @@ export default function UserManageTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortCriteria, setSortCriteria] = useState({ key: "", order: "asc" });
-  const itemsPerPage = 10;
-  const token = Cookies.get("adminToken");
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [customToast, setCustomToast] = useState(null);
+
+  const token = Cookies.get("adminToken");
+  const itemsPerPage = 10;
   const printRef = useRef();
   const viewportHeight = window.innerHeight;
-  const [toast, setToast] = useState(null);
+
+  const handleDeleteSelectedUsers = async () => {
+  if (selectUser.length === 0) return;
+  try {
+    // Delete each user one by one
+    await Promise.all(
+      selectUser.map((userID) =>
+        axios.delete(`http://localhost:8000/api/delete_user/${userID}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+      )
+    );
+
+    // Update local state after all deletions
+    setUsers((prevUsers) => prevUsers.filter((user) => !selectUser.includes(user.id)));
+    setSelectUser([]); // Clear selection
+    toast.success("Selected users deleted successfully");
+  } catch (error) {
+    console.error("Error deleting selected users:", error);
+    toast.error("Failed to delete selected users");
+  }
+};
 
 
   useEffect(() => {
@@ -43,9 +67,7 @@ export default function UserManageTable() {
         const response = await axios.get(
           "http://localhost:8000/api/view_all_users",
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         setUsers(response.data);
@@ -68,20 +90,24 @@ export default function UserManageTable() {
   }, [token, navigate]);
 
   const handleDeleteUser = async (userID) => {
-    try {
-      await axios.delete(`http://localhost:8000/api/delete_user/${userID}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("Event deleted successfully");
-      toast.success("User deleted successfully");
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      toast.error("Failed to cancel event");
-    }
-  };
+  try {
+    await axios.delete(`http://localhost:8000/api/delete_user/${userID}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    toast.success("User deleted successfully");
+
+    // Remove the user from the local state
+    setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userID));
+    setSelectUser((prevSelected) => prevSelected.filter((id) => id !== userID));
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    toast.error("Failed to delete user");
+  }
+};
+
 
   const filteredUsers = users.filter(
     (user) =>
@@ -131,73 +157,48 @@ export default function UserManageTable() {
   };
 
   const handleExport = async () => {
-  const { jsPDF } = await import("jspdf");
-  const autoTable = (await import("jspdf-autotable")).default;
+    const autoTable = (await import("jspdf-autotable")).default;
+    const pdf = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
 
-  const pdf = new jsPDF({
-    orientation: "landscape", // Better layout for tables
-    unit: "pt",
-    format: "a4",
-  });
+    pdf.setFontSize(18);
+    pdf.text("Users Report", 40, 40);
+    pdf.setFontSize(12);
+    pdf.setTextColor(100);
 
-  // Title
-  pdf.setFontSize(18);
-  pdf.text("Users Report", 40, 40);
-  pdf.setFontSize(12);
-  pdf.setTextColor(100);
+    const headers = [["ID", "Name", "Email", "Role", "Status", "Created At"]];
+    const data = users.map((user) => [
+      user.id,
+      user.name,
+      user.email,
+      user.role,
+      user.account_status === "active" ? "Active" : "Inactive",
+      new Date(user.created_at).toLocaleDateString(),
+    ]);
 
-  // Table headers
-  const headers = [["ID", "Name", "Email", "Role", "Status", "Created At"]];
+    autoTable(pdf, {
+      head: headers,
+      body: data,
+      startY: 60,
+      styles: { halign: "left", fontSize: 10, cellPadding: 5 },
+      headStyles: {
+        fillColor: [21, 96, 189],
+        textColor: [255, 255, 255],
+        halign: "center",
+      },
+      margin: { top: 60 },
+    });
 
-  // Table body
-  const data = users.map((user) => [
-    user.id,
-    user.name,
-    user.email,
-    user.role,
-    user.account_status === "active" ? "Active" : "Inactive",
-    new Date(user.created_at).toLocaleDateString(),
-  ]);
-
-  // Generate the table
-  autoTable(pdf, {
-    head: headers,
-    body: data,
-    startY: 60,
-    styles: {
-      halign: "left",
-      fontSize: 10,
-      cellPadding: 5,
-    },
-    headStyles: {
-      fillColor: [21, 96, 189],
-      textColor: [255, 255, 255],
-      halign: "center",
-    },
-    margin: { top: 60 },
-  });
-
-  // Footer
-  const dateStr = new Date().toLocaleString();
-  pdf.setFontSize(10);
-  pdf.text(`Generated on: ${dateStr}`, 40, pdf.internal.pageSize.getHeight() - 30);
-
-  // Save the PDF
-  pdf.save("users_report.pdf");
-};
-
+    pdf.setFontSize(10);
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, 40, pdf.internal.pageSize.getHeight() - 30);
+    pdf.save("users_report.pdf");
+  };
 
   const refreshUserList = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(
-        "http://localhost:8000/api/view_all_users",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get("http://localhost:8000/api/view_all_users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setUsers(response.data);
     } catch (error) {
       console.error("Error refreshing users:", error);
@@ -207,28 +208,22 @@ export default function UserManageTable() {
   };
 
   const handleAddUserSuccess = () => {
-  setShowAddUser(false);
-  setToast({ message: "User added successfully!", type: "success" });
-  refreshUserList();
+    setShowAddUser(false);
+    setCustomToast({ message: "User added successfully!", type: "success" });
+    refreshUserList();
   };
 
-
   return (
-    <div
-      className="h-full p-4 rounded-lg bg-white"
-      style={{
-        boxShadow:
-          "0 4px 6px rgba(0,0,0,0.1), 0 -4px 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1)",
-      }}
-    >
-      {toast && (
+    <div className="h-full p-4 rounded-lg bg-white shadow-lg">
+      {customToast && (
         <CustomToast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
+          message={customToast.message}
+          type={customToast.type}
+          onClose={() => setCustomToast(null)}
         />
       )}
-      <div className="flex justify-between items-center pb-4 ">
+
+      <div className="flex justify-between items-center pb-4">
         <p className="font-bold text-xl">Users Management Table</p>
         <div className="flex h-9 gap-2">
           <div className="relative">
@@ -241,9 +236,11 @@ export default function UserManageTable() {
             />
             <IoSearchSharp className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer" />
           </div>
-          <button className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
+          <button
+            className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs"
+            onClick={handleDeleteSelectedUsers}
+          >
             <MdDeleteOutline size={16} />
-            
             Delete
           </button>
           <button
@@ -258,7 +255,7 @@ export default function UserManageTable() {
             onClick={() => setShowAddUser(true)}
           >
             <FaPlus size={10} />
-            <span>Add User</span>
+            Add User
           </button>
         </div>
       </div>
@@ -277,20 +274,10 @@ export default function UserManageTable() {
                   }
                 />
               </th>
-              {[
-                "id",
-                "email",
-                "name",
-                "role",
-                "status",
-                "created_at",
-                "Action",
-              ].map((key) => (
+              {["id", "email", "name", "role", "status", "created_at", "Action"].map((key) => (
                 <th
                   key={key}
-                  className={`p-2 border-b text-left cursor-pointer ${
-                    key === "Action" ? "rounded-tr-md" : ""
-                  }`}
+                  className={`p-2 border-b text-left cursor-pointer ${key === "Action" ? "rounded-tr-md" : ""}`}
                   onClick={() => key !== "Action" && handleSort(key)}
                 >
                   <p className="flex items-center gap-2 capitalize">
@@ -316,16 +303,11 @@ export default function UserManageTable() {
                   </tr>
                 ))
               : displayUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b-2 border-gray-100 hover:bg-gray-50"
-                  >
+                  <tr key={user.id} className="border-b-2 border-gray-100 hover:bg-gray-50">
                     <td className="border-b border-gray-300 p-2 text-center">
                       <input
                         type="checkbox"
-                        onChange={(e) =>
-                          handleSelectOne(user.id, e.target.checked)
-                        }
+                        onChange={(e) => handleSelectOne(user.id, e.target.checked)}
                         checked={selectUser.includes(user.id)}
                       />
                     </td>
@@ -335,13 +317,9 @@ export default function UserManageTable() {
                     <td className="px-2 py-3 text-left">{user.role}</td>
                     <td className="px-2 py-3 text-left">
                       {user.account_status === "active" ? (
-                        <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">
-                          Active
-                        </span>
+                        <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">Active</span>
                       ) : (
-                        <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">
-                          Inactive
-                        </span>
+                        <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">Inactive</span>
                       )}
                     </td>
                     <td className="px-2 py-3 text-left">
@@ -354,7 +332,10 @@ export default function UserManageTable() {
                       >
                         <FiEdit3 />
                       </button>
-                      <button className="p-1 rounded border border-gray-300 shadow">
+                      <button
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="p-1 rounded border border-gray-300 shadow"
+                      >
                         <MdDeleteOutline />
                       </button>
                     </td>
@@ -364,7 +345,7 @@ export default function UserManageTable() {
         </table>
       </div>
 
-      <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2 ">
+      <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2">
         <p className="text-sm text-gray-500">
           Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
           {Math.min(currentPage * itemsPerPage, sortedUsers.length)} of{" "}
@@ -383,9 +364,7 @@ export default function UserManageTable() {
               key={i + 1}
               onClick={() => handleChangePage(i + 1)}
               className={`px-3 py-1 rounded-md text-sm border ${
-                currentPage === i + 1
-                  ? "bg-[#1560bd] text-white"
-                  : "text-gray-700 hover:bg-gray-100"
+                currentPage === i + 1 ? "bg-[#1560bd] text-white" : "text-gray-700 hover:bg-gray-100"
               }`}
             >
               {i + 1}
@@ -403,26 +382,24 @@ export default function UserManageTable() {
 
       {showUserProfile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-end p-4">
-          <div
-            className="bg-[#F8FAFC] rounded-lg w-[50%]"
-            style={{ height: `${viewportHeight - 30}px` }}
-          >
-            <UserProfile
-              height={viewportHeight}
-              user={selectedUserId}
-              onClose={() => setShowUserProfile(false)}
-            />
+          <div className="bg-[#F8FAFC] rounded-lg w-[50%]" style={{ height: `${viewportHeight - 30}px` }}>
+            <UserProfile height={viewportHeight} user={selectedUserId} onClose={() => setShowUserProfile(false)} />
           </div>
         </div>
       )}
+
       {showAddUser && (
         <div className="fixed z-50 top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-          <AddUser
-            onClose={() => setShowAddUser(false)}
-            onSuccess={handleAddUserSuccess}
-          />
+          <AddUser onClose={() => setShowAddUser(false)} onSuccess={handleAddUserSuccess} />
         </div>
       )}
+       <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }
