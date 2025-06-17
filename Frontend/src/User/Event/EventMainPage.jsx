@@ -141,24 +141,35 @@ export default function EventMainPage() {
 };
 
 
+
   useEffect(() => {
-    const filtered = events.filter((event) => {
-      const matchesStatus = event.status === activeTab;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize to start of day
 
-      const matchesType =
-        typeFilter === "" ||
-        (typeFilter === "physical" && event.type?.toLowerCase() === "physical") ||
-        (typeFilter === "virtual" && event.type?.toLowerCase() === "virtual") ||
-        (typeFilter === "hybrid" && event.type?.toLowerCase() === "hybrid");
+  const filtered = events.filter((event) => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0); // Normalize event date
 
-      const matchesDayTime = filterByDayTime(event, dayTimeFilter);
+    // Status filtering logic (date only comparison)
+    const matchesStatus = 
+      (activeTab === "upcoming" && eventDate >= today && event.status !== "cancelled") ||
+      (activeTab === "past" && eventDate < today && event.status !== "cancelled") ||
+      (activeTab === "cancelled" && event.status === "cancelled");
 
-      return matchesStatus && matchesType && matchesDayTime;
-    });
+    const matchesType =
+      typeFilter === "" ||
+      (typeFilter === "physical" && event.type?.toLowerCase() === "physical") ||
+      (typeFilter === "virtual" && event.type?.toLowerCase() === "virtual") ||
+      (typeFilter === "hybrid" && event.type?.toLowerCase() === "hybrid");
 
-    setFilteredEvents(filtered);
-    setCurrentPage(1);
-  }, [events, activeTab, searchQuery, dayTimeFilter, typeFilter]);
+    const matchesDayTime = filterByDayTime(event, dayTimeFilter);
+
+    return matchesStatus && matchesType && matchesDayTime;
+  });
+
+  setFilteredEvents(filtered);
+  setCurrentPage(1);
+}, [events, activeTab, searchQuery, dayTimeFilter, typeFilter]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -168,6 +179,27 @@ export default function EventMainPage() {
       day: "numeric",
     });
   };
+  const formatTime = (timeString) => {
+  if (!timeString) return '';
+  
+  try {
+    // Create a date object with an arbitrary date and the time
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours, 10));
+    date.setMinutes(parseInt(minutes, 10));
+    
+    // Format as 12-hour time with AM/PM
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return timeString; // Return original if parsing fails
+  }
+};
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -384,7 +416,7 @@ export default function EventMainPage() {
                         <div className="flex items-center text-sm text-gray-500 mb-2">
                           <FaCalendarAlt className="mr-2" />
                           <span>
-                            {formatDate(event.date)} • {event.time}
+                            {formatDate(event.date)} • {formatTime(event.time)}
                           </span>
                         </div>
                         <h3 className="text-xl font-bold text-gray-800 mb-2">
