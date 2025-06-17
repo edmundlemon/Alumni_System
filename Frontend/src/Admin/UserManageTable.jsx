@@ -393,7 +393,8 @@ export default function UserManageTable() {
           <AddUser onClose={() => setShowAddUser(false)} onSuccess={handleAddUserSuccess} />
         </div>
       )}
-       <ToastContainer
+       {/* Toast notifications container */}
+      <ToastContainer
         position="top-center"
         autoClose={3000}
         toastClassName={(context) =>

@@ -14,7 +14,7 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { FiEdit3 } from "react-icons/fi";
 import ViewEventA from "./ViewEvent";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function EventTable() {
@@ -70,7 +70,7 @@ export default function EventTable() {
 
   const handleDeleteEvent = async (EventId) => {
     try {
-      await axios.delete(`http://localhost:8000/api/delete_user/${EventId}`, {
+      await axios.delete(`http://localhost:8000/api/cancel_event/${EventId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -78,6 +78,12 @@ export default function EventTable() {
       });
       console.log("Event deleted successfully");
       toast.success("User deleted successfully");
+      setEvents((prevEvents) =>
+        prevEvents.filter((event) => event.id !== EventId)
+      );
+      setSelectEvent((prevSelect) =>
+        prevSelect.filter((id) => id !== EventId)
+      );
     } catch (error) {
       console.error("Error deleting event:", error);
       toast.error("Failed to cancel event");
@@ -311,7 +317,9 @@ export default function EventTable() {
                                           >
                                             <FiEdit3 />
                                           </button>
-                                          <button className="p-1 rounded border border-gray-300 shadow">
+                                          <button 
+                                            onClick={() => handleDeleteEvent(event.id)}
+                                            className="p-1 rounded border border-gray-300 shadow">
                                             <MdDeleteOutline />
                                           </button>
                                         </td>
@@ -370,6 +378,14 @@ export default function EventTable() {
                 </div>
               </div>
             )}
+
+        <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }

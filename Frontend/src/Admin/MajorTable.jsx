@@ -13,6 +13,8 @@ import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
 import { FiEdit3 } from "react-icons/fi";
 import Select from "react-select";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function MajorTable() {
   const navigate = useNavigate();

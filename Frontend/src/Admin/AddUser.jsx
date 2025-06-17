@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import Select from "react-select";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ImSpinner2 } from "react-icons/im";
 
 export default function AddUser({ onClose, onSuccess}) {
   const [userData, setUserData] = useState({
@@ -15,7 +16,7 @@ export default function AddUser({ onClose, onSuccess}) {
     major_id: "",
     faculty: "",
   });
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [majors, setMajors] = useState([]);
 
   const majorOptions = majors.map((major) => ({
@@ -68,6 +69,8 @@ export default function AddUser({ onClose, onSuccess}) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (isSubmitting) return; // Prevent multiple submissions
+    setIsSubmitting(true);
 
     axios
       .post("http://localhost:8000/api/register_user", userData, {
@@ -82,6 +85,9 @@ export default function AddUser({ onClose, onSuccess}) {
       .catch((error) => {
         console.error(error);
         toast.error("Failed to add user. Please try again.");
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
   };
 
@@ -203,9 +209,16 @@ export default function AddUser({ onClose, onSuccess}) {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-md bg-denim text-white hover:bg-blue-700 transition"
+                className="px-4 py-2 flex items-center rounded-md bg-denim text-white hover:bg-blue-700 transition"
               >
-                Add User
+                {isSubmitting ? (
+                    <>
+                      <ImSpinner2 className="animate-spin mr-2" />
+                      Adding User...
+                    </>
+                  ) : (
+                    "Add User"
+                  )}
               </button>
             </div>
           </form>

@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { FaUpload, FaTimes } from "react-icons/fa";
-import { IoClose } from "react-icons/io5";
-import { IoInformationCircle } from "react-icons/io5";
+import { IoClose, IoInformationCircle } from "react-icons/io5";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import Cookies from "js-cookie";
 
-export default function AddDonation({ onClose }) {
+export default function AddDonation({ onClose, setDonations, setShowAddDonation }) {
+  const token = Cookies.get("adminToken");
   const [formData, setFormData] = useState({
     donation_title: "",
     description: "",
@@ -19,10 +23,44 @@ export default function AddDonation({ onClose }) {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted Donation Data:", formData);
-    // TODO: Add your API submission logic
+    const donationForm = new FormData();
+    donationForm.append("donation_title", formData.donation_title);
+    donationForm.append("description", formData.description);
+    donationForm.append("target_amount", formData.target_amount);
+    donationForm.append("end_date", formData.end_date);
+    if (formData.photo) {
+      donationForm.append("image", formData.photo);
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/create_donation_post",
+        donationForm,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      toast.success("Donation added successfully");
+
+      if (setDonations) {
+        setDonations((prev) => [...prev, response.data.donation_post]);
+      }
+
+      if (setShowAddDonation) {
+        setShowAddDonation(false);
+      } else {
+        onClose(); // fallback close
+      }
+    } catch (error) {
+      console.error("Error adding donation:", error);
+      toast.error("Failed to add donation");
+    }
   };
 
   const handleImageChange = (e) => {
@@ -49,27 +87,28 @@ export default function AddDonation({ onClose }) {
   return (
     <div className="flex flex-col justify-between h-full">
       <form onSubmit={handleSubmit} className="flex flex-col justify-between h-full">
-        <div className="space-y-2 ">
-            <div className="flex items-center justify-between mb-4">
-                <h1 className="font-bold text-2xl flex gap-2 items-center">
-                Create Donation
-                <div className="relative group">
-                    <IoInformationCircle className="text-blue-900 cursor-pointer" />
-                    <div className="absolute -top-2 left-8 w-64 z-50 hidden group-hover:block">
-                    <div className="bg-blue-50 text-blue-800 p-3 rounded-md shadow-lg text-sm">
-                        <h3 className="font-semibold mb-1">Tips for Success</h3>
-                        <ul className="list-disc list-inside text-xs space-y-1">
-                        <li>Set a clear, compelling title</li>
-                        <li>Explain how donations will be used</li>
-                        <li>Add an engaging image</li>
-                        <li>Set a realistic target amount</li>
-                        </ul>
-                    </div>
-                    </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="font-bold text-2xl flex gap-2 items-center">
+              Create Donation
+              <div className="relative group">
+                <IoInformationCircle className="text-blue-900 cursor-pointer" />
+                <div className="absolute -top-2 left-8 w-64 z-50 hidden group-hover:block">
+                  <div className="bg-blue-50 text-blue-800 p-3 rounded-md shadow-lg text-sm">
+                    <h3 className="font-semibold mb-1">Tips for Success</h3>
+                    <ul className="list-disc list-inside text-xs space-y-1">
+                      <li>Set a clear, compelling title</li>
+                      <li>Explain how donations will be used</li>
+                      <li>Add an engaging image</li>
+                      <li>Set a realistic target amount</li>
+                    </ul>
+                  </div>
                 </div>
+              </div>
             </h1>
-                <IoClose className="cursor-pointer text-2xl" onClick={onClose} />
-            </div>
+            <IoClose className="cursor-pointer text-2xl" onClick={onClose} />
+          </div>
+
           <div>
             <label className="block font-medium mb-1 text-gray-700">Title</label>
             <input
@@ -123,10 +162,7 @@ export default function AddDonation({ onClose }) {
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700 mb-1">
-              Donation Image
-            </label>
-
+            <label className="block font-medium text-gray-700 mb-1">Donation Image</label>
             {formData.previewImage ? (
               <div className="relative">
                 <img
@@ -179,6 +215,14 @@ export default function AddDonation({ onClose }) {
           </button>
         </div>
       </form>
+
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }
