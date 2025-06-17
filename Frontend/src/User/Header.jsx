@@ -53,7 +53,7 @@ function Header() {
       path: "/alumniMainPage",
       dropdown: [
         { name: "All Alumni", path: "/alumniMainPage" },
-        { name: "Connect Status", path: "/connectStatus" }
+        { name: "Connect Status", path: "/connectStatus" },
       ],
     },
     { name: "Admin Portal", path: AdminToken ? "/dashboard" : "/adminLogin" },
@@ -210,7 +210,11 @@ function Header() {
                                             after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-900 
                                             after:transition-all after:duration-300 hover:after:w-full`}
                     >
-                      {item.name}
+                      {item.name === "Admin Portal" ? (
+                        <span className="whitespace-nowrap">{item.name}</span>
+                      ) : (
+                        item.name
+                      )}
                       {item.dropdown && (
                         <FiChevronDown
                           className={`transition-transform duration-200 ${

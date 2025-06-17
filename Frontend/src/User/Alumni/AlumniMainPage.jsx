@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Select from "react-select";
 
 export default function AlumniMainPage() {
   const navigate = useNavigate();
@@ -17,6 +18,9 @@ export default function AlumniMainPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredAlumni, setFilteredAlumni] = useState([]);
+  const [majors, setMajors] = useState([]);
+  const [faculties, setFaculties] = useState([]);
+
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
 
@@ -44,16 +48,30 @@ export default function AlumniMainPage() {
   useEffect(() => {
     const fetchAlumni = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8000/api/view_all_alumni",
+        const [alumniRes, majorRes, facultyRes] = await Promise.all([
+          axios.get("http://localhost:8000/api/view_all_alumni",
           {
             headers: {
               Authorization: `Bearer ${Cookies.get("token")}`,
             },
-          }
-        );
-        setAlumni(response.data);
-        setFilteredAlumni(response.data);
+          }),
+          axios.get("http://localhost:8000/api/view_all_majors", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get("http://localhost:8000/api/view_all_faculties", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+          }}),
+        ]) 
+        setAlumni(alumniRes.data);
+        setFilteredAlumni(alumniRes.data);
+        setMajors(majorRes.data);
+        setFaculties(facultyRes.data.faculties);
+        console.log("Alumni data fetched successfully:", alumniRes.data);
+        console.log("Majors data fetched successfully:", majorRes.data);
+        console.log("Faculties data fetched successfully:", facultyRes.data.faculties);
       } catch (error) {
         console.error("Error fetching alumni data:", error);
       } finally {
@@ -96,6 +114,16 @@ export default function AlumniMainPage() {
       }
     }
   }
+
+  const majorOptions = majors.map(major => ({
+    value: major.major_name,
+    label: major.major_name,
+  }));
+
+  const facultyOptions = faculties.map(faculty => ({
+    value: faculty.faculty_name,
+    label: faculty.faculty_name,
+  }));
 
   const SkeletonCard = () => (
     <div className="bg-white shadow-lg border rounded-xl p-2 animate-pulse">
@@ -150,16 +178,103 @@ export default function AlumniMainPage() {
           <h2 className="text-3xl font-bold text-gray-800">
             Distinguished Alumni
           </h2>
-          <div className="relative">
+          <div className="flex gap-2 items-center">
+            <div className="relative">
             <input
               type="text"
               placeholder="Search alumni…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
-              className="py-3 px-5 pr-12 border rounded-lg shadow-md w-[300px] sm:w-[420px] lg:w-[550px] focus:outline-denim"
+              className="py-3 px-5 pr-12 border rounded-lg shadow-md w-[300px] sm:w-[420px] lg:w-[400px] focus:outline-denim"
             />
             <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            </div>
+            <Select
+            name="major"
+            options={majorOptions}
+            placeholder="Filter by Major"
+            className="w-[150px] sm:w-[200px] lg:w-[200px]"
+            onChange={(option) => {
+              const filtered = alumni.filter(alumni =>
+                alumni.major_name === option.value
+              );
+              setFilteredAlumni(filtered);
+              setCurrentPage(1);
+            }}
+            styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    minHeight: 48,
+                    height: 48,
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+                    borderColor: state.isFocused ? '#2563eb' : base.borderColor, // optional focus color
+                    '&:hover': {
+                      borderColor: '#2563eb' 
+                    },
+                    border: '1px solid #e5e7eb',
+                    fontSize: '0.875rem', // 14px
+                  }),
+                  valueContainer: (base) => ({
+                    ...base,
+                    height: 48,
+                    padding: '0 8px',
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    margin: 0,
+                    padding: 0,
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: '#9ca3af',
+                    fontSize: '0.875rem',
+                  }),
+                }}
+          />
+          <Select
+            name="faculty"
+            options={facultyOptions}
+            placeholder="Filter by Faculty"
+            className="w-[150px] sm:w-[200px] lg:w-[200px]"
+            onChange={(option) => {
+              const filtered = alumni.filter(alumni =>
+                alumni.faculty === option.value
+              );
+              setFilteredAlumni(filtered);
+              setCurrentPage(1);
+            }}
+            styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    minHeight: 48,
+                    height: 48,
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+                    borderColor: state.isFocused ? '#2563eb' : base.borderColor, // optional focus color
+                    '&:hover': {
+                      borderColor: '#2563eb' 
+                    },
+                    border: '1px solid #e5e7eb',
+                  }),
+                  valueContainer: (base) => ({
+                    ...base,
+                    height: 48,
+                    padding: '0 8px',
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    margin: 0,
+                    padding: 0,
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: '#9ca3af',
+                    fontSize: '0.875rem',
+                  }),
+                }}
+          />
           </div>
         </div>
 
