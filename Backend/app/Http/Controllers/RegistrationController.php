@@ -117,7 +117,7 @@ class RegistrationController extends Controller
     {
         //
         $user = Auth::guard('sanctum')->user();
-        if (!$user || $user->id !== $registration->user_id) {
+        if (!$user && $user->id !== $registration->user_id) {
             return response()->json([
                 'status' => false,
                 'message' => 'You are not authorized to delete a registration',

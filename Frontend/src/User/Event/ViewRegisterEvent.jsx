@@ -9,6 +9,8 @@ import {
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState, useRef } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ViewEvent() {
   const [events, setEvents] = useState([]);
@@ -19,6 +21,7 @@ export default function ViewEvent() {
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const calendarRef = useRef();
   const token = Cookies.get("token");
+  const userId = Cookies.get("userId");
 
   const getDaysInMonth = (month, year) => {
     return new Date(year, month + 1, 0).getDate();
@@ -72,6 +75,25 @@ export default function ViewEvent() {
       fetchEvents();
     }
   }, [token]);
+
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/delete_registration/${eventId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setEvents((prevEvents) =>
+        prevEvents.filter((event) => event.id !== eventId)
+      );  
+      setSelectedEvent(null);
+      toast.success("Event registration cancelled successfully!")
+    } catch (error) {
+      console.error("Error deleting event:", error); 
+      toast.error("Failed to cancel event registration."); 
+    }
+  };
 
   const handlePrevMonth = () => {
     if (currentMonth === 0) {
@@ -262,9 +284,27 @@ export default function ViewEvent() {
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-2 flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {event.event_title}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {event.event_title}
+                      </h3>
+                      {/* Status Badge */}
+                      {event.status === "upcoming" && (
+                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-green-100 text-green-700 border border-green-300">
+                          Upcoming Event
+                        </span>
+                      )}
+                      {event.status === "cancelled" && (
+                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-red-100 text-red-700 border border-red-300">
+                          Cancelled Event
+                        </span>
+                      )}
+                      {event.status === "Pass" && (
+                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-200 text-gray-600 border border-gray-300">
+                          pass
+                        </span>
+                      )}
+                    </div>
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <FiCalendar className="text-gray-400" />
@@ -323,7 +363,9 @@ export default function ViewEvent() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
+                    <button 
+                      onClick={() => handleDeleteEvent(event.id)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
                       Cancel 
                     </button>
                   </div>
@@ -390,7 +432,13 @@ export default function ViewEvent() {
             <FiCalendar className="text-gray-400" />
             {selectedEvent.description || "No description"}
           </div>
-
+          <div className="w-full mt-2">
+            {selectedEvent.status === "cancelled" && (
+              <span className=" px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-700 border border-red-300">
+                Cancelled
+              </span>
+            )}
+          </div>  
           <div className="mt-3 text-right">
             <button
               onClick={() => setSelectedEvent(null)}
@@ -401,6 +449,14 @@ export default function ViewEvent() {
           </div>
         </div>
       )}
+      {/* Toast notifications container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }

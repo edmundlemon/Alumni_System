@@ -57,6 +57,22 @@ export default function DonationTable() {
     }
   }, [token, navigate]);
 
+  const handleDeleteDonation = async (DoantionId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/cancel_donation_post/${DoantionId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Event deleted successfully");
+      toast.success("User deleted successfully");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to cancel event");
+    }
+  };
+
   const handleViewDonation = (donation) => {
     setSelectedDonationId(donation);
     setShowEditDonation(true);
@@ -105,23 +121,56 @@ export default function DonationTable() {
     setCurrentPage(newPage);
   };
 
-  const handleExport = async () => {
-    const element = printRef.current;
-    if (!element) return;
+ const handleExport = async () => {
+  const { jsPDF } = await import("jspdf");
+  const autoTable = (await import("jspdf-autotable")).default;
 
-    const canvas = await html2canvas(element);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4",
-    });
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("donations_report.pdf");
-  };
+  const pdf = new jsPDF({
+    orientation: "landscape",
+    unit: "pt",
+    format: "a4",
+  });
+
+  pdf.setFontSize(18);
+  pdf.text("Donations Report", 40, 40);
+  pdf.setFontSize(12);
+  pdf.setTextColor(100);
+
+  const headers = [["ID", "Admin ID", "Title", "Raised", "Target", "Status", "Created At"]];
+
+  const data = donations.map((donation) => [
+    donation.id,
+    donation.admin_id,
+    donation.donation_title,
+    `RM ${donation.current_amount.toFixed(2)}`,
+    `RM ${donation.target_amount.toFixed(2)}`,
+    donation.status === "completed" ? "Closed" : donation.status,
+    new Date(donation.created_at).toLocaleDateString(),
+  ]);
+
+  autoTable(pdf, {
+    head: headers,
+    body: data,
+    startY: 60,
+    styles: { fontSize: 10, cellPadding: 5 },
+    headStyles: {
+      fillColor: [21, 96, 189],
+      textColor: [255, 255, 255],
+      halign: "center",
+    },
+    columnStyles: {
+      3: { halign: "right" },
+      4: { halign: "right" },
+    },
+  });
+
+  const dateStr = new Date().toLocaleString();
+  pdf.setFontSize(10);
+  pdf.text(`Generated on: ${dateStr}`, 40, pdf.internal.pageSize.getHeight() - 30);
+
+  pdf.save("donations_report.pdf");
+};
+
 
   return (
     <div

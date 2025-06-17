@@ -236,6 +236,14 @@ export default function EventMainPage() {
           >
             Past Events
           </button>
+          <button
+            className={`px-6 py-3 font-medium ${
+              activeTab === "cancelled" ? "text-denim border-b-2 border-denim" : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("cancelled")}
+          >
+            Cancelled Events
+          </button>
         </div>
 
         {/* Filters */}

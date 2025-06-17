@@ -54,6 +54,22 @@ export default function ForumTable() {
     }
   }, [token, navigate]);
 
+  const handleDeleteForum = async (ForumId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/delete_discussion/${ForumId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Event deleted successfully");
+      toast.success("User deleted successfully");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to cancel event");
+    }
+  };
+
   const handleViewForum = (forum) => {
     setSelectedForumID(forum);
     setShowForum(true);
@@ -111,15 +127,54 @@ export default function ForumTable() {
   };
 
   const handleExport = async () => {
-    const canvas = await html2canvas(printRef.current);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF();
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("forums_report.pdf");
-  };
+  const { jsPDF } = await import("jspdf");
+  const autoTable = (await import("jspdf-autotable")).default;
+
+  const pdf = new jsPDF({
+    orientation: "landscape",
+    unit: "pt",
+    format: "a4",
+  });
+
+  pdf.setFontSize(18);
+  pdf.text("Forum Discussions Report", 40, 40);
+  pdf.setFontSize(12);
+  pdf.setTextColor(100);
+
+  const headers = [["Forum ID", "Title", "Comments", "User ID", "Created At"]];
+  const data = forums.map((forum) => [
+    forum.id,
+    forum.subject ? forum.subject.slice(0, 30) + (forum.subject.length > 30 ? "..." : "") : "",
+    forum.comments?.length ?? 0,
+    forum.user_id,
+    forum.created_at
+      ? new Date(forum.created_at).toLocaleDateString()
+      : "",
+  ]);
+
+  autoTable(pdf, {
+    head: headers,
+    body: data,
+    startY: 60,
+    styles: {
+      fontSize: 10,
+      cellPadding: 6,
+    },
+    headStyles: {
+      fillColor: [21, 96, 189],
+      textColor: [255, 255, 255],
+      halign: "center",
+    },
+    margin: { top: 60 },
+  });
+
+  const dateStr = new Date().toLocaleString();
+  pdf.setFontSize(10);
+  pdf.text(`Generated on: ${dateStr}`, 40, pdf.internal.pageSize.getHeight() - 30);
+
+  pdf.save("forums_report.pdf");
+};
+
 
   return (
     <div className="h-full p-4 rounded-lg bg-white"

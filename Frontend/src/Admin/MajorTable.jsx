@@ -75,6 +75,22 @@ export default function MajorTable() {
     }
   }, [token, navigate]);
 
+  const handleDeleteMajor = async (majorId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/delete_user/${majorId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Event deleted successfully");
+      toast.success("User deleted successfully");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to cancel event");
+    }
+  };
+
   const filteredMajors = majors.filter(
     (user) =>
       user.major_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||

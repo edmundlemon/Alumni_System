@@ -22,6 +22,7 @@ const Sidebar = () => {
   const [hoveredMenu, setHoveredMenu] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
   const token = Cookies.get("adminToken");
+  const userToken = Cookies.get("token");
 
   useEffect(() => {
     if (!open) {
@@ -36,6 +37,7 @@ const Sidebar = () => {
     { name: "Donation", link: "/donationTable", icon: BiDonateHeart },
     { name: "Forum", link: "/forumTable", icon: MdOutlineMessage },
     { name: "Major", link: "/majorTable", icon: MdStorage },
+    { name: "User Portal", link: userToken ? "/forumMainPage" :"/userLogin", icon: MdStorage },
   ];
 
   // Find the menu whose link matches the current path

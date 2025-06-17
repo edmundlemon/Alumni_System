@@ -66,6 +66,22 @@ export default function EventTable() {
     }
   }, [token, navigate]);
 
+  const handleDeleteEvent = async (EventId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/delete_user/${EventId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Event deleted successfully");
+      toast.success("User deleted successfully");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to cancel event");
+    }
+  };
+
   const filteredEvent = events.filter((event) =>
   event.event_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
   event.host_name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -109,22 +125,60 @@ export default function EventTable() {
   };
 
   const handleExport = async () => {
-    const element = printRef.current;
-    if (!element) return;
+  const { jsPDF } = await import("jspdf");
+  const autoTable = (await import("jspdf-autotable")).default;
 
-    const canvas = await html2canvas(element);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4",
-    });
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("users_report.pdf");
-  };
+  const pdf = new jsPDF({
+    orientation: "landscape",
+    unit: "pt",
+    format: "a4",
+  });
+
+  // Header
+  pdf.setFontSize(18);
+  pdf.text("Event Report", 40, 40);
+  pdf.setFontSize(12);
+  pdf.setTextColor(100);
+
+  // Table headers
+  const headers = [
+    ["ID", "Title", "Host", "Location", "Status", "Created At"],
+  ];
+
+  // Data
+  const data = sortedEvent.map((event) => [
+    event.id,
+    event.event_title,
+    event.host_name,
+    event.location,
+    event.status,
+    new Date(event.created_at).toLocaleDateString(),
+  ]);
+
+  autoTable(pdf, {
+    head: headers,
+    body: data,
+    startY: 60,
+    styles: {
+      fontSize: 10,
+      cellPadding: 4,
+    },
+    headStyles: {
+      fillColor: [21, 96, 189],
+      textColor: [255, 255, 255],
+      halign: "center",
+    },
+    margin: { top: 60 },
+  });
+
+  // Footer
+  const generatedAt = new Date().toLocaleString();
+  pdf.setFontSize(10);
+  pdf.text(`Generated on: ${generatedAt}`, 40, pdf.internal.pageSize.getHeight() - 30);
+
+  pdf.save("event_report.pdf");
+};
+
 
   return (
     <div
