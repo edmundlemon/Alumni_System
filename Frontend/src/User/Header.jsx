@@ -101,25 +101,26 @@ function Header() {
   }, [token, location.pathname, userId]);
 
   const handleLoginLogout = () => {
-    if (token) {
-      axios
-        .post("http://localhost:8000/api/user_logout", null, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        })
-        .then(() => {
-          Cookies.remove("token");
-          navigate("/userLogin");
-        })
-        .catch((error) => {
-          console.error("Logout error:", error);
-        });
-    }
-    Cookies.remove("token");
+  if (token) {
+    axios
+      .post("http://localhost:8000/api/user_logout", null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+      })
+      .finally(() => {
+        Cookies.remove("token");
+        navigate("/userLogin");
+      });
+  } else {
     navigate("/userLogin");
-  };
+  }
+};
+
 
   const handleResetSubmit = (event) => {
     event.preventDefault();
