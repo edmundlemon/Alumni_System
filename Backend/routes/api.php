@@ -81,7 +81,7 @@ Route::middleware('auth:sanctum')->delete('/delete_feedback/{feedback}', [Feedba
 Route::middleware('auth:sanctum')->post('/connect/{acceptingUser}', [ConnectionController::class, 'create']);
 Route::middleware('auth:sanctum')->get('/view_pending_connections', [ConnectionController::class, 'viewPendingConnections']);
 Route::middleware('auth:sanctum')->get('/view_pending_to_accept_connections', [ConnectionController::class, 'viewPendingToAcceptConnections']);
-Route::middleware('auth:sanctum')->get('/update_connection', [ConnectionController::class, 'edit']);
+Route::middleware('auth:sanctum')->put('/update_connection/{connection}', [ConnectionController::class, 'edit']);
 // Major Routes
 Route::middleware('auth:sanctum')->post('/create_major', [MajorController::class, 'create']);
 Route::middleware('auth:sanctum')->put('/edit_major/{major}', [MajorController::class, 'update']);
