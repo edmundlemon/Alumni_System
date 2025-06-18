@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-export default function AddDonation({ onClose, setDonations, setShowAddDonation }) {
+export default function AddDonation({ onClose, passMessage}) {
   const token = Cookies.get("adminToken");
   const [formData, setFormData] = useState({
     donation_title: "",
@@ -47,16 +47,11 @@ export default function AddDonation({ onClose, setDonations, setShowAddDonation 
       );
 
       toast.success("Donation added successfully");
-
-      if (setDonations) {
-        setDonations((prev) => [...prev, response.data.donation_post]);
-      }
-
-      if (setShowAddDonation) {
-        setShowAddDonation(false);
-      } else {
-        onClose(); // fallback close
-      }
+      setTimeout(() => {
+        onClose();
+        passMessage();
+      }, 3000);
+      
     } catch (error) {
       console.error("Error adding donation:", error);
       toast.error("Failed to add donation");
@@ -217,7 +212,7 @@ export default function AddDonation({ onClose, setDonations, setShowAddDonation 
       </form>
 
       <ToastContainer
-        position="top-center"
+        position="top-right"
         autoClose={3000}
         toastClassName={(context) =>
           `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`

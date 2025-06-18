@@ -14,6 +14,7 @@ import AddDonation from "./AddDonation";
 import EditDonation from "./EditDonation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { AiOutlineStop } from "react-icons/ai";
 
 export default function DonationTable() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function DonationTable() {
   const [showEditDonation, setShowEditDonation] = useState(false);
   const [selectedDonationId, setSelectedDonationId] = useState(null);
   const viewportHeight = window.innerHeight;
+  const [successAdd, setSuccessAdd] = useState(false)
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -59,6 +61,13 @@ export default function DonationTable() {
     }
   }, [token, navigate]);
 
+  useEffect(() => {
+  if (successAdd) {
+    RefreshPage();
+    setSuccessAdd(false); 
+  }
+}, [successAdd]);
+
   const handleDeleteDonation = async (DoantionId) => {
     try {
       await axios.delete(`http://localhost:8000/api/cancel_donation_post/${DoantionId}`, {
@@ -69,10 +78,7 @@ export default function DonationTable() {
       });
       console.log("Event deleted successfully");
       toast.success("User deleted successfully");
-      // Update local state to remove the deleted donation
-      setDonations((prevDonations) =>
-        prevDonations.filter((donation) => donation.id !== DoantionId)
-      );
+      RefreshPage();
     } catch (error) {
       console.error("Error deleting event:", error);
       toast.error("Failed to cancel event");
@@ -98,17 +104,34 @@ export default function DonationTable() {
     );
 
     // Update state correctly
-    setDonations((prevDonations) =>
-      prevDonations.filter((donation) => !selectDonation.includes(donation.id))
-    );
+      RefreshPage()
+      setSelectDonation([]); // fix here
+      toast.success("Selected donations deleted successfully");
+    } catch (error) {
+      console.error("Error deleting selected donations:", error);
+      toast.error("Failed to delete selected donations");
+    }
+  };
 
-    setSelectDonation([]); // fix here
-    toast.success("Selected donations deleted successfully");
-  } catch (error) {
-    console.error("Error deleting selected donations:", error);
-    toast.error("Failed to delete selected donations");
-  }
-};
+const RefreshPage = async () => {
+    try {
+        const response = await axios.get(
+          "http://localhost:8000/api/view_all_donation_posts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setDonations(response.data.donation_posts);
+        console.log(response.data.donation_posts);
+      } catch (error) {
+        console.error("Error fetching donations:", error);
+        navigate("/403");
+      } finally {
+        setIsLoading(false);
+      }
+  };
 
 
 
@@ -235,8 +258,8 @@ export default function DonationTable() {
           <button 
             onClick={handleDeleteSelectedDonation}
             className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
-            <MdDeleteOutline size={16} />
-            Delete
+            <AiOutlineStop  size={16} />
+            Cancel
           </button>
           <button
             className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs"
@@ -340,7 +363,14 @@ export default function DonationTable() {
                     {donation.status === "completed" ? (
                       <td>
                         <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">
-                          Close
+                          {donation.status}
+                        </span>
+                      </td>
+                    ) : (
+                      donation.status === "cancelled" ? (
+                      <td>
+                        <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">
+                          {donation.status}
                         </span>
                       </td>
                     ) : (
@@ -349,7 +379,7 @@ export default function DonationTable() {
                           {donation.status}
                         </span>
                       </td>
-                    )}
+                    ))}
                     <td className="flex px-2 pt-3 gap-2">
                       <button
                         className="p-1 rounded border border-gray-300 shadow"
@@ -360,7 +390,7 @@ export default function DonationTable() {
                       <button 
                         onClick={() => handleDeleteDonation(donation.id)}
                         className="p-1 rounded border border-gray-300 shadow">
-                        <MdDeleteOutline />
+                        <AiOutlineStop  />
                       </button>
                     </td>
                   </tr>
@@ -411,7 +441,7 @@ export default function DonationTable() {
             className="bg-[#F8FAFC] rounded-lg p-6 w-[50%] "
             style={{ height: `${viewportHeight-30}px` }}
           >
-            <AddDonation onClose={() => setShowAddDonation(false)} />
+            <AddDonation onClose={() => {setShowAddDonation(false)}} passMessage = {() => {setSuccessAdd(true)}} />
           </div>
         </div>
       )}
@@ -430,7 +460,7 @@ export default function DonationTable() {
       )}
       {/* Toast notifications container */}
       <ToastContainer
-        position="top-center"
+        position="top-right"
         autoClose={3000}
         toastClassName={(context) =>
           `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
