@@ -16,6 +16,7 @@ import { useMemo } from "react";
 import fallbackImage from '../../assets/fallback-image.jpg';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { LuMoveRight } from "react-icons/lu";
 
 export default function EventMainPage() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -36,7 +37,7 @@ export default function EventMainPage() {
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
   const currentEvents = useMemo(() => {
     return filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-  }, [filteredEvents, currentPage]);
+  }, [filteredEvents, currentPage, indexOfFirstEvent, indexOfLastEvent]);
   const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
   const getStartOfWeek = (date) => {
@@ -51,9 +52,10 @@ export default function EventMainPage() {
     return new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
   };
 
+  // FIXED: Changed from event.date to event.event_date
   const filterByDayTime = (event, dayTimeFilter) => {
     if (!dayTimeFilter) return true;
-    const eventDate = new Date(event.date);
+    const eventDate = new Date(event.event_date); // Fixed field name
     const today = new Date();
 
     if (dayTimeFilter === "thisWeek") {
@@ -79,83 +81,83 @@ export default function EventMainPage() {
         const response = await axios.get("http://localhost:8000/api/view_all_events", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response.data);
-        const mappedEvents = (response.data.events || []).map((e) => ({
-          id: e.id,
-          title: e.event_title,
-          description: e.description,
-          date: e.event_date,
-          time: e.event_time,
-          location: e.location,
-          image: e.photo || fallbackImage,
-          type: e.event_mode,
-          status: e.status,
-          created_at: e.created_at,
-          host_name: e.host_name,
-        }));
-
-        setEvents(mappedEvents);
+        console.log('Events fetched:', response.data.events);
+        setEvents(response.data.events || []); // Added fallback
       } catch (error) {
         console.error("Error fetching events:", error);
+        console.error("Error response:", error.response?.data);
+        toast.error("Failed to fetch events");
       } finally {
         setLoading(false);
       }
     };
 
-    if (token) fetchData();
+    if (token) {
+      fetchData();
+    }
   }, [token]);
 
   const handleSearchSubmit = async (e) => {
-  e.preventDefault();
-  if (searchQuery.trim() === "") {
-    setFilteredEvents(events);
-    setCurrentPage(1);
-    return;
-  }
+    e.preventDefault();
+    if (searchQuery.trim() === "") {
+      // Reset to show filtered events based on current filters
+      return;
+    }
 
-  try {
-    const response = await axios.get("http://localhost:8000/api/search_events", {
-      params: { query: searchQuery, status: activeTab },
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const response = await axios.get("http://localhost:8000/api/search_events", {
+        params: { query: searchQuery, status: activeTab },
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const mappedEvents = (response.data.events || []).map((e) => ({
-      id: e.id,
-      title: e.event_title,
-      description: e.description,
-      date: e.event_date,
-      time: e.event_time,
-      location: e.location,
-      image: e.photo || `https://picsum.photos/400/250?random=${e.id}`,
-      type: e.event_mode,
-      status: e.status,
-      created_at: e.created_at,
-      host_name: e.host_name,
-    }));
-
-    setFilteredEvents(mappedEvents);
-    setCurrentPage(1);
-  } catch (error) {
-    console.error("Error searching events:", error);
-  }
-};
+      setFilteredEvents(response.data.events || []);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Error searching events:", error);
+      toast.error("Failed to search events");
+    }
+  };
 
 
   useEffect(() => {
-    const filtered = events.filter((event) => {
-      const matchesStatus = event.status === activeTab;
+    // If there's a search query, don't filter here (handled by search API)
+    if (searchQuery.trim() !== "") {
+      return;
+    }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const filtered = events.filter((event) => {
+      const eventDate = new Date(event.event_date);
+      eventDate.setHours(0, 0, 0, 0);
+      // FIXED: Status filtering logic
+      let matchesStatus = false;
+      
+      if (activeTab === "upcoming") {
+        // Show events that are today or in the future AND not cancelled
+        matchesStatus = eventDate >= today && event.status !== "cancelled";
+      } else if (activeTab === "past") {
+        // Show events that are in the past AND not cancelled
+        matchesStatus = eventDate < today && event.status !== "cancelled";
+      } else if (activeTab === "cancelled") {
+        // Show only cancelled events
+        matchesStatus = event.status === "cancelled";
+      }
+
+      // FIXED: Type filtering (case insensitive)
       const matchesType =
         typeFilter === "" ||
-        (typeFilter === "physical" && event.type?.toLowerCase() === "physical") ||
-        (typeFilter === "virtual" && event.type?.toLowerCase() === "virtual") ||
-        (typeFilter === "hybrid" && event.type?.toLowerCase() === "hybrid");
+        event.event_mode?.toLowerCase() === typeFilter.toLowerCase();
 
+      // Day/time filtering
       const matchesDayTime = filterByDayTime(event, dayTimeFilter);
 
-      return matchesStatus && matchesType && matchesDayTime;
-    });
+      const shouldInclude = matchesStatus && matchesType && matchesDayTime;
 
+      return shouldInclude;
+    });
+    
     setFilteredEvents(filtered);
     setCurrentPage(1);
   }, [events, activeTab, searchQuery, dayTimeFilter, typeFilter]);
@@ -169,6 +171,26 @@ export default function EventMainPage() {
     });
   };
 
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    
+    try {
+      const [hours, minutes] = timeString.split(':');
+      const date = new Date();
+      date.setHours(parseInt(hours, 10));
+      date.setMinutes(parseInt(minutes, 10));
+      
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return timeString;
+    }
+  };
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 500, behavior: "smooth" });
@@ -176,13 +198,14 @@ export default function EventMainPage() {
 
   const handleRegister = async (eventId) => {
     if (!token) {
-      console.error("User not authenticated");
+      toast.error("Please login to register for events");
       return;
     }
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/register_for_event/${eventId}`,{},
+        `http://localhost:8000/api/register_for_event/${eventId}`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -193,11 +216,11 @@ export default function EventMainPage() {
       console.log("Register successful:", response.data);
       toast.success("Successfully registered for the event!");
     } catch (error) {
-      console.error("Error connecting with alumni:", error);
+      console.error("Error registering for event:", error);
       toast.error(error.response?.data?.message || "Failed to register for the event");
     }
-  }
-   
+  };
+
 
   return (
     <section className="min-h-screen bg-gray-50">
@@ -217,12 +240,12 @@ export default function EventMainPage() {
         </div>
       </div>
 
-      <div className=" px-4 py-12">
+      <div className="px-4 py-12">
         {/* Tabs */}
         <div className="flex flex-wrap justify-center mb-12 border-b border-gray-200">
           <button
             className={`px-6 py-3 font-medium ${
-              activeTab === "upcoming" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"
+              activeTab === "upcoming" ? "text-denim border-b-2 border-denim" : "text-gray-500"
             }`}
             onClick={() => setActiveTab("upcoming")}
           >
@@ -230,11 +253,19 @@ export default function EventMainPage() {
           </button>
           <button
             className={`px-6 py-3 font-medium ${
-              activeTab === "past" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"
+              activeTab === "past" ? "text-denim border-b-2 border-denim" : "text-gray-500"
             }`}
             onClick={() => setActiveTab("past")}
           >
             Past Events
+          </button>
+          <button
+            className={`px-6 py-3 font-medium ${
+              activeTab === "cancelled" ? "text-denim border-b-2 border-denim" : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("cancelled")}
+          >
+            Cancelled Events
           </button>
         </div>
 
@@ -247,20 +278,21 @@ export default function EventMainPage() {
                 <input
                   type="text"
                   placeholder="Search events..."
-                  className="py-3 px-5 pr-12 rounded-lg shadow-md w-[350px]"
+                  className="py-3 px-5 pr-12 rounded-lg shadow-md w-[380px] focus:outline-denim"
                   value={searchQuery}
                   onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit(e)}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <FaSearch 
-                onClick={(e)=>handleSearchSubmit(e)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" />
+                  onClick={handleSearchSubmit}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+                />
               </div>
               <div className="relative">
                 <select
-                  className="appearance-none py-3 px-4 pr-10 rounded-lg border select-none bg-white text-gray-700 shadow-md cursor-pointer hover:border-gray-400"
+                  className="focus:outline-denim appearance-none py-3 w-[170px] px-4 pr-10 rounded-lg border select-none bg-white text-gray-700 shadow-md cursor-pointer hover:border-gray-400"
                   onChange={(e) => setDayTimeFilter(e.target.value)}
-                   style={{ backgroundImage: "none" }}
+                  style={{ backgroundImage: "none" }}
                   value={dayTimeFilter}
                   onFocus={() => setIsDayOpen(true)}
                   onBlur={() => setIsDayOpen(false)}
@@ -275,18 +307,18 @@ export default function EventMainPage() {
               </div>
               <div className="relative">
                 <select
-                    className="appearance-none py-3 px-4 pr-10 rounded-lg border bg-white text-gray-700 shadow-md cursor-pointer hover:border-gray-400"
-                    style={{ backgroundImage: "none" }}
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                    value={typeFilter}
-                    onFocus={() => setIsTypeOpen(true)}
-                    onBlur={() => setIsTypeOpen(false)}
-                  >
-                    <option value="">All Types</option>
-                    <option value="physical">Physical</option>
-                    <option value="virtual">Virtual</option>
-                    <option value="hybrid">Hybrid</option>
-                  </select>
+                  className="focus:outline-denim appearance-none w-[170px] py-3 px-4 pr-10 rounded-lg border bg-white text-gray-700 shadow-md cursor-pointer hover:border-gray-400"
+                  style={{ backgroundImage: "none" }}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  value={typeFilter}
+                  onFocus={() => setIsTypeOpen(true)}
+                  onBlur={() => setIsTypeOpen(false)}
+                >
+                  <option value="">All Types</option>
+                  <option value="physical">Physical</option>
+                  <option value="virtual">Virtual</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
                 <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">
                   {isTypeOpen ? <FaAngleUp /> : <FaAngleDown />}
                 </div>
@@ -294,8 +326,7 @@ export default function EventMainPage() {
             </div>
           </div>
 
-
-          {/* Skeletons or Events */}
+          {/* Events Display */}
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-9">
               {Array.from({ length: eventsPerPage }).map((_, idx) => (
@@ -319,7 +350,10 @@ export default function EventMainPage() {
             </div>
           ) : currentEvents.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No {activeTab} events found. Check back later!</p>
+              <p className="text-gray-500 text-lg">No {activeTab} events found.</p>
+              <p className="text-gray-400 text-sm mt-2">
+                Total events: {events.length} | Filtered: {filteredEvents.length}
+              </p>
               {(searchQuery || dayTimeFilter || typeFilter) && (
                 <button
                   onClick={() => {
@@ -334,75 +368,103 @@ export default function EventMainPage() {
               )}
             </div>
           ) : (
-             <>
+            <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-9">
                 {currentEvents.map((event) => (
                   <div
                     key={event.id}
                     className="bg-white rounded-lg p-4 shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full max-h-[460px]"
                   >
-                    <div className="relative h-80  overflow-hidden">
+                    <div className="relative h-80 overflow-hidden">
                       <img
-                        src={event.image}
-                        alt={event.title}
+                        src={event.photo || fallbackImage}
+                        alt={event.event_title}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        onError={(e) => {
+                          e.target.src = fallbackImage;
+                        }}
                       />
+
                       {/* Status Badge */}
-                      {event.status === "past" ? (
+                      {activeTab === "past" ? (
                         <div className="absolute top-4 right-4 bg-gray-800 text-white px-3 py-1 text-xs">
                           Past Event
+                        </div>
+                      ) : event.status === "cancelled" ? (
+                        <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 text-xs">
+                          Cancelled
                         </div>
                       ) : (
                         <div className="absolute top-4 right-4 bg-white text-gray-900 px-3 py-1 rounded-sm text-xs font-bold border border-gray-300">
                           <span className="block">
-                            {new Date(event.date).toLocaleDateString("en-US", {
+                            {new Date(event.event_date).toLocaleDateString("en-US", {
                               day: "numeric",
                             })}
                           </span>
                           <span className="block text-[10px] mt-1">
-                            {new Date(event.date).toLocaleDateString("en-US", {
+                            {new Date(event.event_date).toLocaleDateString("en-US", {
                               month: "short",
                             })}
                           </span>
                         </div>
                       )}
+
+                      {/* Event Mode Badge */}
                       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-sm border text-xs font-semibold shadow-sm">
-                        {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+                        {event.event_mode?.charAt(0).toUpperCase() + event.event_mode?.slice(1).toLowerCase()}
                       </div>
                     </div>
 
                     <div className="p-4 flex flex-col h-full">
                       <div>
+                        {/* Date & Time */}
                         <div className="flex items-center text-sm text-gray-500 mb-2">
                           <FaCalendarAlt className="mr-2" />
                           <span>
-                            {formatDate(event.date)} • {event.time}
+                            {formatDate(event.event_date)} • {formatTime(event.event_time)}
                           </span>
                         </div>
+
+                        {/* Title */}
                         <h3 className="text-xl font-bold text-gray-800 mb-2">
-                          {event.title}
+                          {event.event_title}
                         </h3>
+
+                        {/* Location */}
                         <div className="flex items-center text-sm text-gray-600 mb-3">
                           <FaMapMarkerAlt className="mr-2" />
                           <span>{event.location}</span>
                         </div>
+
+                        {/* Description */}
                         <p className="text-gray-600 mb-4 line-clamp-2">
                           {event.description}
                         </p>
                       </div>
 
-                      <div className="flex justify-between items-center mt-auto pt-4 -mb-4 border-t border-gray-100">
-                        <button 
-                          className="text-denim hover:text-blue-800 font-medium text-sm flex items-center"
+                      {/* Attendee Info */}
+                      {event.attendeeCount > 0 && (
+                        <div className="text-sm text-gray-500 mb-3">
+                          <span>{event.attendeeCount} registered</span>
+                        </div>
+                      )}
+
+                     {/* Buttons */}
+                      <div className={`flex items-center mt-auto pt-4 -mb-4 border-t border-gray-200 ${activeTab === "upcoming" && event.status !== "cancelled" ? "justify-between" : "justify-end"}`}>
+                        {activeTab === "upcoming" && event.status !== "cancelled" && (
+                          <button
+                            onClick={() => handleRegister(event.id)}
+                            className="bg-denim hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors"
+                          >
+                            Register Now
+                          </button>
+                        )}
+                        <button
+                          className="text-denim hover:text-blue-800 font-medium text-base flex items-center"
                           onClick={() => navigate("/viewEventDetails", { state: { event } })}
                         >
                           View Details
-                          <FaChevronRight className="ml-1 text-xs" />
-                        </button>
-                        <button 
-                          onClick={() => handleRegister(event.id)}
-                          className="bg-denim hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                          Register Now
+                          <LuMoveRight className="ml-1 text-2xl" />
                         </button>
                       </div>
                     </div>
@@ -410,52 +472,58 @@ export default function EventMainPage() {
                 ))}
               </div>
 
-              <div className="flex justify-between items-center mt-8">
-                <p className="text-sm text-gray-600">
-                  Showing {indexOfFirstEvent + 1} to{" "}
-                  {Math.min(indexOfLastEvent, filteredEvents.length)} of{" "}
-                  {filteredEvents.length} events
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
-                  >
-                    <FaChevronLeft />
-                  </button>
-
-                  {Array.from({ length: totalPages }, (_, i) => (
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-between items-center mt-8">
+                  <p className="text-sm text-gray-600">
+                    Showing {indexOfFirstEvent + 1} to{" "}
+                    {Math.min(indexOfLastEvent, filteredEvents.length)} of{" "}
+                    {filteredEvents.length} events
+                  </p>
+                  <div className="flex items-center gap-2">
                     <button
-                      key={i + 1}
-                      onClick={() => handlePageChange(i + 1)}
-                      className={`w-10 h-10 rounded-md ${
-                        currentPage === i + 1
-                          ? "bg-blue-600 text-white"
-                          : "border border-gray-300 hover:bg-gray-100"
-                      }`}
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
                     >
-                      {i + 1}
+                      <FaChevronLeft />
                     </button>
-                  ))}
 
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
-                  >
-                    <FaChevronRight />
-                  </button>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => handlePageChange(i + 1)}
+                        className={`w-10 h-10 rounded-md ${
+                          currentPage === i + 1
+                            ? "bg-blue-600 text-white"
+                            : "border border-gray-300 hover:bg-gray-100"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-md border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      <FaChevronRight />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
         </div>
       </div>
+
       {/* Toast notifications container */}
-      <ToastContainer position="top-center" autoClose={3000} toastClassName={(context) =>
-        `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
-      }/>
+      <ToastContainer 
+        position="top-center" 
+        autoClose={3000} 
+        toastClassName="bg-white shadow-md rounded text-black flex w-auto px-4 py-6 min-w-[400px]"
+      />
     </section>
   );
 }

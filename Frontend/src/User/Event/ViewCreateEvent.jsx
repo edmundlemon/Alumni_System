@@ -10,6 +10,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ViewCreateEvent() {
   const navigate = useNavigate();
@@ -51,29 +53,51 @@ export default function ViewCreateEvent() {
     setPopupPosition({ top, left });
   };
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8000/api/view_my_upcoming_events",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log(response.data.events);
-        setEvents(response.data.events);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/view_my_upcoming_events",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(response.data.events);
+      setEvents(response.data.events);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
 
+  useEffect(() => {
     if (token) {
       fetchEvents();
     }
   }, [token]);
+
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/cancel_event/${eventId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Event deleted successfully");
+      fetchEvents();
+      setSelectedEvent(null);
+      toast.success("Event cancelled successfully");
+      // Close popup if the deleted event was the selected one
+      if (selectedEvent && selectedEvent.id === eventId) {
+        setSelectedEvent(null);
+      }
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to cancel event");
+    }
+  };
 
   const handlePrevMonth = () => {
     if (currentMonth === 0) {
@@ -128,7 +152,9 @@ export default function ViewCreateEvent() {
       {/* Header Section */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-denim mb-1">My Created Events</h1>
+          <h1 className="text-3xl font-bold text-denim mb-1">
+            My Created Events
+          </h1>
           <p className="text-gray-500 text-base">
             View, manage, and create your upcoming events.
           </p>
@@ -273,13 +299,31 @@ export default function ViewCreateEvent() {
             {events.map((event) => (
               <div
                 key={event.id}
-                className="p-6 hover:bg-gray-50 transition-colors  border-b border-gray-200"
+                className="p-6 hover:bg-gray-50 transition-colors border-b border-gray-200"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-2 flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {event.event_title}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {event.event_title}
+                      </h3>
+                      {/* Status Badge */}
+                      {event.status === "upcoming" && (
+                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-green-100 text-green-700 border border-green-300">
+                          Upcoming Event
+                        </span>
+                      )}
+                      {event.status === "cancelled" && (
+                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-red-100 text-red-700 border border-red-300">
+                          Cancelled Event
+                        </span>
+                      )}
+                      {event.status === "Pass" && (
+                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-200 text-gray-600 border border-gray-300">
+                          pass
+                        </span>
+                      )}
+                    </div>
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <FiCalendar className="text-gray-400" />
@@ -304,9 +348,9 @@ export default function ViewCreateEvent() {
                       </div>
                       <div className="flex items-center gap-2">
                         {event.event_mode === "online" ? (
-                          <FiGlobe className="text-blue-400" />
+                          <FiGlobe className="text-gray-400" />
                         ) : (
-                          <FiMapPin className="text-red-400" />
+                          <FiMapPin className="text-gray-400" />
                         )}
                         <span>
                           {event.event_mode === "online" ? (
@@ -346,7 +390,10 @@ export default function ViewCreateEvent() {
                     >
                       Edit Event
                     </button>
-                    <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
+                    <button
+                      onClick={() => handleDeleteEvent(event.id)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+                    >
                       Cancel Event
                     </button>
                   </div>
@@ -416,6 +463,15 @@ export default function ViewCreateEvent() {
           <div className="text-sm text-gray-600 flex items-center gap-2">
             <FiCalendar className="text-gray-400" />
             {selectedEvent.description || "No description"}
+            
+          </div>
+          {/* Show status if cancelled */}
+          <div className="w-full mt-2">
+            {selectedEvent.status === "cancelled" && (
+              <span className=" px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-700 border border-red-300">
+                Cancelled
+              </span>
+            )}
           </div>
 
           <div className="mt-3 text-right">
@@ -428,6 +484,14 @@ export default function ViewCreateEvent() {
           </div>
         </div>
       )}
+      {/* Toast notifications container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }

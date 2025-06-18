@@ -12,6 +12,8 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { FiEdit3 } from "react-icons/fi";
 import ViewForum from "./ViewForum";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ForumTable() {
   const navigate = useNavigate();
@@ -53,6 +55,59 @@ export default function ForumTable() {
       navigate("/403");
     }
   }, [token, navigate]);
+
+  const handleDeleteForum = async (ForumId) => {
+    try {
+      await axios.delete(
+        `http://localhost:8000/api/delete_discussion/${ForumId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Event deleted successfully");
+      toast.success("User deleted successfully");
+      setForums((prevForums) =>
+        prevForums.filter((forum) => forum.id !== ForumId)
+      );
+      setSelectForum((prevSelect) => prevSelect.filter((id) => id !== ForumId));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to cancel event");
+    }
+  };
+
+  const handleDeleteSelectedForums = async () => {
+    if (selectForum.length === 0) return;
+    try {
+      // Delete each user one by one
+      await Promise.all(
+        selectForum.map((ForumId) =>
+          axios.delete(
+            `http://localhost:8000/api/delete_discussion/${ForumId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          )
+        )
+      );
+
+      // Update local state after all deletions
+      setForums((prevForums) =>
+        prevForums.filter((forum) => !selectForum.includes(forum.id))
+      );
+      setSelectForum([]);
+      toast.success("Selected users deleted successfully");
+    } catch (error) {
+      console.error("Error deleting selected users:", error);
+      toast.error("Failed to delete selected users");
+    }
+  };
 
   const handleViewForum = (forum) => {
     setSelectedForumID(forum);
@@ -111,22 +166,68 @@ export default function ForumTable() {
   };
 
   const handleExport = async () => {
-    const canvas = await html2canvas(printRef.current);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF();
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    const { jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "pt",
+      format: "a4",
+    });
+
+    pdf.setFontSize(18);
+    pdf.text("Forum Discussions Report", 40, 40);
+    pdf.setFontSize(12);
+    pdf.setTextColor(100);
+
+    const headers = [
+      ["Forum ID", "Title", "Comments", "User ID", "Created At"],
+    ];
+    const data = forums.map((forum) => [
+      forum.id,
+      forum.subject
+        ? forum.subject.slice(0, 30) + (forum.subject.length > 30 ? "..." : "")
+        : "",
+      forum.comments?.length ?? 0,
+      forum.user_id,
+      forum.created_at ? new Date(forum.created_at).toLocaleDateString() : "",
+    ]);
+
+    autoTable(pdf, {
+      head: headers,
+      body: data,
+      startY: 60,
+      styles: {
+        fontSize: 10,
+        cellPadding: 6,
+      },
+      headStyles: {
+        fillColor: [21, 96, 189],
+        textColor: [255, 255, 255],
+        halign: "center",
+      },
+      margin: { top: 60 },
+    });
+
+    const dateStr = new Date().toLocaleString();
+    pdf.setFontSize(10);
+    pdf.text(
+      `Generated on: ${dateStr}`,
+      40,
+      pdf.internal.pageSize.getHeight() - 30
+    );
+
     pdf.save("forums_report.pdf");
   };
 
   return (
-    <div className="h-full p-4 rounded-lg bg-white"
-    style={{
+    <div
+      className="h-full p-4 rounded-lg bg-white"
+      style={{
         boxShadow:
           "0 4px 6px rgba(0,0,0,0.1), 0 -4px 8px rgba(0,0,0,0.1), 4px 0 8px rgba(0,0,0,0.1), -4px 0 8px rgba(0,0,0,0.1)",
-      }}>
+      }}
+    >
       <div className="flex justify-between items-center pb-4">
         <p className="font-bold text-xl">Forum Management Table</p>
         <div className="flex h-9 gap-2">
@@ -140,7 +241,9 @@ export default function ForumTable() {
             />
             <IoSearchSharp className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
-          <button className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
+          <button 
+            onClick={handleDeleteSelectedForums}
+            className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
             <MdDeleteOutline size={16} />
             Delete
           </button>
@@ -177,7 +280,7 @@ export default function ForumTable() {
                   onClick={() => col.key !== "Action" && handleSort(col.key)}
                 >
                   <p className="flex items-center gap-2 capitalize">
-                    {col.label} 
+                    {col.label}
                     {col.key !== "Action" && <BiSortAlt2 size={20} />}
                   </p>
                 </th>
@@ -186,7 +289,7 @@ export default function ForumTable() {
           </thead>
           <tbody>
             {isLoading
-              ? Array.from({ length: itemsPerPage  }, (_, i) => (
+              ? Array.from({ length: itemsPerPage }, (_, i) => (
                   <tr key={i} className="border-b border-gray-100">
                     <td className="p-2 text-center">
                       <Skeleton circle height={16} width={16} />
@@ -217,7 +320,7 @@ export default function ForumTable() {
                     </td>
                     <td className="px-2 py-3 text-left">
                       <div className="line-clamp-1">
-                       {forum.subject && forum.subject.length > 5
+                        {forum.subject && forum.subject.length > 5
                           ? forum.subject.slice(0, 20) + "..."
                           : forum.subject}
                       </div>
@@ -232,65 +335,82 @@ export default function ForumTable() {
                         : ""}
                     </td>
                     <td className="flex px-2 pt-3 gap-2">
-                                          <button className="p-1 rounded border border-gray-300 shadow" onClick={() => handleViewForum(forum)}><FiEdit3 /></button>
-                                          <button className="p-1 rounded border border-gray-300 shadow"><MdDeleteOutline /></button>
-                                        </td>
+                      <button
+                        className="p-1 rounded border border-gray-300 shadow"
+                        onClick={() => handleViewForum(forum)}
+                      >
+                        <FiEdit3 />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteForum(forum.id)}
+                        className="p-1 rounded border border-gray-300 shadow"
+                      >
+                        <MdDeleteOutline />
+                      </button>
+                    </td>
                   </tr>
                 ))}
           </tbody>
         </table>
       </div>
 
-      
-        <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2">
-          <p className="text-sm text-gray-500">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, sortedForums.length)} of{" "}
-            {sortedForums.length}
-          </p>
-          <div className="flex items-center space-x-2">
+      <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2">
+        <p className="text-sm text-gray-500">
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, sortedForums.length)} of{" "}
+          {sortedForums.length}
+        </p>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => handleChangePage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded-md border text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
             <button
-              onClick={() => handleChangePage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 rounded-md border text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+              key={i}
+              onClick={() => handleChangePage(i + 1)}
+              className={`px-3 py-1 rounded-md text-sm border ${
+                currentPage === i + 1
+                  ? "bg-[#1560bd] text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
             >
-              Previous
+              {i + 1}
             </button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i}
-                onClick={() => handleChangePage(i + 1)}
-                className={`px-3 py-1 rounded-md text-sm border ${
-                  currentPage === i + 1
-                    ? "bg-[#1560bd] text-white"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => handleChangePage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 rounded-md border text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-            >
-              Next
-            </button>
+          ))}
+          <button
+            onClick={() => handleChangePage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded-md border text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+      {showForum && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
+          <div
+            className="bg-[#F8FAFC] rounded-lg w-[50%] "
+            style={{ height: `${viewportHeight - 30}px` }}
+          >
+            <ViewForum
+              onClose={() => setShowForum(false)}
+              forum={selectedForumID}
+            />
           </div>
         </div>
-             {showForum && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
-                      <div
-                        className="bg-[#F8FAFC] rounded-lg w-[50%] "
-                        style={{ height: `${viewportHeight - 30}px` }}
-                      >
-                        <ViewForum
-                          onClose={() => setShowForum(false)}
-                          forum={selectedForumID}
-                        />
-                      </div>
-                    </div>
-                  )}
+      )}
+      {/* Toast notifications container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }

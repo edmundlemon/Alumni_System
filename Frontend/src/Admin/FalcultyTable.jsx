@@ -13,12 +13,10 @@ import { jsPDF } from "jspdf";
 import Skeleton from "react-loading-skeleton";
 import { FiEdit3 } from "react-icons/fi";
 import Select from "react-select";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
-export default function MajorTable() {
+export default function facultyTable() {
   const navigate = useNavigate();
-  const [majors, setMajors] = useState([]);
+  const [facultys, setfacultys] = useState([]);
   const [selectMajor, setSelectMajor] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,12 +42,7 @@ export default function MajorTable() {
     const fetchMajor = async () => {
       try {
         console.log("Token:", token);
-        const [majorRes, facultyRes] = await Promise.all([
-          axios.get("http://localhost:8000/api/view_all_majors", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
+        const [facultyRes] = await Promise.all([
           axios.get("http://localhost:8000/api/view_all_faculties", {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -58,7 +51,6 @@ export default function MajorTable() {
         ]);
         console.log(majorRes.data);
         console.log(facultyRes.data.faculties);
-        setMajors(majorRes.data);
         setFaculty(facultyRes.data.faculties);
       } catch (error) {
         console.error("Error Response:", error.response);
@@ -93,13 +85,13 @@ export default function MajorTable() {
     }
   };
 
-  const filteredMajors = majors.filter(
+  const filteredfacultys = facultys.filter(
     (user) =>
       user.major_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.id?.toString().includes(searchTerm)
   );
 
-  const sortedMajors = [...filteredMajors].sort((a, b) => {
+  const sortedfacultys = [...filteredfacultys].sort((a, b) => {
     const aValue = a[sortCriteria.key];
     const bValue = b[sortCriteria.key];
 
@@ -108,14 +100,14 @@ export default function MajorTable() {
     return 0;
   });
 
-  const totalPages = Math.ceil(sortedMajors.length / itemsPerPage);
-  const displayMajors = sortedMajors.slice(
+  const totalPages = Math.ceil(sortedfacultys.length / itemsPerPage);
+  const displayfacultys = sortedfacultys.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   const handleSelectAll = (isChecked) => {
-    setSelectMajor(isChecked ? displayMajors.map((u) => u.id) : []);
+    setSelectMajor(isChecked ? displayfacultys.map((u) => u.id) : []);
   };
 
   const handleSelectOne = (id, isChecked) => {
@@ -150,7 +142,7 @@ export default function MajorTable() {
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("majors_report.pdf");
+    pdf.save("facultys_report.pdf");
   };
 
   const handleAddMajor = async (e) => {
@@ -169,12 +161,12 @@ export default function MajorTable() {
       setShowAddMajor(false);
       setFormData({ major_name: "", faculty_id: "", faculty_name: "" });
       const majorRes = await axios.get(
-        "http://localhost:8000/api/view_all_majors",
+        "http://localhost:8000/api/view_all_facultys",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setMajors(majorRes.data);
+      setfacultys(majorRes.data);
     } catch (error) {
       console.error(error);
     }
@@ -231,8 +223,8 @@ export default function MajorTable() {
                   type="checkbox"
                   onChange={(e) => handleSelectAll(e.target.checked)}
                   checked={
-                    displayMajors.length > 0 &&
-                    displayMajors.every((user) => selectMajor.includes(user.id))
+                    displayfacultys.length > 0 &&
+                    displayfacultys.every((user) => selectMajor.includes(user.id))
                   }
                 />
               </th>
@@ -268,7 +260,7 @@ export default function MajorTable() {
                     ))}
                   </tr>
                 ))
-              : displayMajors.map((major) => (
+              : displayfacultys.map((major) => (
                   <tr
                     key={major.id}
                     className="border-b-2 border-gray-100 hover:bg-gray-50"
@@ -305,8 +297,8 @@ export default function MajorTable() {
       <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2 ">
         <p className="text-sm text-gray-500">
           Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-          {Math.min(currentPage * itemsPerPage, sortedMajors.length)} of{" "}
-          {sortedMajors.length}
+          {Math.min(currentPage * itemsPerPage, sortedfacultys.length)} of{" "}
+          {sortedfacultys.length}
         </p>
         <div className="flex items-center space-x-2">
           <button

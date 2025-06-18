@@ -27,7 +27,12 @@ class Event extends Model
     ];
     protected $appends = [
         'host_name',
+        'attendeeCount'
     ];
+    public function getAttendeeCountAttribute()
+    {
+        return $this->attendees->count();
+    }
     public function getHostNameAttribute()
     {
         return $this->organizer->name ?? 'Not Available';

@@ -38,7 +38,7 @@ class EventController extends Controller
             'event_time' => 'required|date_format:H:i',
             'max_participant' => 'nullable|integer',
             'registration_close_date' => 'required|date|after:today|before:event_date',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'event_mode' => 'required|in:Online,Physical,Hybrid',
             'location' => [
                 'required',
@@ -61,8 +61,8 @@ class EventController extends Controller
             ], 403);
         }
         $photoPath = null;
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('event_pictures'), $filename);
             $photoPath = asset('event_pictures/'.$filename);

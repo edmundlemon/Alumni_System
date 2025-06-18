@@ -12,6 +12,8 @@ import Skeleton from "react-loading-skeleton";
 import { FiEdit3 } from "react-icons/fi";
 import AddDonation from "./AddDonation";
 import EditDonation from "./EditDonation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function DonationTable() {
   const navigate = useNavigate();
@@ -56,6 +58,59 @@ export default function DonationTable() {
       navigate("/403");
     }
   }, [token, navigate]);
+
+  const handleDeleteDonation = async (DoantionId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/cancel_donation_post/${DoantionId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Event deleted successfully");
+      toast.success("User deleted successfully");
+      // Update local state to remove the deleted donation
+      setDonations((prevDonations) =>
+        prevDonations.filter((donation) => donation.id !== DoantionId)
+      );
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to cancel event");
+    }
+  };
+
+  const handleDeleteSelectedDonation = async () => {
+  if (selectDonation.length === 0) return;
+
+  try {
+    await Promise.all(
+      selectDonation.map((donationId) =>
+        axios.delete(
+          `http://localhost:8000/api/cancel_donation_post/${donationId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+      )
+    );
+
+    // Update state correctly
+    setDonations((prevDonations) =>
+      prevDonations.filter((donation) => !selectDonation.includes(donation.id))
+    );
+
+    setSelectDonation([]); // fix here
+    toast.success("Selected donations deleted successfully");
+  } catch (error) {
+    console.error("Error deleting selected donations:", error);
+    toast.error("Failed to delete selected donations");
+  }
+};
+
+
 
   const handleViewDonation = (donation) => {
     setSelectedDonationId(donation);
@@ -105,23 +160,56 @@ export default function DonationTable() {
     setCurrentPage(newPage);
   };
 
-  const handleExport = async () => {
-    const element = printRef.current;
-    if (!element) return;
+ const handleExport = async () => {
+  const { jsPDF } = await import("jspdf");
+  const autoTable = (await import("jspdf-autotable")).default;
 
-    const canvas = await html2canvas(element);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4",
-    });
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("donations_report.pdf");
-  };
+  const pdf = new jsPDF({
+    orientation: "landscape",
+    unit: "pt",
+    format: "a4",
+  });
+
+  pdf.setFontSize(18);
+  pdf.text("Donations Report", 40, 40);
+  pdf.setFontSize(12);
+  pdf.setTextColor(100);
+
+  const headers = [["ID", "Admin ID", "Title", "Raised", "Target", "Status", "Created At"]];
+
+  const data = donations.map((donation) => [
+    donation.id,
+    donation.admin_id,
+    donation.donation_title,
+    `RM ${donation.current_amount.toFixed(2)}`,
+    `RM ${donation.target_amount.toFixed(2)}`,
+    donation.status === "completed" ? "Closed" : donation.status,
+    new Date(donation.created_at).toLocaleDateString(),
+  ]);
+
+  autoTable(pdf, {
+    head: headers,
+    body: data,
+    startY: 60,
+    styles: { fontSize: 10, cellPadding: 5 },
+    headStyles: {
+      fillColor: [21, 96, 189],
+      textColor: [255, 255, 255],
+      halign: "center",
+    },
+    columnStyles: {
+      3: { halign: "right" },
+      4: { halign: "right" },
+    },
+  });
+
+  const dateStr = new Date().toLocaleString();
+  pdf.setFontSize(10);
+  pdf.text(`Generated on: ${dateStr}`, 40, pdf.internal.pageSize.getHeight() - 30);
+
+  pdf.save("donations_report.pdf");
+};
+
 
   return (
     <div
@@ -144,7 +232,9 @@ export default function DonationTable() {
             />
             <IoSearchSharp className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer" />
           </div>
-          <button className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
+          <button 
+            onClick={handleDeleteSelectedDonation}
+            className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
             <MdDeleteOutline size={16} />
             Delete
           </button>
@@ -267,7 +357,9 @@ export default function DonationTable() {
                       >
                         <FiEdit3 />
                       </button>
-                      <button className="p-1 rounded border border-gray-300 shadow">
+                      <button 
+                        onClick={() => handleDeleteDonation(donation.id)}
+                        className="p-1 rounded border border-gray-300 shadow">
                         <MdDeleteOutline />
                       </button>
                     </td>
@@ -336,6 +428,14 @@ export default function DonationTable() {
           </div>
         </div>
       )}
+      {/* Toast notifications container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }
