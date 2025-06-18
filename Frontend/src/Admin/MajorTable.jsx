@@ -169,7 +169,7 @@ export default function MajorTable() {
   const handleEditMajor = async (e) => {
   e.preventDefault();
   try {
-    await axios.post(
+    const response = await axios.post(
       `http://localhost:8000/api/edit_major/${selectMajorId}`,
       {
         major_name: formData.major_name,
@@ -180,6 +180,7 @@ export default function MajorTable() {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
+    console.log(response)
     setShowEditMajor(false);
     setFormData({ major_name: "", faculty_id: "", faculty_name: "" });
     

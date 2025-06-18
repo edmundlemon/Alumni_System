@@ -4,8 +4,10 @@ import Cookies from "js-cookie"
 import { FaUpload, FaTimes } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { IoInformationCircle } from "react-icons/io5";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-export default  function EditDonation({onClose, donation}){
+export default  function EditDonation({onClose, donation, passMessage}){
     const [formData, setFormData] = useState({
         donation_title: donation.donation_title || "",
         description: donation.description || "",
@@ -74,11 +76,16 @@ export default  function EditDonation({onClose, donation}){
             },
         })
         .then(response => {
+           toast.success("Donation updated successfully");
+                setTimeout(() => {
+                  onClose();
+                  passMessage();
+                }, 1000);
             console.log("Donation updated successfully:", response.data);
-            onClose();
         })
         .catch(error => {
             console.error("Error updating donation:", error);
+            toast.error("Failed to Edit donation");
         });
     }
 
@@ -215,6 +222,13 @@ export default  function EditDonation({onClose, donation}){
           </button>
         </div>
       </form>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }

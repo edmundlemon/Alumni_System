@@ -42,6 +42,7 @@ import ViewCreateEvent from "./User/Event/ViewCreateEvent";
 import EditEvent from "./User/Event/EditEvent";
 import Sidebar from "./Admin/Sidebar";
 import ScrollToTop from "./ScrollToTop";
+import FacultyTable from "./Admin/FalcultyTable";
 
 // 🔒 Protected Routes
 function ProtectedRoute({ children }) {
@@ -67,12 +68,12 @@ function AppRoutes() {
 
   const hideHeader = [
     "/userTable", "/eventTable", "/forumTable", "/donationTable",
-    "/adminLogin", "/commentTable", "/majorTable", "/dashboard"
+    "/adminLogin", "/commentTable", "/majorTable", "/dashboard", "/facultyTable"
   ].includes(location.pathname);
 
   const hideFooter = [
     "/userTable", "/eventTable", "/forumTable", "/donationTable",
-    "/adminLogin", "/forumMainPage", "/commentTable", "/majorTable", "/dashboard"
+    "/adminLogin", "/forumMainPage", "/commentTable", "/majorTable", "/dashboard", "/facultyTable"
   ].includes(location.pathname);
 
   return (
@@ -115,6 +116,7 @@ function AppRoutes() {
             <Route path="/donationTable" element={<DonationTable />} />
             <Route path="/majorTable" element={<MajorTable />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/facultyTable" element={<FacultyTable />} />
           </Route>
         </Route>
 

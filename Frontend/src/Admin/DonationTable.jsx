@@ -454,6 +454,7 @@ const RefreshPage = async () => {
             <EditDonation
               onClose={() => setShowEditDonation(false)}
               donation={selectedDonationId}
+              passMessage = {() => {setSuccessAdd(true)}}
             />
           </div>
         </div>

@@ -12,6 +12,8 @@ import { LuUsers } from "react-icons/lu";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { ImSpinner2 } from "react-icons/im";
+import { TbBrandDatabricks } from "react-icons/tb";
+import { IoMdBrowsers } from "react-icons/io";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -37,7 +39,8 @@ const Sidebar = () => {
     { name: "Donation", link: "/donationTable", icon: BiDonateHeart },
     { name: "Forum", link: "/forumTable", icon: MdOutlineMessage },
     { name: "Major", link: "/majorTable", icon: MdStorage },
-    { name: "User Portal", link: userToken ? "/forumMainPage" :"/userLogin", icon: MdStorage },
+    { name: "Falcuty", link: "/facultyTable", icon: TbBrandDatabricks    },
+    { name: "User Portal", link: userToken ? "/forumMainPage" :"/userLogin", icon: IoMdBrowsers  },
   ];
 
   // Find the menu whose link matches the current path

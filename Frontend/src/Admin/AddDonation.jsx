@@ -34,6 +34,11 @@ export default function AddDonation({ onClose, passMessage}) {
       donationForm.append("image", formData.photo);
     }
 
+    console.log("FormData donationForm:");
+    for (let [key, value] of donationForm.entries()) {
+      console.log(`${key}:`, value);
+    }
+
     try {
       const response = await axios.post(
         "http://localhost:8000/api/create_donation_post",
@@ -45,7 +50,7 @@ export default function AddDonation({ onClose, passMessage}) {
           },
         }
       );
-
+      console.log(response.data)
       toast.success("Donation added successfully");
       setTimeout(() => {
         onClose();
