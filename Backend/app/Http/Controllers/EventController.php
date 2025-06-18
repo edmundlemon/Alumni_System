@@ -205,7 +205,7 @@ class EventController extends Controller
     {
         //
         $user = Auth::guard('sanctum')->user();
-        if (!$user || $user->id !== $event->user_id) {
+        if (!$user || ($user->id !== $event->user_id && !$user->hasRole('admin'))) {
             return response()->json([
                 'status' => false,
                 'message' => 'You are not authorized to delete this event',
