@@ -31,22 +31,27 @@ export default function FacultyTable() {
   const handleAddFalcuty = async (e) => {
   e.preventDefault();
   try {
-    const res = await axios.post(
+    await axios.post(
       "http://localhost:8000/api/create_faculty",
       { faculty_name: content },
       { headers: { Authorization: `Bearer ${token}` } }
     );
+
+    // Re-fetch the updated list
+    const res = await axios.get("http://localhost:8000/api/view_all_faculties", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setFaculties(res.data.faculties || []);
+
     toast.success("Faculty added successfully");
-    const newFaculty = res.data.faculty;
-    setFaculties((prev) => [...prev, newFaculty]);
     setShowAddFalculty(false);
     setContent("");
-
   } catch (error) {
     console.error(error);
     toast.error("Failed to add faculty");
   }
 };
+
 
 
   useEffect(() => {

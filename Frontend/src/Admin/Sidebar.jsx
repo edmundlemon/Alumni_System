@@ -59,7 +59,8 @@ const Sidebar = () => {
     })
     .catch((error) => {
       console.error("Logout error:", error);
-      // If token is invalid or session reset, treat as logged out
+      Cookies.remove("adminToken");
+      navigate("/adminLogin");
       if (error.response && error.response.status === 401) {
         console.warn("Token invalid or already logged out.");
       } else {
@@ -68,10 +69,10 @@ const Sidebar = () => {
       }
     })
     .finally(() => {
-      Cookies.remove("adminToken");
-      navigate("/adminLogin");
       setLoggingOut(false); // Stop loading
     });
+    Cookies.remove("adminToken");
+    navigate("/adminLogin");
 };
 
 
