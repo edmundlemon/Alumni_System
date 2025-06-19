@@ -1,11 +1,9 @@
 import { GoHomeFill } from "react-icons/go";
-import { FaRegBell } from "react-icons/fa";
 import { FiUsers } from "react-icons/fi";
 import { FaRegFile } from "react-icons/fa";
 import { CiImageOn } from "react-icons/ci";
 import { IoSearchSharp } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/logo.png";
 import Cookies from "js-cookie";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
@@ -22,6 +20,11 @@ import { LiaPollSolid } from "react-icons/lia";
 import { IoArrowBackOutline } from "react-icons/io5";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FiEdit3 } from "react-icons/fi";
+import { MdDeleteOutline } from "react-icons/md";
+import EditPost from "./EditPost";
 
 export default function ForumMainPage() {
   const getInitial = (name = "") => name.charAt(0).toUpperCase();
@@ -50,8 +53,17 @@ export default function ForumMainPage() {
   const [suggest, setSuggest] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [showEditPost, setShowEditPost] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedEditPost,setSelectedEditPost] = useState(null);
+  const [postForm, setPostForm] = useState({
+    photo: null,
+    subject: "",
+    content: ""
+  })
+  
   const getTimeAgo = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -74,15 +86,69 @@ export default function ForumMainPage() {
   };
 
   const onEmojiClick = (emojiObject) => {
-    setContent((prevInput) => prevInput + emojiObject.emoji);
-    setShowPicker(false);
-  };
+  setPostForm(prev => ({
+    ...prev,
+    content: prev.content + emojiObject.emoji
+  }));
+  setShowPicker(false);
+};
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // setSelectedImage(URL.createObjectURL(file));
-  };
+  const file = e.target.files[0];
+  if (file) {
+    setPostForm(prev => ({
+      ...prev,
+      photo: file,
+    }));
+    setImagePreview(URL.createObjectURL(file));
+  }
+};
+
+  const handleDeletePost = async (discussionID) =>{
+    try{
+      const response = await axios.delete(
+        `http://localhost:8000/api/delete_discussion/${discussionID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      toast.success("Post cancelled successfully");
+      console.log("Post deleted successfully");
+      setOwnPost((prev) => prev.filter((post) => post.id !== discussionID));
+    }catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to cancel post");
+    }
+  }
+
+  const handleDeleteComment = async (commentID) =>{
+    try{
+      const response = await axios.delete(
+        `http://localhost:8000/api/delete_comment/${commentID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      toast.success("Comment cancelled successfully");
+      console.log("Comment deleted successfully");
+    //   setSelectedPost(prev => prev.filter({
+    //     ...prev,
+    //     post: {
+    //       ...prev.post,
+    //       comments: [...(prev.post.comments || []), newComment]
+    //     }
+    // }));
+    }catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to cancel post");
+    }
+  }
 
   const handleClickComment = (post) => {
     setShowAddComment(!showAddComment);
@@ -98,6 +164,197 @@ export default function ForumMainPage() {
     { text: "Connected", onClick: () => {setShowConnect(true),setShowPosted(false),setShowMore(false)}, icon: FiUsers },
     { text: "My Posted", onClick: () => {setShowPosted(true),setShowConnect(false),setShowMore(false)}, icon: FaRegFile },
   ];
+
+  const handleConnect = async (alumniId) => {
+    if (!token) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/connect/${alumniId}`, {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      toast.success("Connection request sent successfully!");
+    } catch (error) {
+      console.error("Error connecting with alumni:", error);
+      if (error.response && error.response.status === 400) {
+        toast.error("You already connected this alumni.");
+      } else {
+        toast.error("Failed to send connection request.");
+      }
+    }
+  };
+
+  const submitComment = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedPost || !content.trim()) {
+      toast.error("Please write a comment");
+      return;
+    }
+
+    try {
+      // Try different payload structures based on common API patterns
+      const payload = {
+        content: content.trim(),
+        // Alternative field names your API might expect:
+        comment_content: content.trim(),
+        user_id: parseInt(userId), // Ensure it's a number
+        discussion_id: selectedPost.post.id,
+        post_id: selectedPost.post.id,
+      };
+
+      const response = await axios.post(
+        `http://localhost:8000/api/create_comment/${selectedPost.post.id}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      toast.success("Comment submitted successfully!");
+
+      // Update the selected post with the new comment
+      const newComment = response.data.comment || {
+        id: Date.now(), // temporary ID
+        comment_content: content.trim(),
+        user_id: parseInt(userId),
+        created_at: new Date().toISOString(),
+      };
+      
+      setSelectedPost(prev => ({
+        ...prev,
+        post: {
+          ...prev.post,
+          comments: [...(prev.post.comments || []), newComment]
+        }
+    }));
+
+    // Update the posts in the main list as well
+    if(showConnectPost){
+      setConnectPost(prev => prev.map(post => 
+        post.id === selectedPost.post.id 
+          ? { ...post, comments: [...(post.comments || []), newComment] }
+          : post
+      ));
+    }else{
+      setPosts(prev => prev.map(post => 
+        post.id === selectedPost.post.id 
+          ? { ...post, comments: [...(post.comments || []), newComment] }
+          : post
+      ));
+      setFilteredEvents(prev => prev.map(post => 
+        post.id === selectedPost.post.id 
+          ? { ...post, comments: [...(post.comments || []), newComment] }
+          : post
+      ));
+    }
+
+    // Reset form
+    setContent("");
+    setJoinComment(false);
+    setShowPicker(false);
+    
+  } catch (error) {
+    console.error("Error submitting comment:", error);
+    
+    // Log the full error response for debugging
+    if (error.response) {
+      console.log("Error response data:", error.response.data);
+      console.log("Error response status:", error.response.status);
+    }
+    
+    // More specific error handling
+    if (error.response?.status === 401) {
+      toast.error("You need to be logged in to comment");
+    } else if (error.response?.status === 404) {
+      toast.error("Post not found");
+    } else if (error.response?.status === 422) {
+      // Validation error - show specific message if available
+      const errorMessage = error.response.data?.message || 
+                          error.response.data?.error || 
+                          "Please check your input and try again";
+      toast.error(`Validation error: ${errorMessage}`);
+    } else if (error.response?.data?.message) {
+      toast.error(error.response.data.message);
+    } else {
+      toast.error("Failed to submit comment. Please try again.");
+    }
+  }
+};
+
+  const submitPost = async (e) => {
+    e.preventDefault(); // prevent default form submission behavior
+
+    const formData = new FormData();
+    formData.append("subject", postForm.subject);
+    formData.append("content", postForm.content);
+
+    if (postForm.photo) {
+      formData.append("photo", postForm.photo);
+       try {
+      const response = await axios.post(
+        "http://localhost:8000/api/create_discussion",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+           "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      toast.success("Post submitted successfully!");
+
+      // Prepend new post to existing posts list
+      const newPost = response.data.discussion;
+      setPosts((prev) => [newPost, ...prev])
+      setFilteredEvents((prev) => [newPost, ...prev]);
+      // Optionally reset form  
+      setPostForm({ subject: "", content: "", photo: null });
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = null;
+    } catch (error) {
+      console.error("Error submitting post:", error);
+      toast.error("Failed to submit post.");
+    }
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/create_discussion",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+           "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      toast.success("Post submitted successfully!");
+
+      // Prepend new post to existing posts list
+      const newPost = response.data.discussion;
+      setFilteredEvents((prev) => [newPost, ...prev]);
+      // Optionally reset form  
+      setPostForm({ subject: "", content: "", photo: null });
+      setImagePreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = null;
+    } catch (error) {
+      console.error("Error submitting post:", error);
+      toast.error("Failed to submit post.");
+    }
+  };
+
 
   useEffect(() => {
     const getPostsAndUsers = async () => {
@@ -124,7 +381,7 @@ export default function ForumMainPage() {
             }
           ),
           axios.get(
-            "http://localhost:8000/api/view_all_alumni",
+            "http://localhost:8000/api/connected_users",
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -137,13 +394,14 @@ export default function ForumMainPage() {
           ),
         ]);
         setPosts(postsRes.data.discussions.data);
+        setFilteredEvents(postsRes.data.discussions.data)
         setUsers(usersRes.data);
         setMainUser(mainRes.data);
         setConnectPost(connectRes.data.discussions.data);
-        setConnectUser(connectUserRes.data);
+        setConnectUser(connectUserRes.data.connected_users);
         setOwnPost(ownPost.data.discussions.data);
         setSuggest(suggesRes.data.suggested_connections);
-        console.log("suggested connections", suggesRes.data.suggested_connections);
+        console.log("post", postsRes.data.discussions.data);
         const map = {};
         usersRes.data.forEach((user) => {
           map[user.id] = user;
@@ -179,6 +437,34 @@ export default function ForumMainPage() {
     setJoinComment(false);
   }
   }, [showPostDetails]);
+
+    const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+
+    if (searchQuery.trim() === "") {
+      return;
+    }
+
+    try {
+      const response = await axios.get("http://localhost:8000/api/search_discussions", {
+        params: { query: searchQuery },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setFilteredEvents(response.data.discussions.data || []); // Ensure it's .discussions.data like your original API
+    } catch (error) {
+      console.error("Error searching discussions:", error);
+      toast.error("Failed to search discussions");
+    }
+  };
+
+  useEffect(() => {
+  if (searchQuery.trim() === "") {
+    setFilteredEvents(posts); // You’d need to store the original list somewhere like in `allPosts` state
+    }
+  }, [searchQuery]);
+
+
 
   // Skeleton for posts
   const PostSkeleton = () => (
@@ -293,7 +579,7 @@ export default function ForumMainPage() {
                             className="flex-1 flex item-center text-center px-8 py-3 font-semibold text-blue-600 border-b-2 border-blue-500"
                           >
                             <button
-                              onClick={() => { setShowPosted(false); setShowConnect(false); }}
+                              onClick={() => { setShowPosted(false); setShowConnect(false); setPostForm({ subject: "", content: "", photo: null });setImagePreview(null);}}
                               className="p-1 text-gray-600"
                             >
                               <IoArrowBackOutline size={23} />
@@ -302,7 +588,7 @@ export default function ForumMainPage() {
                           </div>
                         )
                       ) : (
-                        ["For you", "connecting"].map((tab, i) => (
+                        ["For you", "connected"].map((tab, i) => (
                           <button
                             key={i}
                             className={`flex-1 text-center py-3 font-semibold hover:bg-gray-100 transition ${
@@ -310,7 +596,11 @@ export default function ForumMainPage() {
                                 ? "text-blue-600 border-b-2 border-blue-500"
                                 : "text-gray-600"
                             }`}
-                            onClick={() => setShowConnectPost(i === 1)}
+                            onClick={() => {
+                              setShowConnectPost(i === 1);
+                              setPostForm({ subject: "", content: "", photo: null });
+                              setImagePreview(null);
+                            }}
                           >
                             {tab}
                           </button>
@@ -335,7 +625,12 @@ export default function ForumMainPage() {
               {/* Posts */}
               {showMore === true ? (
                 <div className="flex flex-col gap-4">
-                  {suggest.map((user) => (
+                 {suggest.length === 0 ?(
+                    <div className="text-center text-gray-500 py-8">
+                      No suggest user for you.
+                    </div>
+                 ):
+                  (suggest.map((user) => (
                   <div
                     key={user.id}
                     className="flex items-center gap-4 border-b px-8 p-4 w-full"
@@ -360,10 +655,12 @@ export default function ForumMainPage() {
                       </p>
                     </div>
                     <div className="ml-auto">
-                      <button className="bg-gray-200 px-3 py-1 rounded-full text-sm font-semibold">Connect</button>
+                      <button 
+                        onClick={()=>handleConnect(user.id)}
+                        className="bg-gray-200 px-3 py-1 rounded-full text-sm font-semibold">Connect</button>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
               ) : 
                 showPostDetails === false ? (
@@ -371,132 +668,157 @@ export default function ForumMainPage() {
             {(showposted === true || showConnect === true) ? (
               showConnect === true ? (
                 <div className="flex flex-col gap-4">
-                {connectUser.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex items-center gap-4 border-b px-8 p-4 w-full"
-                  >
-                    <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
-                      {user.image ? (
-                        <img
-                          src={user.image}
-                          alt="Profile"
-                          className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
-                        />
-                      ) : (
-                        <div className="w-full h-full text-2xl font-medium flex items-center justify-center rounded-full border-4 border-blue-200 shadow-sm">
-                          {getInitial(user.name)}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <h1 className="text-lg font-bold">{user.name}</h1>
-                      <p>
-                        {user.major_name} , {user.major.faculty_name}
-                      </p>
-                    </div>
+                {connectUser.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    No connected user yet.
                   </div>
-                ))}
+                ) : (
+                  connectUser.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center gap-4 border-b px-8 p-4 w-full"
+                    >
+                      <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
+                        {user.image ? (
+                          <img
+                            src={user.image}
+                            alt="Profile"
+                            className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-full h-full text-2xl font-medium flex items-center justify-center rounded-full border-4 border-blue-200 shadow-sm">
+                            {getInitial(user.name)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h1 className="text-lg font-bold">{user.name}</h1>
+                        <p>
+                          {user.major_name} , {user.faculty}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
               ) : (
                 <div>
                     <div className="px-8 py-4 border-b border-gray-100">
-                  <form className="flex  bg-white">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-400 mr-4 font-bold">
-                      {getInitial(mainUser?.name)}
-                    </div>
-
-                    {/* Composer */}
-                    <div className="flex-1">
-                      <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className="w-full bg-transparent text-gray-800 placeholder-gray-500 text-lg outline-none resize-none focus:border-b focus:border-blue-500 transition-colors"
-                        placeholder="What's happening?"
-                        rows="2"
-                      />
-
-                      <div className="flex items-center justify-between mt-3">
-                        {/* Action Icons */}
-                        <div className="flex items-center space-x-3 text-blue-500">
-                          <button
-                            type="button"
-                            onClick={handleImageClick}
-                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                            title="Add Image"
-                          >
-                            <CiImageOn size={24} />
-                          </button>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            hidden
-                          />
-                          <button
-                            type="button"
-                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                            title="Add Image"
-                          >
-                            <PiGif size={24} />
-                          </button>
-                          <button
-                            type="button"
-                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                            title="Add Image"
-                          >
-                            <LiaPollSolid size={24} />
-                          </button>
-                          <div className="relative">
-                            <button
-                              className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setShowPicker(!showPicker);
-                              }}
-                            >
-                              <BsEmojiSmile size={19} />
-                            </button>
-
-                            {showPicker && (
-                              <div className="absolute top-10 left-0 z-10">
-                                <EmojiPicker
-                                  onEmojiClick={onEmojiClick}
-                                  width={300}
-                                  height={350}
-                                />
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                            title="Add Image"
-                          >
-                            <GoLocation size={19} />
-                          </button>
+                      <form className="flex bg-white" onSubmit={submitPost}>
+                        {/* Avatar */}
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-400 mr-4 font-bold">
+                          {getInitial(mainUser?.name)}
                         </div>
 
-                        {/* Post Button */}
-                        <button
-                          type="submit"
-                          disabled={!content.trim()}
-                          className={`px-5 py-2 text-sm font-semibold rounded-full transition 
-                            ${
-                              content.trim()
-                                ? "bg-blue-500 hover:bg-blue-600 text-white"
-                                : "bg-blue-300 text-white cursor-not-allowed opacity-50"
-                            }`}
-                        >
-                          Post
-                        </button>
-                      </div>
+                        {/* Composer */}
+                        <div className="flex-1">
+                          {/* Subject Input */}
+                          <input
+                            type="text"
+                            value={postForm.subject}
+                            onChange={(e) =>
+                              setPostForm((prev) => ({ ...prev, subject: e.target.value }))
+                            }
+                            placeholder="Subject (e.g., Event Title or Topic)"
+                            className="w-full mb-2 text-lg font-medium border-b border-gray-200 focus:outline-none focus:border-blue-500 placeholder-gray-500"
+                          />
+
+                          {/* Content Input */}
+                          <textarea
+                            value={postForm.content}
+                            onChange={(e) =>
+                              setPostForm((prev) => ({ ...prev, content: e.target.value }))
+                            }
+                            className="w-full bg-transparent text-gray-800 placeholder-gray-500 text-lg outline-none resize-none focus:border-b focus:border-blue-500 transition-colors"
+                            placeholder="What's happening?"
+                            rows="2"
+                          />
+
+                          {/* Image Preview */}
+                          {imagePreview && (
+                            <div className="mt-3 relative w-max">
+                              <img
+                                src={imagePreview}
+                                alt="Preview"
+                                className="max-h-60 rounded-lg border border-gray-300"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPostForm((prev) => ({ ...prev, photo: null }));
+                                  setImagePreview(null);
+                                  fileInputRef.current.value = null;
+                                }}
+                                className="absolute top-1 right-1 bg-white px-2 py-1 rounded-full shadow hover:bg-red-100"
+                                title="Remove Image"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Actions */}
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center space-x-3 text-blue-500">
+                              <button
+                                type="button"
+                                onClick={handleImageClick}
+                                className="hover:bg-blue-100 p-2 rounded-full"
+                                title="Add Image"
+                              >
+                                <CiImageOn size={24} />
+                              </button>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                hidden
+                              />
+                              <button type="button" className="hover:bg-blue-100 p-2 rounded-full" title="Add GIF">
+                                <PiGif size={24} />
+                              </button>
+                              <button type="button" className="hover:bg-blue-100 p-2 rounded-full" title="Add Poll">
+                                <LiaPollSolid size={24} />
+                              </button>
+                              <div className="relative">
+                                <button
+                                  className="hover:bg-blue-100 p-2 rounded-full"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowPicker(!showPicker);
+                                  }}
+                                >
+                                  <BsEmojiSmile size={19} />
+                                </button>
+                                {showPicker && (
+                                  <div className="absolute top-10 left-0 z-10">
+                                    <EmojiPicker onEmojiClick={onEmojiClick} width={300} height={350} />
+                                  </div>
+                                )}
+                              </div>
+                              <button type="button" className="hover:bg-blue-100 p-2 rounded-full" title="Add Location">
+                                <GoLocation size={19} />
+                              </button>
+                            </div>
+
+                            {/* Post Button */}
+                            <button
+                              type="submit"
+                              disabled={!postForm.subject.trim() || !postForm.content.trim()}
+                              className={`px-5 py-2 text-sm font-semibold rounded-full transition ${
+                                postForm.subject.trim() && postForm.content.trim()
+                                  ? "bg-blue-500 hover:bg-blue-600 text-white"
+                                  : "bg-blue-300 text-white cursor-not-allowed opacity-50"
+                              }`}
+                            >
+                              Post
+                            </button>
+                          </div>
+                        </div>
+                      </form>
                     </div>
-                  </form>
-                </div>
-                    {ownPost.map((post, i) => {
+                   {ownPost.map((post, i) => {
                       const user = userMap[post.user_id];
                       return (
                         <div
@@ -508,26 +830,45 @@ export default function ForumMainPage() {
                           <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center font-bold text-lg text-gray-700">
                             {user ? user.name[0] : "?"}
                           </div>
+
                           {/* Post Content */}
                           <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-900">
-                                {user ? user.name : "Unknown User"}
-                              </span>
-                              <span className="text-gray-400 text-xs">
-                                · {getTimeAgo(post.created_at)}
-                              </span>
+                            <div className="flex justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-gray-900">
+                                  {user ? user.name : "Unknown User"}
+                                </span>
+                                <span className="text-gray-400 text-xs">
+                                  · {getTimeAgo(post.created_at)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FiEdit3 size={17} 
+                                onClick={(e) => {
+                                  e.stopPropagation(); 
+                                  setSelectedEditPost(post);
+                                  setShowEditPost(true);
+                                  }}/>
+                                <MdDeleteOutline size={17} 
+                                  onClick={(e) => {
+                                  e.stopPropagation(); 
+                                  handleDeletePost(post.id)
+                                  }}/>
+                              </div>
                             </div>
+
                             <p>{post.subject}</p>
-                            <div className="text-gray-800 text-base pt-3 pb-1">
-                              {post.content}
-                            </div>
+                            <div className="text-gray-800 text-base pt-3 pb-1">{post.content}</div>
+
                             <div className="flex items-center gap-2 mt-2">
                               <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
                                 <FaRegHeart size={15} />
                               </div>
                               <div
-                                onClick={() => handleClickComment(post)}
+                                onClick={(e) => {
+                                  e.stopPropagation(); 
+                                  handleClickComment(post); 
+                                }}
                                 className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
                               >
                                 <FaRegComment size={15} />
@@ -539,108 +880,125 @@ export default function ForumMainPage() {
                           </div>
                         </div>
                       );
-                    })
-              }
+                    })}
                   </div>
               )
             ) : (
               <>
                 <div className="px-8 py-4 border-b border-gray-100">
-                  <form className="flex  bg-white">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-400 mr-4 font-bold">
-                      {getInitial(mainUser?.name)}
-                    </div>
-
-                    {/* Composer */}
-                    <div className="flex-1">
-                      <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        className="w-full bg-transparent text-gray-800 placeholder-gray-500 text-lg outline-none resize-none focus:border-b focus:border-blue-500 transition-colors"
-                        placeholder="What's happening?"
-                        rows="2"
-                      />
-
-                      <div className="flex items-center justify-between mt-3">
-                        {/* Action Icons */}
-                        <div className="flex items-center space-x-3 text-blue-500">
-                          <button
-                            type="button"
-                            onClick={handleImageClick}
-                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                            title="Add Image"
-                          >
-                            <CiImageOn size={24} />
-                          </button>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            hidden
-                          />
-                          <button
-                            type="button"
-                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                            title="Add Image"
-                          >
-                            <PiGif size={24} />
-                          </button>
-                          <button
-                            type="button"
-                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                            title="Add Image"
-                          >
-                            <LiaPollSolid size={24} />
-                          </button>
-                          <div className="relative">
-                            <button
-                              className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setShowPicker(!showPicker);
-                              }}
-                            >
-                              <BsEmojiSmile size={19} />
-                            </button>
-
-                            {showPicker && (
-                              <div className="absolute top-10 left-0 z-10">
-                                <EmojiPicker
-                                  onEmojiClick={onEmojiClick}
-                                  width={300}
-                                  height={350}
-                                />
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="hover:bg-blue-100 p-2 rounded-full transition-colors"
-                            title="Add Image"
-                          >
-                            <GoLocation size={19} />
-                          </button>
+                      <form className="flex bg-white" onSubmit={submitPost}>
+                        {/* Avatar */}
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-400 mr-4 font-bold">
+                          {getInitial(mainUser?.name)}
                         </div>
 
-                        {/* Post Button */}
-                        <button
-                          type="submit"
-                          disabled={!content.trim()}
-                          className={`px-5 py-2 text-sm font-semibold rounded-full transition 
-                            ${
-                              content.trim()
-                                ? "bg-blue-500 hover:bg-blue-600 text-white"
-                                : "bg-blue-300 text-white cursor-not-allowed opacity-50"
-                            }`}
-                        >
-                          Post
-                        </button>
-                      </div>
+                        {/* Composer */}
+                        <div className="flex-1">
+                          {/* Subject Input */}
+                          <input
+                            type="text"
+                            value={postForm.subject}
+                            onChange={(e) =>
+                              setPostForm((prev) => ({ ...prev, subject: e.target.value }))
+                            }
+                            placeholder="Subject (e.g., Event Title or Topic)"
+                            className="w-full mb-2 text-lg font-medium border-b border-gray-200 focus:outline-none focus:border-blue-500 placeholder-gray-500"
+                          />
+
+                          {/* Content Input */}
+                          <textarea
+                            value={postForm.content}
+                            onChange={(e) =>
+                              setPostForm((prev) => ({ ...prev, content: e.target.value }))
+                            }
+                            className="w-full bg-transparent text-gray-800 placeholder-gray-500 text-lg outline-none resize-none focus:border-b focus:border-blue-500 transition-colors"
+                            placeholder="What's happening?"
+                            rows="2"
+                          />
+
+                          {/* Image Preview */}
+                          {imagePreview && (
+                            <div className="mt-3 relative w-max">
+                              <img
+                                src={imagePreview}
+                                alt="Preview"
+                                className="max-h-60 rounded-lg border border-gray-300"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPostForm((prev) => ({ ...prev, photo: null }));
+                                  setImagePreview(null);
+                                  fileInputRef.current.value = null;
+                                }}
+                                className="absolute top-1 right-1 bg-white px-2 py-1 rounded-full shadow hover:bg-red-100"
+                                title="Remove Image"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Actions */}
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center space-x-3 text-blue-500">
+                              <button
+                                type="button"
+                                onClick={handleImageClick}
+                                className="hover:bg-blue-100 p-2 rounded-full"
+                                title="Add Image"
+                              >
+                                <CiImageOn size={24} />
+                              </button>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                hidden
+                              />
+                              <button type="button" className="hover:bg-blue-100 p-2 rounded-full" title="Add GIF">
+                                <PiGif size={24} />
+                              </button>
+                              <button type="button" className="hover:bg-blue-100 p-2 rounded-full" title="Add Poll">
+                                <LiaPollSolid size={24} />
+                              </button>
+                              <div className="relative">
+                                <button
+                                  className="hover:bg-blue-100 p-2 rounded-full"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowPicker(!showPicker);
+                                  }}
+                                >
+                                  <BsEmojiSmile size={19} />
+                                </button>
+                                {showPicker && (
+                                  <div className="absolute top-10 left-0 z-10">
+                                    <EmojiPicker onEmojiClick={onEmojiClick} width={300} height={350} />
+                                  </div>
+                                )}
+                              </div>
+                              <button type="button" className="hover:bg-blue-100 p-2 rounded-full" title="Add Location">
+                                <GoLocation size={19} />
+                              </button>
+                            </div>
+                            {/* Post Button */}
+                            <button
+                              type="submit"
+                              disabled={!postForm.subject.trim() || !postForm.content.trim()}
+                              className={`px-5 py-2 text-sm font-semibold rounded-full transition ${
+                                postForm.subject.trim() && postForm.content.trim()
+                                  ? "bg-blue-500 hover:bg-blue-600 text-white"
+                                  : "bg-blue-300 text-white cursor-not-allowed opacity-50"
+                              }`}
+                            >
+                              Post
+                            </button>
+                          </div>
+                        </div>
+                      </form>
                     </div>
-                  </form>
-                </div>
                 {/* Posts List */}
                 {showConnectPost === true ? (
                   <div>
@@ -682,7 +1040,10 @@ export default function ForumMainPage() {
                                       <FaRegHeart size={15} />
                                     </div>
                                     <div
-                                      onClick={() => handleClickComment(post)}
+                                      onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleClickComment(post);
+                                        }}
                                       className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
                                     >
                                       <FaRegComment size={15} />
@@ -701,7 +1062,13 @@ export default function ForumMainPage() {
                   <div>
                     {loading
                       ? Array.from({ length: 5 }).map((_, i) => <PostSkeleton key={i} />)
-                      : posts.map((post, i) => {
+                      : 
+                      filteredEvents<= 0 ? (
+                        <div className="text-center text-gray-500 py-8">
+                          No matching events found.
+                        </div>
+                      ) :
+                      (filteredEvents.map((post, i) => {
                           const user = userMap[post.user_id];
                           return (
                             <div
@@ -732,7 +1099,7 @@ export default function ForumMainPage() {
                                     <FaRegHeart size={15} />
                                   </div>
                                   <div
-                                    onClick={() => handleClickComment(post)}
+                                    onClick={(e) => { e.stopPropagation();handleClickComment(post)}}
                                     className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
                                   >
                                     <FaRegComment size={15} />
@@ -744,7 +1111,7 @@ export default function ForumMainPage() {
                               </div>
                             </div>
                           );
-                        })}
+                        }))}
                   </div>
                 )}
               </>
@@ -775,7 +1142,10 @@ export default function ForumMainPage() {
                   <FaRegHeart size={15} />
                 </div>
                 <div
-                  onClick={() => handleClickComment(posts)}
+                  onClick={(e) => {
+                      e.stopPropagation();
+                      handleClickComment(selectedPost.post); 
+                    }}
                   className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2"
                 >
                   <FaRegComment size={15} />
@@ -798,7 +1168,7 @@ export default function ForumMainPage() {
                   ></textarea>
                 </div>
               ) : (
-                <form className="w-full h-30 border border-gray-300 rounded-xl mt-4 flex flex-col items-center px-4 py-2">
+                <form onSubmit={(e) => submitComment(e)} className="w-full h-30 border border-gray-300 rounded-xl mt-4 flex flex-col items-center px-4 py-2">
                   <textarea
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
@@ -862,13 +1232,26 @@ export default function ForumMainPage() {
                           {getInitial(user?.name)}
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-lg">
-                              {user ? user.name : "Unknown User"}
-                            </span>
-                            <span className="text-gray-400 text-sm">
-                              · {getTimeAgo(comment.created_at)}
-                            </span>
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-lg">
+                                {user ? user.name : "Unknown User"}
+                              </span>
+                              <span className="text-gray-400 text-sm">
+                                · {getTimeAgo(comment.created_at)}
+                              </span>
+                            </div>
+                            {(comment.user_id === parseInt(userId) || comment.user_id == userId) && 
+                              <div className="flex items-center gap-2 cursor-pointer">
+                                <MdDeleteOutline
+                                  size={17}
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    console.log("Delete clicked for comment:", comment.id);
+                                    handleDeleteComment(comment.id);
+                                  }}
+                                />
+                              </div>}
                           </div>
                           <p className="text-lg">{comment.comment_content}</p>
                         </div>
@@ -891,6 +1274,9 @@ export default function ForumMainPage() {
               <IoSearchSharp />
             </div>
             <input
+              value={searchQuery}
+              onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit(e)}
+              onChange={(e) => setSearchQuery(e.target.value)}
               type="text"
               className="bg-gray-100 w-full pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="Search"
@@ -927,7 +1313,9 @@ export default function ForumMainPage() {
                       <div className="text-gray-500">{user.handle}</div>
                     </div>
                   </div>
-                  <button className="bg-white text-black font-semibold text-sm px-3 py-1 rounded-full hover:bg-gray-200">
+                  <button 
+                    onClick={()=>handleConnect(user.id)}
+                    className="bg-white text-black font-semibold text-sm px-3 py-1 rounded-full hover:bg-gray-200">
                     Connect
                   </button>
                 </div>
@@ -961,14 +1349,28 @@ export default function ForumMainPage() {
           <AddComment
             post={selectedPost}
             onClose={() => setShowAddComment(false)}
+            setFilteredEvents={setFilteredEvents} 
+            setPosts={setPosts}
+            setConnectPost={setConnectPost}
+            setSelectedPost={setSelectedPost}
+            showConnectPost={showConnectPost}
           ></AddComment>
         </div>
       )}
       {showAddPost && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <AddPost onClose={() => setShowAddPost(!showAddPost)} />
+          <AddPost onClose={() => setShowAddPost(!showAddPost)} setFilteredEvents={setFilteredEvents} setPosts={setPosts}/>
         </div>
       )}
+      {showEditPost && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <EditPost onClose={() => setShowEditPost(!showEditPost)} post={selectedEditPost} setOwnPost={setOwnPost}/>
+        </div>
+      )}
+      {/* Toast notifications container */}
+        <ToastContainer position="top-center" autoClose={3000} toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }/>
     </div>
   );
 }
