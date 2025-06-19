@@ -20,15 +20,15 @@ export default function ViewProfile() {
   console.log("Alumni Data:", alumni);
 
   const [activeTab, setActiveTab] = useState("about");
-
   const [connect, setconnect] = useState([]);
   const [forum, setForum] = useState([]);
+  const[event,setEvent] = useState([])
   const token = Cookies.get("token");
 
   useEffect(() => {
     const fetchAlumni = async () => {
       try {
-        const [connectRes, forumRes] = await Promise.all([
+        const [connectRes, forumRes, userRes, userDetailsRes] = await Promise.all([
           axios.get("http://localhost:8000/api/view_all_alumni", {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -41,7 +41,8 @@ export default function ViewProfile() {
         ]);
         setconnect(connectRes.data);
         setForum(forumRes.data.discussions);
-        console.log("Connected alumni:", connectRes.data);
+        setEvent(forumRes.data.past_events)
+        console.log("user:", userRes.data);
         console.log("Alumni forum:", forumRes.data.discussions);
       } catch (error) {
         if (error.response && error.response.status === 404) {
@@ -125,31 +126,6 @@ export default function ViewProfile() {
       status: "upcoming"
     },
     ]
-
-    const mokForum = [
-        {
-            id:1,
-            name:"John Doe",
-            title:"How to improve my coding skills?",
-            description:"I am looking for resources and tips to enhance my coding skills. Any recommendations?",
-        }
-        ,
-        {
-            id:2,
-            name:"Jane Smith",
-            title:"Best practices for web development",
-            description:"What are the best practices for web development in 2025? Looking for insights and resources.",
-        },
-        {
-            id:3,
-            name:"Alice Johnson",
-            title:"Career advice for fresh graduates",
-            description:"I am a recent graduate and would like to know how to kickstart my career in tech. Any advice?",
-        }
-    ]
-
-
-
 
   return (
     <section className="min-h-screen">
@@ -351,7 +327,7 @@ export default function ViewProfile() {
             <div className="p-6">
               <h1 className="font-bold text-xl">Events</h1>
               <div className="flex flex-col gap-4 mt-4">
-                {mockEvents.map((event) => (
+                {event.map((event) => (
                   <div
                     key={event.id}
                     className="flex items-center gap-4 border-b pb-4 w-full"
@@ -377,14 +353,17 @@ export default function ViewProfile() {
             <div className="p-6">
               <h1 className="font-bold text-xl">Forum Posts</h1>
               <div className="flex flex-col gap-4 mt-4">
-                {forum.map((forum) => (
+                {forum.length === 0 ?(
+                  <p>No discussion post yet</p>
+                ):
+                (forum.map((forum) => (
                   <div
                     key={forum.id}
                     className="flex items-center gap-4 w-full"
                   >
                     <div className="border border-gray-300 px-4 pt-3 rounded-lg w-full">
-                      <h1 className="text-lg font-bold">{forum.title}</h1>
-                      <p>{forum.description}</p>
+                      <h1 className="text-lg font-bold">{forum.subject}</h1>
+                      <p>{forum.content}</p>
                       <p>{forum.name}</p>
                       <div className="flex gap-2 py-2 border-t items-center justify-between">
                         <div className="flex gap-2">
@@ -395,7 +374,7 @@ export default function ViewProfile() {
                       </div>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
             </div>
           )}    

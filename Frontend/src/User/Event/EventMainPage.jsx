@@ -372,9 +372,11 @@ export default function EventMainPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-9">
                 {currentEvents.map((event) => (
                   <div
-                    key={event.id}
-                    className="bg-white rounded-lg p-4 shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full max-h-[460px]"
-                  >
+                      key={event.id}
+                      className="bg-white rounded-lg p-4 shadow-md overflow-hidden 
+                                transition-all duration-300 ease-in-out transform hover:scale-[1.02] 
+                                hover:shadow-lg flex flex-col h-full max-h-[500px]"
+                    >
                     <div className="relative h-80 overflow-hidden">
                       <img
                         src={event.photo || fallbackImage}

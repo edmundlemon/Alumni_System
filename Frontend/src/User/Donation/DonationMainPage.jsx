@@ -186,7 +186,8 @@ export default function DonationMainPage() {
                 return (
                   <div
                     key={dnt.id}
-                    className="bg-white shadow-lg border rounded flex flex-col"
+                    className="bg-white shadow-lg border rounded transition-all duration-300 ease-in-out transform hover:scale-[1.02] 
+                                hover:shadow-lg flex flex-col"
                   >
                     <div className="relative">
                       <img

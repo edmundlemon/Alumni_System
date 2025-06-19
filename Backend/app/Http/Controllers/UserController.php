@@ -223,4 +223,5 @@ class UserController extends Controller
             'suggested_connections' => $suggestedConnections,
         ], 200);
     }
+    
 }

@@ -282,22 +282,18 @@ export default function FacultyTable() {
           </thead>
           <tbody>
             {isLoading
-              ? Array.from({ length: itemsPerPage }, (_, i) => (
-                  <tr key={i} className="border-b border-gray-100">
-                    <td className="p-2 text-center">
-                      <Skeleton circle height={16} width={16} />
-                    </td>
-                    <td className="p-2 text-center">
-                      <Skeleton height={10} width="80%" />
-                    </td>
-                    <td className="p-2">
-                      <Skeleton height={10} width="80%" />
-                    </td>
-                    <td className="p-2">
-                      <Skeleton height={10} width="80%" />
-                    </td>
-                  </tr>
-                ))
+                          ? Array.from({ length: itemsPerPage }, (_, i) => (
+                              <tr key={i} className="border-b border-gray-100">
+                                <td className="p-2 text-center">
+                                  <Skeleton circle height={16} width={16} />
+                                </td>
+                                {[...Array(4)].map((_, j) => (
+                                  <td key={j} className="px-2 py-3 text-left">
+                                    <Skeleton height={10} width="80%" />
+                                  </td>
+                                ))}
+                              </tr>
+                            ))
               : displayed.map((faculty, i) => (
                   <tr key={faculty.id} className="hover:bg-gray-50 border-b">
                     <td className="p-1 text-center">
