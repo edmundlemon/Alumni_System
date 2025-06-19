@@ -14,6 +14,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 // Fake Donation Data for Donut Chart
 const donationData = [
@@ -31,28 +33,89 @@ export default function Dashboard() {
     users: 0,
     events: 0,
     donations: 0,
-    connections: 0,
+    Forum: 0,
   });
+  
+  const [recentDonations, setRecentDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const token = Cookies.get("token");
 
   useEffect(() => {
-    setTimeout(() => {
-      setStats({
-        users: 1089,
-        events: 42,
-        donations: 32000,
-        connections: 154,
-      });
-    }, 1000);
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [userRes, eventRes, donationPostRes, donationRes, forumRes] = await Promise.all([
+          axios.get("http://localhost:8000/api/view_all_users", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:8000/api/view_all_events", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:8000/api/view_all_donations", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:8000/api/view_all_donation_posts", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:8000/api/discussions", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        console.log(userRes.data);
+        console.log(eventRes.data);
+        console.log(donationPostRes.data);
+        console.log(donationRes.data);
+        console.log(forumRes.data);
+
+        // Calculate total donation amount
+        const totalDonations = donationRes.data.donations?.reduce((sum, donation) => {
+          return sum + (donation.amount || 0);
+        }, 0) || 0;
+
+        // Get forum discussions count
+        const forumCount = forumRes.data.discussions?.total || 
+                          Object.keys(forumRes.data.discussions || {}).length || 0;
+
+        // Update stats with actual API data
+        setStats({
+          users: userRes.data.length || 0, // Assuming userRes.data is an array
+          events: eventRes.data.events?.length || 0,
+          donations: totalDonations,
+          Forum: forumCount,
+        });
+
+        // Set recent donations for the table (take first 5)
+        const donations = donationRes.data.donations || [];
+        setRecentDonations(donations.slice(0, 5));
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Fallback to mock data if API fails
+        setStats({
+          users: 1089,
+          events: 42,
+          donations: 32000,
+          Forum: 154,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchData();
+    }
+  }, [token]);
 
   const userActivityData = [
-    { name: "Mon", logins: 65, events: 28, connections: 45 },
-    { name: "Tue", logins: 60, events: 48, connections: 25 },
-    { name: "Wed", logins: 78, events: 40, connections: 40 },
-    { name: "Thu", logins: 80, events: 20, connections: 60 },
-    { name: "Fri", logins: 65, events: 88, connections: 35 },
-    { name: "Sat", logins: 50, events: 25, connections: 48 },
-    { name: "Sun", logins: 58, events: 42, connections: 40 },
+    { name: "Mon", logins: 65, events: 28, Forum: 45 },
+    { name: "Tue", logins: 60, events: 48, Forum: 25 },
+    { name: "Wed", logins: 78, events: 40, Forum: 40 },
+    { name: "Thu", logins: 80, events: 20, Forum: 60 },
+    { name: "Fri", logins: 65, events: 88, Forum: 35 },
+    { name: "Sat", logins: 50, events: 25, Forum: 48 },
+    { name: "Sun", logins: 58, events: 42, Forum: 40 },
   ];
 
   return (
@@ -63,6 +126,13 @@ export default function Dashboard() {
       }}
     >
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+
+      {/* Loading indicator */}
+      {loading && (
+        <div className="text-center py-4">
+          <p className="text-gray-600">Loading dashboard data...</p>
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ">
@@ -79,8 +149,8 @@ export default function Dashboard() {
         />
         <StatCard
           icon={<MdPeople />}
-          label="Connections"
-          value={stats.connections}
+          label="Forum"
+          value={stats.Forum}
         />
       </div>
 
@@ -121,10 +191,10 @@ export default function Dashboard() {
               />
               <Line
                 type="monotone"
-                dataKey="connections"
+                dataKey="Forum"
                 stroke="#FB8C00"
                 strokeWidth={3}
-                name="Connections Made"
+                name="Forum Made"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -160,7 +230,7 @@ export default function Dashboard() {
       {/* Donation Table */}
       <div className="bg-white p-4 rounded-lg shadow-md ">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Recent Donation</h2>
+          <h2 className="text-xl font-bold">Recent Donations</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left text-gray-700">
@@ -172,17 +242,35 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              <tr className="hover:bg-gray-50">
-                <td className="py-2 px-4 border">John Doe</td>
-                <td className="py-2 px-4 border">RM 1,000</td>
-                <td className="py-2 px-4 border">2025-05-01</td>
-              </tr>
-              <tr className="hover:bg-gray-50">
-                <td className="py-2 px-4 border">Jane Lim</td>
-                <td className="py-2 px-4 border">RM 500</td>
-                <td className="py-2 px-4 border">2025-05-20</td>
-              </tr>
-              {/* Add API data dynamically later */}
+              {recentDonations.length > 0 ? (
+                recentDonations.map((donation, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="py-2 px-4 border">
+                      {donation.donor_name || donation.name || 'Anonymous'}
+                    </td>
+                    <td className="py-2 px-4 border">
+                      RM {(donation.amount || 0).toLocaleString()}
+                    </td>
+                    <td className="py-2 px-4 border">
+                      {donation.date || donation.created_at || 'N/A'}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                // Fallback static data when no API data available
+                <>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-2 px-4 border">John Doe</td>
+                    <td className="py-2 px-4 border">RM 1,000</td>
+                    <td className="py-2 px-4 border">2025-05-01</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="py-2 px-4 border">Jane Lim</td>
+                    <td className="py-2 px-4 border">RM 500</td>
+                    <td className="py-2 px-4 border">2025-05-20</td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>

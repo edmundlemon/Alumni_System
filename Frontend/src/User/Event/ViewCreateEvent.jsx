@@ -15,7 +15,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function ViewCreateEvent() {
   const navigate = useNavigate();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState([]); 
+  const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [viewMode, setViewMode] = useState("month");
@@ -296,7 +297,9 @@ export default function ViewCreateEvent() {
           </div>
         ) : events.length > 0 ? (
           <div className="min-h-screen">
-            {events.map((event) => (
+            {events.map((event) => {
+              const eventDate = new Date(event.event_date);
+              return(
               <div
                 key={event.id}
                 className="p-6 hover:bg-gray-50 transition-colors border-b border-gray-200"
@@ -308,20 +311,25 @@ export default function ViewCreateEvent() {
                         {event.event_title}
                       </h3>
                       {/* Status Badge */}
-                      {event.status === "upcoming" && (
-                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-green-100 text-green-700 border border-green-300">
-                          Upcoming Event
-                        </span>
-                      )}
-                      {event.status === "cancelled" && (
+                      {eventDate >= today && (
+                        event.status === "cancelled" ? (
                         <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-red-100 text-red-700 border border-red-300">
                           Cancelled Event
                         </span>
-                      )}
-                      {event.status === "Pass" && (
-                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-200 text-gray-600 border border-gray-300">
-                          pass
+                        ):
+                       ( <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-green-100 text-green-700 border border-green-300">
+                          Upcoming Event
+                        </span>)
+                      )} 
+                      {eventDate < today && (
+                         event.status === "cancelled" ? (
+                        <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-red-100 text-red-700 border border-red-300">
+                          Cancelled Event
                         </span>
+                        ):
+                        (<span className="ml-2 px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-200 text-gray-600 border border-gray-300">
+                          pass
+                        </span>)
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
@@ -379,6 +387,14 @@ export default function ViewCreateEvent() {
                             : "No participant limit"}
                         </span>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <FiUsers className="text-gray-400" />
+                        <span>
+                          {event.max_participants
+                            ? `${event.max_participants} participants max`
+                            : "No participant limit"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -399,7 +415,7 @@ export default function ViewCreateEvent() {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         ) : (
           <div className="p-12 text-center">

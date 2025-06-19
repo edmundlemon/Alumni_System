@@ -89,7 +89,6 @@ function AppRoutes() {
         <Route path="/termAndCondition" element={<TermAndCondition />} />
         <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/policy" element={<Policy />} />
-
         {/* Protected User Routes */}
         <Route path="/viewEvent" element={<ProtectedRoute><ViewEvent /></ProtectedRoute>} />
         <Route path="/eventMainPage" element={<ProtectedRoute><EventMainPage /></ProtectedRoute>} />

@@ -124,32 +124,6 @@ export default function ForumMainPage() {
     }
   }
 
-  const handleDeleteComment = async (commentID) =>{
-    try{
-      const response = await axios.delete(
-        `http://localhost:8000/api/delete_comment/${commentID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      toast.success("Comment cancelled successfully");
-      console.log("Comment deleted successfully");
-    //   setSelectedPost(prev => prev.filter({
-    //     ...prev,
-    //     post: {
-    //       ...prev.post,
-    //       comments: [...(prev.post.comments || []), newComment]
-    //     }
-    // }));
-    }catch (error) {
-      console.error("Error deleting post:", error);
-      toast.error("Failed to cancel post");
-    }
-  }
-
   const handleClickComment = (post) => {
     setShowAddComment(!showAddComment);
     setSelectedPost({ post, user: userMap[post.user_id] });
@@ -1241,17 +1215,6 @@ export default function ForumMainPage() {
                                 · {getTimeAgo(comment.created_at)}
                               </span>
                             </div>
-                            {(comment.user_id === parseInt(userId) || comment.user_id == userId) && 
-                              <div className="flex items-center gap-2 cursor-pointer">
-                                <MdDeleteOutline
-                                  size={17}
-                                  onClick={e => {
-                                    e.stopPropagation();
-                                    console.log("Delete clicked for comment:", comment.id);
-                                    handleDeleteComment(comment.id);
-                                  }}
-                                />
-                              </div>}
                           </div>
                           <p className="text-lg">{comment.comment_content}</p>
                         </div>

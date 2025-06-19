@@ -24,35 +24,69 @@ export default function FacultyTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isLoading, setIsLoading] = useState(true);
-  const [showAddFalculty,setShowAddFalculty] = useState(false)
+  const [showAddFaculty, setShowAddFaculty] = useState(false);
   const printRef = useRef();
-  const [content,setContent] = useState("")
+  const [content, setContent] = useState("");
+  const [showEditFaculty, setShowEditFaculty] = useState(false);
+  const [selectFaculty, setSelectFaculty] = useState(null);
 
-  const handleAddFalcuty = async (e) => {
-  e.preventDefault();
-  try {
-    await axios.post(
-      "http://localhost:8000/api/create_faculty",
-      { faculty_name: content },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const handleAddFaculty = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(
+        "http://localhost:8000/api/create_faculty",
+        { faculty_name: content },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Faculty added successfully");
+      const newFaculty = res.data.faculty;
+      setFaculties((prev) => [...prev, newFaculty]);
+      setShowAddFaculty(false);
+      setContent("");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add faculty");
+    }
+  };
 
-    // Re-fetch the updated list
-    const res = await axios.get("http://localhost:8000/api/view_all_faculties", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setFaculties(res.data.faculties || []);
+  const handleEditFaculty = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put(
+        `http://localhost:8000/api/edit_faculty/${selectFaculty.id}`,
+        { faculty_name: content },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      // Update the local state with the edited faculty
+      setFaculties((prev) =>
+        prev.map((faculty) =>
+          faculty.id === selectFaculty.id
+            ? { ...faculty, faculty_name: content }
+            : faculty
+        )
+      );
+      
+      toast.success("Faculty edited successfully");
+      setShowEditFaculty(false);
+      setContent("");
+      setSelectFaculty(null);
+    } catch (error) {
+      console.error("Error editing faculty:", error);
+      toast.error("Failed to edit faculty.");
+    }
+  };
 
-    toast.success("Faculty added successfully");
-    setShowAddFalculty(false);
-    setContent("");
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to add faculty");
-  }
-};
-
-
+  // Initialize content when editing
+  useEffect(() => {
+    if (showEditFaculty && selectFaculty) {
+      setContent(selectFaculty.faculty_name || "");
+    }
+  }, [showEditFaculty, selectFaculty]);
 
   useEffect(() => {
     const fetchFaculties = async () => {
@@ -144,12 +178,23 @@ export default function FacultyTable() {
   };
 
   const filtered = faculties.filter((f) =>
-    f.faculty_name.toLowerCase().includes(searchTerm.toLowerCase())
+    f.faculty_name && f.faculty_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const sorted = [...filtered].sort((a, b) => {
+    if (!sortCriteria.key) return 0;
+    
     const aVal = a[sortCriteria.key];
     const bVal = b[sortCriteria.key];
+    
+    // Handle numeric sorting for ID
+    if (sortCriteria.key === 'id') {
+      const numA = Number(aVal);
+      const numB = Number(bVal);
+      return sortCriteria.order === "asc" ? numA - numB : numB - numA;
+    }
+    
+    // Handle string sorting for other fields
     if (aVal < bVal) return sortCriteria.order === "asc" ? -1 : 1;
     if (aVal > bVal) return sortCriteria.order === "asc" ? 1 : -1;
     return 0;
@@ -163,18 +208,6 @@ export default function FacultyTable() {
 
   return (
     <div className="h-full p-4 bg-white rounded-lg shadow">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-      
       <div className="flex justify-between items-center pb-4">
         <p className="text-xl font-bold">Faculty Management Table</p>
         <div className="flex items-center gap-2">
@@ -204,11 +237,11 @@ export default function FacultyTable() {
           </button>
           <button
              className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs"
-             onClick={() => setShowAddFalculty(true)}
+             onClick={() => setShowAddFaculty(true)}
           >
             <FaPlus size={10} />
-            <span>Add Falculty</span>
-            </button>
+            <span>Add Faculty</span>
+          </button>
         </div>
       </div>
 
@@ -226,7 +259,15 @@ export default function FacultyTable() {
                   }
                 />
               </th>
-              <th className="p-2 text-left">Falcuty ID</th>
+              <th 
+                className="p-2 text-left cursor-pointer"
+                onClick={() => handleSort("id")}
+              >
+                <div className="flex items-center gap-2">
+                  Faculty ID
+                  <BiSortAlt2 size={18} />
+                </div>
+              </th>
               <th
                 className="p-2 text-left cursor-pointer"
                 onClick={() => handleSort("faculty_name")}
@@ -269,16 +310,19 @@ export default function FacultyTable() {
                       />
                     </td>
                     <td className="p-2 text-left">
-                      {(currentPage - 1) * itemsPerPage + i + 1}
+                      {faculty.id}
                     </td>
-                    <td className="p-2">{faculty.faculty_name}</td>
+                    <td className="p-2 py-3 ">{faculty.faculty_name}</td>
                     <td className="flex px-2 pt-3 gap-2">
                        <button
                         className="p-1 rounded border border-gray-300 shadow"
-                        onClick={() => handleViewEvent(faculty)}
-                         >
+                        onClick={() => {
+                          setShowEditFaculty(true);
+                          setSelectFaculty(faculty);
+                        }}
+                       >
                         <FiEdit3 />
-                        </button>
+                      </button>
                       <button
                         onClick={() => handleDelete(faculty.id)}
                         className="p-1 border border-gray-300 rounded hover:bg-gray-100"
@@ -325,24 +369,24 @@ export default function FacultyTable() {
           </button>
         </div>
       </div>
-      {showAddFalculty && (
+      
+      {/* Add Faculty Modal */}
+      {showAddFaculty && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
-            <h2 className="text-xl font-semibold mb-4 rounded-t-md px-4 py-2 text-white bg-denim">
-              Add Falculty
+            <h2 className="text-xl font-semibold mb-4 rounded-t-md px-4 py-2 text-white bg-[#1560bd]">
+              Add Faculty
             </h2>
-            <form className="px-4 pb-4 space-y-4" onSubmit={handleAddFalcuty}>
+            <form className="px-4 pb-4 space-y-4" onSubmit={handleAddFaculty}>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Faculty Name :
                 </label>
                 <input
                   type="text"
-                  name="major_name"
+                  name="faculty_name"
                   value={content}
-                  onChange={(e) =>
-                    setContent(e.target.value)
-                  }
+                  onChange={(e) => setContent(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
                   required
                 />
@@ -351,7 +395,7 @@ export default function FacultyTable() {
                 <button
                   type="button"
                   onClick={() => {
-                    setShowAddFalculty(false);
+                    setShowAddFaculty(false);
                     setContent("");
                   }}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
@@ -362,13 +406,59 @@ export default function FacultyTable() {
                   type="submit"
                   className="px-4 py-2 bg-[#1560bd] text-white rounded-md hover:bg-blue-600 transition-colors"
                 >
-                  Add Falculty
+                  Add Faculty
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Edit Faculty Modal */}
+      {showEditFaculty && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
+            <h2 className="text-xl font-semibold mb-4 rounded-t-md px-4 py-2 text-white bg-[#1560bd]">
+              Edit Faculty
+            </h2>
+            <form className="px-4 pb-4 space-y-4" onSubmit={handleEditFaculty}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Faculty Name :
+                </label>
+                <input
+                  type="text"
+                  name="faculty_name"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditFaculty(false);
+                    setContent("");
+                    setSelectFaculty(null);
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#1560bd] text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Update Faculty
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      
       {/* Toast notifications container */}
       <ToastContainer
         position="top-right"

@@ -443,11 +443,19 @@ export default function EventMainPage() {
                       </div>
 
                       {/* Attendee Info */}
-                      {event.attendeeCount > 0 && (
-                        <div className="text-sm text-gray-500 mb-3">
-                          <span>{event.attendeeCount} registered</span>
+                      
+                        <div className="flex justify-between">
+                          <div className="text-sm text-gray-500 mb-3">
+                            <span>{event.attendeeCount} registered</span>
+                          </div>
+                          <div className="text-sm text-gray-500 mb-3">
+                            {event.max_participants == null
+                              ? <span>No participant limit</span>
+                              : <span>Max participant: {event.max_participants}</span>
+                            }
+                          </div>
                         </div>
-                      )}
+                      
 
                      {/* Buttons */}
                       <div className={`flex items-center mt-auto pt-4 -mb-4 border-t border-gray-200 ${activeTab === "upcoming" && event.status !== "cancelled" ? "justify-between" : "justify-end"}`}>
