@@ -29,7 +29,7 @@ export default function UserManageTable() {
   const [showAddUser, setShowAddUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [customToast, setCustomToast] = useState(null);
-
+  const [successAdd, setSuccessAdd] = useState(false)
   const token = Cookies.get("adminToken");
   const itemsPerPage = 10;
   const printRef = useRef();
@@ -207,11 +207,13 @@ export default function UserManageTable() {
     }
   };
 
-  const handleAddUserSuccess = () => {
-    setShowAddUser(false);
-    setCustomToast({ message: "User added successfully!", type: "success" });
-    refreshUserList();
-  };
+  useEffect(() => {
+    if (successAdd) {
+      refreshUserList();
+      setCustomToast({ message: "User added successfully!", type: "success" });
+      setSuccessAdd(false); 
+    }
+  }, [successAdd]);
 
   return (
     <div className="h-full p-4 rounded-lg bg-white shadow-lg">
@@ -390,7 +392,7 @@ export default function UserManageTable() {
 
       {showAddUser && (
         <div className="fixed z-50 top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-          <AddUser onClose={() => setShowAddUser(false)} onSuccess={handleAddUserSuccess} />
+          <AddUser onClose={() => setShowAddUser(false)} passMessage = {() => {setSuccessAdd(true)}} />
         </div>
       )}
        {/* Toast notifications container */}

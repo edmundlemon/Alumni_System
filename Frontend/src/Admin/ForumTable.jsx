@@ -405,7 +405,7 @@ export default function ForumTable() {
       )}
       {/* Toast notifications container */}
       <ToastContainer
-        position="top-center"
+        position="top-right"
         autoClose={3000}
         toastClassName={(context) =>
           `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`

@@ -12,6 +12,8 @@ import { LuUsers } from "react-icons/lu";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { ImSpinner2 } from "react-icons/im";
+import { TbBrandDatabricks } from "react-icons/tb";
+import { IoMdBrowsers } from "react-icons/io";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -37,7 +39,8 @@ const Sidebar = () => {
     { name: "Donation", link: "/donationTable", icon: BiDonateHeart },
     { name: "Forum", link: "/forumTable", icon: MdOutlineMessage },
     { name: "Major", link: "/majorTable", icon: MdStorage },
-    { name: "User Portal", link: userToken ? "/forumMainPage" :"/userLogin", icon: MdStorage },
+    { name: "Falcuty", link: "/facultyTable", icon: TbBrandDatabricks    },
+    { name: "User Portal", link: userToken ? "/forumMainPage" :"/userLogin", icon: IoMdBrowsers  },
   ];
 
   // Find the menu whose link matches the current path
@@ -46,26 +49,32 @@ const Sidebar = () => {
     "Dashboard";
 
   const handleLogout = () => {
-    setLoggingOut(true); // Start loading
-    axios
-      .post("http://localhost:8000/api/admin_logout", null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-      .then(() => {
-        Cookies.remove("adminToken");
-        navigate("/adminLogin");
-      })
-      .catch((error) => {
-        console.error("Logout error:", error);
+  setLoggingOut(true); // Start loading
+  axios
+    .post("http://localhost:8000/api/admin_logout", null, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+    .catch((error) => {
+      console.error("Logout error:", error);
+      // If token is invalid or session reset, treat as logged out
+      if (error.response && error.response.status === 401) {
+        console.warn("Token invalid or already logged out.");
+      } else {
         alert("Logout failed, please try again.");
-      })
-      .finally(() => {
-        setLoggingOut(false); // Stop loading
-      });
-  };
+        return; // Don't proceed to navigate
+      }
+    })
+    .finally(() => {
+      Cookies.remove("adminToken");
+      navigate("/adminLogin");
+      setLoggingOut(false); // Stop loading
+    });
+};
+
+
 
   const profileMenus = [
     { name: "Settings", link: "/settings", icon: HiOutlineCog },

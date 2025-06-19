@@ -20,6 +20,7 @@ export default function MajorTable() {
   const navigate = useNavigate();
   const [majors, setMajors] = useState([]);
   const [selectMajor, setSelectMajor] = useState([]);
+  const [selectMajorId, setSelectMajorId] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortCriteria, setSortCriteria] = useState({ key: "", order: "asc" });
@@ -28,14 +29,15 @@ export default function MajorTable() {
   const printRef = useRef();
   const token = Cookies.get("adminToken");
   const [showAddMajor, setShowAddMajor] = useState(false);
-  const [falcuty, setFaculty] = useState([]);
+  const [showEditMajor, setShowEditMajor] = useState(false);
+  const [faculty, setFaculty] = useState([]);
   const [formData, setFormData] = useState({
     major_name: "",
     faculty_id: "",
     faculty_name: "",
   });
 
-  const facultyOptions = falcuty.map((f) => ({
+ const facultyOptions = faculty.map((f) => ({
     value: f.id,
     label: f.faculty_name,
   }));
@@ -76,22 +78,6 @@ export default function MajorTable() {
       navigate("/403");
     }
   }, [token, navigate]);
-
-  const handleDeleteMajor = async (majorId) => {
-    try {
-      await axios.delete(`http://localhost:8000/api/delete_user/${majorId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("Event deleted successfully");
-      toast.success("User deleted successfully");
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      toast.error("Failed to cancel event");
-    }
-  };
 
   const filteredMajors = majors.filter(
     (user) =>
@@ -179,6 +165,49 @@ export default function MajorTable() {
       console.error(error);
     }
   };
+
+  const handleEditMajor = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await axios.post(
+      `http://localhost:8000/api/edit_major/${selectMajorId}`,
+      {
+        major_name: formData.major_name,
+        faculty_id: formData.faculty_id,
+        _method: "PUT"
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    console.log(response)
+    setShowEditMajor(false);
+    setFormData({ major_name: "", faculty_id: "", faculty_name: "" });
+    
+    // Refresh the majors list
+    const majorRes = await axios.get(
+      "http://localhost:8000/api/view_all_majors",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    setMajors(majorRes.data);
+    toast.success("Major updated successfully!");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to update major");
+  }
+};
+
+  const handleViewMajor = (major) => {
+  setSelectMajorId(major.id); // Store the major ID for editing
+  setFormData({
+    major_name: major.major_name,
+    faculty_id: major.faculty_id,
+    faculty_name: major.faculty_name,
+  });
+  setShowEditMajor(true);
+};
 
   return (
     <div
@@ -283,7 +312,7 @@ export default function MajorTable() {
                       />
                     </td>
                     <td className="px-2 py-3 text-left">
-                      <button onClick={() => handleViewUser(major)}>
+                      <button>
                         {major.id}
                       </button>
                     </td>
@@ -292,8 +321,10 @@ export default function MajorTable() {
                       {major.faculty_name}
                     </td>
                     <td className="flex px-6 pt-3 gap-2">
-                      <button className="p-1 rounded border border-gray-300 shadow">
-                        <MdDeleteOutline />
+                      <button
+                        onClick={() => handleViewMajor(major)}
+                        className="p-1 rounded border border-gray-300 shadow">
+                        <FiEdit3 />
                       </button>
                     </td>
                   </tr>
@@ -409,6 +440,85 @@ export default function MajorTable() {
           </div>
         </div>
       )}
+      {showEditMajor && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
+      <h2 className="text-xl font-semibold mb-4 rounded-t-md px-4 py-2 text-white bg-denim">
+        Edit Major
+      </h2>
+      <form className="px-4 pb-4 space-y-4" onSubmit={handleEditMajor}>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Major Name
+          </label>
+          <input
+            type="text"
+            name="major_name"
+            value={formData.major_name}
+            onChange={(e) =>
+              setFormData({ ...formData, major_name: e.target.value })
+            }
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Faculty Name
+          </label>
+          <Select
+            name="faculty"
+            options={facultyOptions}
+            onChange={(selectedOption) =>
+              setFormData({
+                ...formData,
+                faculty_id: selectedOption.value,
+                faculty_name: selectedOption.label,
+              })
+            }
+            value={
+              facultyOptions.find(
+                (option) => option.value === formData.faculty_id
+              ) || null
+            }
+            placeholder="Select Faculty"
+            className="mt-1"
+          />
+        </div>
+        <div className="flex justify-end space-x-2">
+          <button
+            type="button"
+            onClick={() => {
+              setShowEditMajor(false);
+              setFormData({
+                major_name: "",
+                faculty_id: "",
+                faculty_name: "",
+              });
+            }}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-[#1560bd] text-white rounded-md hover:bg-blue-600 transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+{/* Toast notifications container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }

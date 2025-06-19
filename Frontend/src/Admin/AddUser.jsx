@@ -7,7 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ImSpinner2 } from "react-icons/im";
 
-export default function AddUser({ onClose, onSuccess}) {
+export default function AddUser({ onClose, passMessage}) {
   const [userData, setUserData] = useState({
     email: "",
     role: "",
@@ -80,7 +80,11 @@ export default function AddUser({ onClose, onSuccess}) {
       })
       .then((response) => {
         console.log("User added successfully:", response.data);
-        if (onSuccess) onSuccess(); 
+        toast.success("User added successfully");
+        setTimeout(() => {
+          onClose();
+          passMessage();
+        }, 1000);
       })
       .catch((error) => {
         console.error(error);
