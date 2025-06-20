@@ -43,6 +43,7 @@ import EditEvent from "./User/Event/EditEvent";
 import Sidebar from "./Admin/Sidebar";
 import ScrollToTop from "./ScrollToTop";
 import FacultyTable from "./Admin/FalcultyTable";
+import MyProfile from "./User/MyProfile";
 
 // 🔒 Protected Routes
 function ProtectedRoute({ children }) {
@@ -105,6 +106,7 @@ function AppRoutes() {
         <Route path="/connectStatus" element={<ProtectedRoute><ConnectStatus /></ProtectedRoute>} />
         <Route path="/viewCreateEvent" element={<ProtectedRoute><ViewCreateEvent /></ProtectedRoute>} />
         <Route path="/editEvent" element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
+        <Route path="/myProfile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
 
         {/* Protected Admin Routes */}
         <Route element={<ProtectedAdminRoute />}>

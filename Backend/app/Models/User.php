@@ -128,7 +128,7 @@ class User extends Authenticatable
     }
     public function getEventsCountAttribute()
     {
-        return $this->joinedEvents()->count();
+        return $this->hostedEvents()->count();
     }
 
     public function role()
@@ -268,5 +268,6 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Admin::class);
     }
-    
+
 }
+

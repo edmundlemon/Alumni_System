@@ -94,21 +94,41 @@ class UserController extends Controller
         return response()->json($users);
     }
     public function show(User $user)
-    {
-        // You can add multiple temporary attributes like this:
-        $user->past_events = $user->hostedEvents()
-            ->where('event_date', '<', now())
-            ->get();
-        $user->discussions = $user->discussions()
-            ->with('comments')
-            ->get();
-        $user->discussions->each(function ($discussion) {
-            $discussion->makeHidden('user');
-        });
-        return response()->json(
-            $user
-        );
-    }
+{
+    // Hosted Events
+    $user->events = $user->hostedEvents()->get();
+
+    // Discussions with comments
+    $user->discussions = $user->discussions()->with('comments')->get();
+    $user->discussions->each(function ($discussion) {
+        $discussion->makeHidden('user');
+    });
+
+    // Combine accepted and requested connections
+    $connections = $user->acceptedConnections
+        ->merge($user->requestedConnections)
+        ->unique('id')
+        ->makeHidden(['pivot', 'email', 'phone', 'bio']);
+
+    // Add connections data and count as additional attributes
+    $user->connections_count = $connections->count();
+    $user->connections = $connections->map(function ($connection) {
+        return [
+            'id' => $connection->id,
+            'name' => $connection->name,
+            'role' => $connection->role,
+            'image' => $connection->image,
+            'job_title' => $connection->job_title,
+            'company' => $connection->company,
+            'graduation_year' => $connection->graduation_year,
+            'major_name' => $connection->major->major_name ?? null,
+            'faculty' => $connection->major->faculty->faculty_name ?? null,
+        ];
+    });
+
+    return response()->json($user);
+}
+
     public function update(Request $request, User $userToBeEdited)
     {
         Log::channel('auth_activity')->info('User update request received', $request->all());
@@ -223,5 +243,4 @@ class UserController extends Controller
             'suggested_connections' => $suggestedConnections,
         ], 200);
     }
-    
 }

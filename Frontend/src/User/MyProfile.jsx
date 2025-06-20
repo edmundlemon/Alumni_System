@@ -12,18 +12,15 @@ import { FaRegComment } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import fallbackImage from '../../assets/fallback-image.jpg';
+import fallbackImage from '../assets/fallback-image.jpg';
 import { LuCalendarDays } from "react-icons/lu";
 import { GrLocationPin } from "react-icons/gr";
 import { FiUsers } from "react-icons/fi";
 import { GoGoal } from "react-icons/go";
-import { useLocation } from "react-router-dom";
 
-export default function ViewProfile() {
+export default function MyProfile() {
   const getInitial = (name = "") => name.charAt(0).toUpperCase();
-  const location = useLocation();
-  const userID = location.state?.userInfo;
-  console.log(userID)
+  const userID = Cookies.get("userId");
   const [activeTab, setActiveTab] = useState("about");
   const [forum, setForum] = useState([]);
   const [user, setUser] = useState({});
@@ -453,7 +450,7 @@ export default function ViewProfile() {
                   {filteredConnections.map((connection) => (
                     <div
                       key={connection.id}
-                       onClick={() =>
+                      onClick={() =>
                           navigate("/viewProfile", { state: { userInfo: connection.id } })
                         }
                       className="cursor-pointer flex items-center gap-4 border-b pb-4 w-full hover:bg-gray-50 p-2 rounded transition-colors"

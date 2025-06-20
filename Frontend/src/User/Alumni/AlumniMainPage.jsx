@@ -343,8 +343,8 @@ export default function AlumniMainPage() {
                     </div>
                     <div className='flex items-center justify-center mt-6'>
                       <button
-                        onClick={() =>
-                          navigate("/viewProfile", { state: { alumni } })
+                         onClick={() =>
+                          navigate("/viewProfile", { state: { userInfo: alumni.id } })
                         }
                         className='w-full bg-blue-900 text-white py-2 rounded-full'>View Profile
                       </button>
