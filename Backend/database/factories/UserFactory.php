@@ -67,6 +67,38 @@ class UserFactory extends Factory
         });
     }
 
+    public function withExistingConnections($count = 3){
+        // return $this->afterCreating(function (User $user) use ($count) {
+        //     // Create existing connections where user is the requester
+        //     $user->requestedConnections()->attach(
+        //         User::factory($count)->create()->pluck('id'),
+        //         ['status' => 'accepted', 'created_at' => now()]
+        //     );
+
+        //     // Create existing connections where user is the acceptor
+        //     $user->acceptedConnections()->attach(
+        //         User::factory($count)->create()->pluck('id'),
+        //         ['status' => 'accepted', 'created_at' => now()]
+        //     );
+        // });
+        return $this->afterCreating(function (User $user) use ($count) {
+            // Get random existing users (excluding the current user)
+            $existingUsers = User::where('id', '!=', $user->id)->inRandomOrder()->limit($count)->get();
+
+            // Attach as accepted connections (requester)
+            $user->requestedConnections()->attach(
+                $existingUsers->pluck('id'),
+                ['status' => 'accepted', 'created_at' => now()]
+            );
+
+            // Attach as accepted connections (acceptor)
+            $user->acceptedConnections()->attach(
+                $existingUsers->pluck('id'),
+                ['status' => 'accepted', 'created_at' => now()]
+            );
+        });
+    }
+
     public function withPendingConnections($count = 3)
     {
         return $this->afterCreating(function (User $user) use ($count) {

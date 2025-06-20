@@ -17,6 +17,7 @@ class Donation extends Model
     protected $appends = [
         'donor_name',
         'donor_id',
+        'donation_post_title',
     ];
     // protected $casts = [
     //     'donated_amount' => 'float',
@@ -28,11 +29,21 @@ class Donation extends Model
 
     public function getDonorNameAttribute()
     {
+        if (!$this->user) {
+            return 'Unknown Donor';
+        }
         return $this->user->name;
     }
     public function getDonorIdAttribute()
     {
+        if (!$this->user) {
+            return null; // or handle as needed
+        }
         return $this->user->id;
+    }
+    public function getDonationPostTitleAttribute()
+    {
+        return $this->donationPost->title;
     }
 
     public function user()

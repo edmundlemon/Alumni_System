@@ -46,11 +46,11 @@ class DonationPostController extends Controller
             'description' => 'required|string|max:255',
             'target_amount' => 'required|numeric',
             'end_date' => 'required|date|after:today',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
         $photoPath = null;
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('donation_posts'), $filename);
             $photoPath = asset('donation_posts/'.$filename);
