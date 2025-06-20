@@ -100,7 +100,7 @@ function Header() {
     }
   }, [token, location.pathname, userId]);
 
-  const handleLoginLogout = () => {
+const handleLoginLogout = () => {
   if (token) {
     axios
       .post("http://localhost:8000/api/user_logout", null, {
@@ -109,10 +109,12 @@ function Header() {
           Accept: "application/json",
         },
       })
+      .then(() => {
+        Cookies.remove("token");
+        navigate("/userLogin");
+      })
       .catch((error) => {
         console.error("Logout error:", error);
-      })
-      .finally(() => {
         Cookies.remove("token");
         navigate("/userLogin");
       });

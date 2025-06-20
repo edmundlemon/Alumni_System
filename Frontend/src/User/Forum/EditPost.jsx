@@ -1,7 +1,7 @@
 import { MdClose } from "react-icons/md";
 import { BsEmojiSmile } from "react-icons/bs";
 import EmojiPicker from "emoji-picker-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PiGif } from "react-icons/pi";
 import { GoLocation } from "react-icons/go";
 import { CiImageOn } from "react-icons/ci";
@@ -10,16 +10,20 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 
-export default function AddPost({ onClose, setFilteredEvents, setPosts}) {
+export default function EditPost({ onClose, post, setOwnPost}) {
   const [showPicker, setShowPicker] = useState(false);
   const fileInputRef = useRef(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [postForm, setPostForm] = useState({
-    photo: null,
-    subject: "",
-    content: ""
+    photo: post ? post.photo : null,
+    subject: post ? post.subject : null,
+    content: post ? post.content : null
   });
   const token = Cookies.get("token");
+
+  useEffect(() => {
+    console.log(post);
+  }, [post]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -34,13 +38,14 @@ export default function AddPost({ onClose, setFilteredEvents, setPosts}) {
     const formData = new FormData();
     formData.append("subject", postForm.subject);
     formData.append("content", postForm.content);
+    formData.append("_method", "PUT");
     if (postForm.photo) {
       formData.append("photo", postForm.photo);
     }
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/create_discussion",
+        `http://localhost:8000/api/edit_discussion/${post.id}`,
         formData,
         {
           headers: {
@@ -50,12 +55,11 @@ export default function AddPost({ onClose, setFilteredEvents, setPosts}) {
       );
       toast.success("Post submitted successfully!");
       const newPost = response.data.discussion;
-      setPosts((prev) => [newPost, ...prev]);
-      setFilteredEvents(prev => [newPost, ...prev]);
-      setPostForm({ subject: "", content: "", photo: null });
-      setImagePreview(null);
+      setOwnPost((prev) =>
+        prev.map((p) => (p.id === newPost.id ? newPost : p))
+        );
       fileInputRef.current.value = null;
-      onClose(); // Close modal after posting
+      onClose(); 
     } catch (error) {
       console.error("Error submitting post:", error);
       toast.error("Failed to submit post.");
@@ -128,7 +132,7 @@ export default function AddPost({ onClose, setFilteredEvents, setPosts}) {
 
         {/* Action Bar */}
         <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center space-x-3 text-blue-500">
+          <div className="flex items-center space-x-3 text-denim">
             <button
               type="button"
               onClick={() => fileInputRef.current.click()}
@@ -178,11 +182,11 @@ export default function AddPost({ onClose, setFilteredEvents, setPosts}) {
             disabled={!postForm.subject.trim() || !postForm.content.trim()}
             className={`px-5 py-2 rounded-full font-semibold text-sm transition ${
               postForm.subject.trim() && postForm.content.trim()
-                ? "bg-blue-500 hover:bg-blue-600 text-white"
+                ? "bg-denim hover:bg-blue-600 text-white"
                 : "bg-blue-500/40 text-white cursor-not-allowed"
             }`}
           >
-            Post
+            Save & Change
           </button>
         </div>
       </form>

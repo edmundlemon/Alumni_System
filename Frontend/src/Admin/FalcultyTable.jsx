@@ -11,6 +11,8 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FiEdit3 } from "react-icons/fi";
+import { FaPlus } from "react-icons/fa";
 
 export default function FacultyTable() {
   const navigate = useNavigate();
@@ -22,7 +24,35 @@ export default function FacultyTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isLoading, setIsLoading] = useState(true);
+  const [showAddFalculty,setShowAddFalculty] = useState(false)
   const printRef = useRef();
+  const [content,setContent] = useState("")
+
+  const handleAddFalcuty = async (e) => {
+  e.preventDefault();
+  try {
+    await axios.post(
+      "http://localhost:8000/api/create_faculty",
+      { faculty_name: content },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Re-fetch the updated list
+    const res = await axios.get("http://localhost:8000/api/view_all_faculties", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setFaculties(res.data.faculties || []);
+
+    toast.success("Faculty added successfully");
+    setShowAddFalculty(false);
+    setContent("");
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to add faculty");
+  }
+};
+
+
 
   useEffect(() => {
     const fetchFaculties = async () => {
@@ -172,11 +202,18 @@ export default function FacultyTable() {
             <BiExport size={16} />
             Export
           </button>
+          <button
+             className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs"
+             onClick={() => setShowAddFalculty(true)}
+          >
+            <FaPlus size={10} />
+            <span>Add Falculty</span>
+            </button>
         </div>
       </div>
 
       <div ref={printRef}>
-        <table className="min-w-full bg-white rounded shadow">
+        <table className="min-w-full bg-white rounded shadow ">
           <thead className="bg-blue-100">
             <tr>
               <th className=" text-center rounded-tl-md">
@@ -235,7 +272,13 @@ export default function FacultyTable() {
                       {(currentPage - 1) * itemsPerPage + i + 1}
                     </td>
                     <td className="p-2">{faculty.faculty_name}</td>
-                    <td className="p-2 ">
+                    <td className="flex px-2 pt-3 gap-2">
+                       <button
+                        className="p-1 rounded border border-gray-300 shadow"
+                        onClick={() => handleViewEvent(faculty)}
+                         >
+                        <FiEdit3 />
+                        </button>
                       <button
                         onClick={() => handleDelete(faculty.id)}
                         className="p-1 border border-gray-300 rounded hover:bg-gray-100"
@@ -249,7 +292,7 @@ export default function FacultyTable() {
         </table>
       </div>
 
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-between items-center bg-white rounded-b-md shadow px-4 py-2">
         <p className="text-sm text-gray-500">
           Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
           {Math.min(currentPage * itemsPerPage, sorted.length)} of {sorted.length}
@@ -282,6 +325,58 @@ export default function FacultyTable() {
           </button>
         </div>
       </div>
+      {showAddFalculty && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md shadow-lg">
+            <h2 className="text-xl font-semibold mb-4 rounded-t-md px-4 py-2 text-white bg-denim">
+              Add Falculty
+            </h2>
+            <form className="px-4 pb-4 space-y-4" onSubmit={handleAddFalcuty}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Faculty Name :
+                </label>
+                <input
+                  type="text"
+                  name="major_name"
+                  value={content}
+                  onChange={(e) =>
+                    setContent(e.target.value)
+                  }
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddFalculty(false);
+                    setContent("");
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#1560bd] text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Add Falculty
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Toast notifications container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        toastClassName={(context) =>
+          `Toastify__toast bg-white shadow-md rounded text-black flex w-auto px-4 py-6 !min-w-[400px]`
+        }
+      />
     </div>
   );
 }

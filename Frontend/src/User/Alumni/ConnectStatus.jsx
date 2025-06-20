@@ -109,18 +109,18 @@ export default function ConnectStatus() {
     }
   };
 
-  const handleUpdateConnect = async (alumniId, status) => {
+  const handleUpdateConnect = async (connectID, alumniId, status) => {
     if (!token) {
       console.error("User not authenticated");
       return;
     }
     
     try {
-      const response = await axios.put(
-        "http://localhost:8000/api/update_connection",
+      const response = await axios.post(
+        `http://localhost:8000/api/update_connection/${connectID}`,
         { 
-          alumni_id: alumniId,
-          status: status 
+          status: status,
+          _method: "PUT" 
         },
         {
           headers: {
@@ -253,13 +253,13 @@ export default function ConnectStatus() {
                     </div>
                    <div className="flex gap-2">
                       <button
-                        onClick={() => handleUpdateConnect(user.id, "accepted")}
+                        onClick={() => handleUpdateConnect(connection.id,user.id, "accepted")}
                         className="px-6 py-1.5 text-sm font-semibold bg-green-100 text-green-700 hover:bg-green-200 border border-green-300 rounded-lg transition duration-150"
                       >
                         Accept
                       </button>
                       <button
-                        onClick={() => handleUpdateConnect(user.id, "rejected")}
+                        onClick={() => handleUpdateConnect(connection.id,user.id, "rejected")}
                         className="px-6 py-1.5 text-sm font-semibold bg-red-100 text-red-600 hover:bg-red-200 border border-red-300 rounded-lg transition duration-150"
                       >
                         Reject

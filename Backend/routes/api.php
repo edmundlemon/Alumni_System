@@ -50,7 +50,7 @@ Route::middleware('auth:sanctum')->put('/edit_discussion/{discussion}', [Discuss
 Route::middleware('auth:sanctum')->delete('/delete_discussion/{discussion}', [DiscussionController::class, 'destroy']);
 Route::middleware('auth:sanctum')->get('/search_discussions', [DiscussionController::class, 'search']);
 Route::middleware('auth:sanctum')->post('/create_comment/{discussion}', [CommentController::class, 'create']);
-Route::middleware('auth:sanctum')->post('/delete_comment/{comment}', [CommentController::class, 'destroy']);
+Route::middleware('auth:sanctum')->delete('/delete_comment/{comment}', [CommentController::class, 'destroy']);
 // Donation Routes
 Route::middleware('auth:sanctum')->get('/view_all_donation_posts', [DonationPostController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/view_all_donations', [DonationController::class, 'index']);
