@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\AdminAccess;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EventController;
@@ -31,6 +32,7 @@ Route::middleware('auth:sanctum')->put('/edit_users/{userToBeEdited}', [UserCont
 Route::middleware('auth:sanctum')->put('/change_password', [UserController::class, 'changePassword']);
 Route::middleware('auth_sanctum')->put('/deactivate_user/{user}', [UserController::class, 'deactivate']);
 Route::middleware('auth:sanctum')->delete('/delete_user/{user}', [UserController::class, 'destroy']);
+Route::middleware('auth:sanctum')->get('admin_dashboard', [AdminAccess::class, 'index']);
 
 // User Routes
 Route::middleware('guest')->post('/user_login', [LoginController::class, 'userLogin']);

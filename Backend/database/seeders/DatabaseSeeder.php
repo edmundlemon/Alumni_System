@@ -74,9 +74,25 @@ class DatabaseSeeder extends Seeder
 
 
         // Create a user with a specific name and email
-        User::factory()->withConnections(2)->withDiscussions(2)->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        User::factory()->withDiscussions(2)->withEvents()->create([
+            'name' => 'Sean Connolly',
+            'email' => 'sean.connolly@example.com',
+            'role' => 'student'
+        ]);
+        User::factory()->withDiscussions(2)->withEvents()->create([
+            'name' => 'Jade Smith',
+            'email' => 'jade.smith@example.com',
+            'role' => 'student'
+        ]);
+        User::factory()->withDiscussions(2)->withEvents()->create([
+            'name' => 'Tanya Johnson',
+            'email' => 'tanya.johnson@example.com',
+            'role' => 'alumni'
+        ]);
+        User::factory()->withExistingConnections(3)->withEvents()->withDiscussions(2)->create([
+            'name' => 'Sequoia Brown',
+            'email' => 'sequioa.brown@example.com',
+            'role' => 'alumni'
         ]);
 
         User::factory()->count(10)->withConnections(2)->create();
