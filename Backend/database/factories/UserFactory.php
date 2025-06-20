@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Models\Event;
 use App\Models\Major;
 use App\Models\Comment;
 use App\Models\Discussion;
@@ -68,19 +69,7 @@ class UserFactory extends Factory
     }
 
     public function withExistingConnections($count = 3){
-        // return $this->afterCreating(function (User $user) use ($count) {
-        //     // Create existing connections where user is the requester
-        //     $user->requestedConnections()->attach(
-        //         User::factory($count)->create()->pluck('id'),
-        //         ['status' => 'accepted', 'created_at' => now()]
-        //     );
 
-        //     // Create existing connections where user is the acceptor
-        //     $user->acceptedConnections()->attach(
-        //         User::factory($count)->create()->pluck('id'),
-        //         ['status' => 'accepted', 'created_at' => now()]
-        //     );
-        // });
         return $this->afterCreating(function (User $user) use ($count) {
             // Get random existing users (excluding the current user)
             $existingUsers = User::where('id', '!=', $user->id)->inRandomOrder()->limit($count)->get();
@@ -119,12 +108,26 @@ class UserFactory extends Factory
             );
         });
     }
+
     public function withComments($count = 3)
     {
         return $this->afterCreating(function (User $user) use ($count) {
             // Create comments for the user
             $user->comments()->saveMany(
                 Comment::factory($count)->create(['user_id' => $user->id])
+            );
+        });
+    }
+
+    public function withEvents($count = 3)
+    {
+        return $this->afterCreating(function (User $user) use ($count) {
+            // Create events for the user
+            $user->joinedEvents()->saveMany(
+                Event::factory($count)->create(['user_id' => $user->id])->where('event_date', '>=', now())
+            );
+            $user->joinedEvents()->saveMany(
+                Event::factory($count)->create(['user_id' => $user->id])->where('event_date', '<', now())
             );
         });
     }
