@@ -122,13 +122,19 @@ class UserFactory extends Factory
     public function withEvents($count = 3)
     {
         return $this->afterCreating(function (User $user) use ($count) {
-            // Create events for the user
-            $user->joinedEvents()->saveMany(
-                Event::factory($count)->create(['user_id' => $user->id])->where('event_date', '>=', now())
-            );
-            $user->joinedEvents()->saveMany(
-                Event::factory($count)->create(['user_id' => $user->id])->where('event_date', '<', now())
-            );
+            // Create future events for the user (within next 3 months)
+            $futureEvents = Event::factory($count)->create([
+            'user_id' => $user->id,
+            'event_date' => fake()->dateTimeBetween('now', '+3 months'),
+            ]);
+            $user->joinedEvents()->saveMany($futureEvents);
+
+            // Create past events for the user (within previous 3 months)
+            // $pastEvents = Event::factory($count)->create([
+            // 'user_id' => $user->id,
+            // 'event_date' => fake()->dateTimeBetween('-3 months', 'now'),
+            // ]);
+            // $user->joinedEvents()->saveMany($pastEvents);
         });
     }
 
