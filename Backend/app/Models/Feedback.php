@@ -16,4 +16,9 @@ class Feedback extends Model
         'rating',
         'feedback_date',
     ];
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'event_id');
+    }
 }

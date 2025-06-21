@@ -2,16 +2,17 @@
 
 namespace Database\Seeders;
 
+use DB;
 use App\Models\User;
 use App\Models\Admin;
-use App\Models\Event;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Event;
 use App\Models\Major;
 use App\Models\Comment;
 use App\Models\Donation;
+use App\Models\Connection;
 use App\Models\Discussion;
 use App\Models\DonationPost;
-use App\Models\Connection;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -79,6 +80,13 @@ class DatabaseSeeder extends Seeder
             'email' => 'sean.connolly@example.com',
             'role' => 'student'
         ]);
+        Event::factory()->create([
+            'user_id' => 1221, // Admin user
+            'event_title' => 'Alumni Networking Event',
+            'description' => 'An event to connect with alumni and discuss career opportunities.',
+            'event_date' => now()->subDays(10), // Future date
+            'location' => 'Main Auditorium',
+        ]);
         User::factory()->withDiscussions(2)->withEvents()->create([
             'name' => 'Jade Smith',
             'email' => 'jade.smith@example.com',
@@ -94,6 +102,14 @@ class DatabaseSeeder extends Seeder
             'email' => 'sequioa.brown@example.com',
             'role' => 'alumni'
         ]);
+        for ($userId = 1221; $userId <= 1224; $userId++) {
+            DB::table('registrations')->insert([
+                'user_id' => $userId,
+                'event_id' => 4,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         User::factory()->count(10)->withConnections(2)->create();
 
