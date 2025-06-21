@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->get('/view_my_upcoming_events', [EventControl
 Route::middleware('auth:sanctum')->get('/search_events', [EventController::class, 'search']);
 // Registration Routes
 Route::middleware('auth:sanctum')->get('/view_my_registrations', [RegistrationController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/joined_past_event', [RegistrationController::class, 'joinedPastEvents']);
 Route::middleware('auth:sanctum')->post('/register_for_event/{event}', [RegistrationController::class, 'create']);
 Route::middleware('auth:sanctum')->delete('/delete_registration/{registration}', [RegistrationController::class, 'destroy']);
 // Feedback Routes
