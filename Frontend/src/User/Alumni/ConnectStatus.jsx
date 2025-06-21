@@ -110,6 +110,7 @@ export default function ConnectStatus() {
   };
 
   const handleUpdateConnect = async (connectID, alumniId, status) => {
+    console.log("Status passed:", status); 
     if (!token) {
       console.error("User not authenticated");
       return;
@@ -129,7 +130,8 @@ export default function ConnectStatus() {
           },
         }
       );
-
+      console.log(response.data)
+      toast.success("Connection accepted successfully!");
       if (status === "accepted") {
         // Move user from pending to connected
         const acceptedConnection = pendingConnections.find(
@@ -142,7 +144,6 @@ export default function ConnectStatus() {
             prev.filter((conn) => conn.requesting_user.id !== alumniId)
           );
         }
-        toast.success("Connection accepted successfully!");
       } else if (status === "rejected") {
         // Remove from pending connections
         setPendingConnections((prev) =>

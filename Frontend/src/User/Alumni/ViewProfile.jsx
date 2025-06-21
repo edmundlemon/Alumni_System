@@ -89,6 +89,34 @@ export default function ViewProfile() {
     setFilteredForum(filtered);
   };
 
+  const handleConnect = async (alumniId) => {
+    if (!token) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/connect/${alumniId}`,{},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Connection successful:", response.data);
+      toast.success("Connection request sent successfully!");
+    } catch (error) {
+      console.error("Error connecting with alumni:", error);
+      if (error.response && error.response.status === 400) {
+        toast.error("You already connected this alumni.");
+      } else {
+        toast.error("Failed to send connection request");
+      }
+    }
+  }
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -302,9 +330,9 @@ export default function ViewProfile() {
           </div>
           <div className="flex justify-end items-start flex-0">
             <button 
-              onClick={() => navigate("/updateProfile")}
+              onClick={() => handleConnect(userID)}
               className="border border-white text-white px-4 py-2 rounded-md ml-auto hover:bg-white hover:text-blue-900 transition-colors">
-              Update Profile
+              Connect
             </button>
           </div>
         </div>

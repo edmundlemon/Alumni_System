@@ -124,7 +124,7 @@ class ConnectionController extends Controller
         return response()->json($connection);
 
         $request->validate([
-            'status' => 'required|string|in:accepted,rejected',
+            'status' => 'required|string|in:accepted,accepted',
         ]);
         $connection->status = $request->status;
         $connection->save();
