@@ -93,6 +93,29 @@ class RegistrationController extends Controller
     {
         //
     }
+    public function joinedPastEvents()
+    {
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You are not authorized to view past events',
+            ], 403);
+        }
+        $pastEvents = Registration::where('user_id', $user->id)
+            ->whereHas('event', function ($query) {
+                $query->where('event_date', '<', now());
+            })
+            ->with('event')
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Past events fetched successfully',
+            'events' => $pastEvents,
+        ], 200);
+    }
 
     /**
      * Show the form for editing the specified resource.
