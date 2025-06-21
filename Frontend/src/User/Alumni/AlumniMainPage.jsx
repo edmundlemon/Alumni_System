@@ -286,7 +286,8 @@ export default function AlumniMainPage() {
             : currentAlumni.map(alumni => (
                 <div
                   key={alumni.id}
-                  className="bg-white shadow-lg border rounded-xl overflow-hidden p-2 flex flex-col items-start transition hover:shadow-xl duration-300"
+                  className="bg-white shadow-lg border rounded-xl overflow-hidden p-2 flex flex-col items-start uration-300 ease-in-out transform hover:scale-[1.02] 
+                                hover:shadow-lg duration-300"
                 >
                   {/* Profile Picture or Initials */}
                   <div className='w-full bg-blue-900 h-32 rounded-lg relative'>
@@ -342,8 +343,8 @@ export default function AlumniMainPage() {
                     </div>
                     <div className='flex items-center justify-center mt-6'>
                       <button
-                        onClick={() =>
-                          navigate("/viewProfile", { state: { alumni } })
+                         onClick={() =>
+                          navigate("/viewProfile", { state: { userInfo: alumni.id } })
                         }
                         className='w-full bg-blue-900 text-white py-2 rounded-full'>View Profile
                       </button>

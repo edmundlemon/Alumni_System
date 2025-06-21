@@ -25,8 +25,13 @@ import "react-toastify/dist/ReactToastify.css";
 import { FiEdit3 } from "react-icons/fi";
 import { MdDeleteOutline } from "react-icons/md";
 import EditPost from "./EditPost";
+import { useLocation } from "react-router-dom";
 
 export default function ForumMainPage() {
+  const location = useLocation();
+  const showViewPost = location.state?.showPostDetails;
+  const selectedForum = location.state?.post;
+  const userInfo = location.state?.user;
   const getInitial = (name = "") => name.charAt(0).toUpperCase();
   const [posts, setPosts] = useState([]);
   const [user, setUsers] = useState([]);
@@ -40,8 +45,8 @@ export default function ForumMainPage() {
   const [userMap, setUserMap] = useState({});
   const [showAddComment, setShowAddComment] = useState(false);
   const [showAddPost, setShowAddPost] = useState(false);
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [showPostDetails, setShowPostDetails] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(selectedForum || null);
+  const [showPostDetails, setShowPostDetails] = useState(showViewPost || false);
   const [joinComment, setJoinComment] = useState(false);
   const [connectPost, setConnectPost] = useState([]);
   const [showConnectPost, setShowConnectPost] = useState(false);
@@ -58,6 +63,7 @@ export default function ForumMainPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedEditPost,setSelectedEditPost] = useState(null);
+  
   const [postForm, setPostForm] = useState({
     photo: null,
     subject: "",
@@ -118,32 +124,6 @@ export default function ForumMainPage() {
       toast.success("Post cancelled successfully");
       console.log("Post deleted successfully");
       setOwnPost((prev) => prev.filter((post) => post.id !== discussionID));
-    }catch (error) {
-      console.error("Error deleting post:", error);
-      toast.error("Failed to cancel post");
-    }
-  }
-
-  const handleDeleteComment = async (commentID) =>{
-    try{
-      const response = await axios.delete(
-        `http://localhost:8000/api/delete_comment/${commentID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      toast.success("Comment cancelled successfully");
-      console.log("Comment deleted successfully");
-    //   setSelectedPost(prev => prev.filter({
-    //     ...prev,
-    //     post: {
-    //       ...prev.post,
-    //       comments: [...(prev.post.comments || []), newComment]
-    //     }
-    // }));
     }catch (error) {
       console.error("Error deleting post:", error);
       toast.error("Failed to cancel post");
@@ -357,6 +337,7 @@ export default function ForumMainPage() {
 
 
   useEffect(() => {
+    console.log("test:",selectedPost);
     const getPostsAndUsers = async () => {
       try {
         const [postsRes, usersRes, mainRes, connectRes, ownPost, connectUserRes, suggesRes] = await Promise.all([
@@ -1120,22 +1101,22 @@ export default function ForumMainPage() {
         ) : (
           <div className="flex gap-3 px-9 mt-4 pt-4">
             <div className="w-11 h-11 rounded-full bg-gray-600 flex items-center justify-center font-bold">
-              {getInitial(selectedPost?.user.name)}
+              {getInitial(selectedPost?.user?.name || userInfo.name)}
             </div>
 
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-lg">
-                  {selectedPost.user?.name}
+                  {(selectedPost && selectedPost.user && selectedPost.user.name) ? selectedPost.user.name : userInfo.name}
                 </span>
                 <span className="text-gray-400 text-sm">
-                  · {getTimeAgo(selectedPost.post.created_at)}
+                  · {selectedPost && selectedPost.post && getTimeAgo(selectedPost.post.created_at || selectedPost.created_at)}
                 </span>
               </div>
 
-              <p className="text-lg">{selectedPost.post.subject}</p>
+              <p className="text-lg">{selectedPost && selectedPost.post && selectedPost.post.subject || selectedPost.subject}</p>
               <div className="text-gray-800 text-lg pt-3 pb-1">
-                {selectedPost.post.content}
+                {selectedPost && selectedPost.post && selectedPost.post.content ||selectedPost.content}
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
@@ -1215,12 +1196,12 @@ export default function ForumMainPage() {
                 </form>
               )}
 
-              {selectedPost.post.comments.length === 0 ? (
+              {selectedPost && selectedPost.post && selectedPost.post.comments||selectedPost.comments.length === 0  ? (
                   <div className="py-6 text-center text-gray-500">
                     No comments yet. Be the first to comment!
                   </div>
                 ) : (
-                  selectedPost.post.comments.map((comment, i) => {
+                  selectedPost && selectedPost.post && selectedPost.post.comments||selectedPost.comments.map((comment, i) => {
                     console.log("Comment:", comment);
                     const user = userMap[comment.user_id];
                     return (
@@ -1241,17 +1222,6 @@ export default function ForumMainPage() {
                                 · {getTimeAgo(comment.created_at)}
                               </span>
                             </div>
-                            {(comment.user_id === parseInt(userId) || comment.user_id == userId) && 
-                              <div className="flex items-center gap-2 cursor-pointer">
-                                <MdDeleteOutline
-                                  size={17}
-                                  onClick={e => {
-                                    e.stopPropagation();
-                                    console.log("Delete clicked for comment:", comment.id);
-                                    handleDeleteComment(comment.id);
-                                  }}
-                                />
-                              </div>}
                           </div>
                           <p className="text-lg">{comment.comment_content}</p>
                         </div>

@@ -372,9 +372,11 @@ export default function EventMainPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-9">
                 {currentEvents.map((event) => (
                   <div
-                    key={event.id}
-                    className="bg-white rounded-lg p-4 shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full max-h-[460px]"
-                  >
+                      key={event.id}
+                      className="bg-white rounded-lg p-4 shadow-md overflow-hidden 
+                                transition-all duration-300 ease-in-out transform hover:scale-[1.02] 
+                                hover:shadow-lg flex flex-col h-full max-h-[500px]"
+                    >
                     <div className="relative h-80 overflow-hidden">
                       <img
                         src={event.photo || fallbackImage}
@@ -443,11 +445,19 @@ export default function EventMainPage() {
                       </div>
 
                       {/* Attendee Info */}
-                      {event.attendeeCount > 0 && (
-                        <div className="text-sm text-gray-500 mb-3">
-                          <span>{event.attendeeCount} registered</span>
+                      
+                        <div className="flex justify-between">
+                          <div className="text-sm text-gray-500 mb-3">
+                            <span>{event.attendeeCount} registered</span>
+                          </div>
+                          <div className="text-sm text-gray-500 mb-3">
+                            {event.max_participants == null
+                              ? <span>No participant limit</span>
+                              : <span>Max participant: {event.max_participants}</span>
+                            }
+                          </div>
                         </div>
-                      )}
+                      
 
                      {/* Buttons */}
                       <div className={`flex items-center mt-auto pt-4 -mb-4 border-t border-gray-200 ${activeTab === "upcoming" && event.status !== "cancelled" ? "justify-between" : "justify-end"}`}>
