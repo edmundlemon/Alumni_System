@@ -210,8 +210,6 @@ export default function UserManageTable() {
   useEffect(() => {
     if (successAdd) {
       refreshUserList();
-      setCustomToast({ message: "User added successfully!", type: "success" });
-      setSuccessAdd(false); 
     }
   }, [successAdd]);
 
