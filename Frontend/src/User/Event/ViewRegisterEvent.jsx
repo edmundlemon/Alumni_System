@@ -12,8 +12,10 @@ import { useEffect, useState, useRef } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BsBuildings } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 
 export default function ViewEvent() {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -382,12 +384,21 @@ export default function ViewEvent() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex item-center gap-2">
+                    <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => navigate("/viewEventDetails", { state: { event } })}
+                      className="px-4 py-2 bg-denim text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                      View Event
+                    </button>
+                  </div>
+                    <div className="flex items-center gap-3">
                     <button 
                       onClick={() => handleDeleteEvent(event.id)}
                       className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
                       Cancel 
                     </button>
+                  </div>
                   </div>
                 </div>
               </div>

@@ -16,10 +16,169 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import fallbackImage from '../../assets/fallback-image.jpg';
 
+// Skeleton Loading Components
+const SkeletonText = ({ width = "100%", height = "1rem", className = "" }) => (
+  <div
+    className={`bg-gray-200 rounded animate-pulse ${className}`}
+    style={{ width, height }}
+  ></div>
+);
+
+const SkeletonImage = ({ className = "" }) => (
+  <div
+    className={`bg-gray-200 rounded animate-pulse ${className}`}
+  ></div>
+);
+
+const SkeletonAvatar = ({ size = "2.5rem" }) => (
+  <div
+    className="bg-gray-200 rounded-full animate-pulse"
+    style={{ width: size, height: size }}
+  ></div>
+);
+
+const EventDetailsSkeleton = () => (
+  <section className=" bg-gray-50 min-h-screen">
+
+    <div className="rounded p-7 border shadow-lg bg-white">
+      {/* Event Title */}
+      <div className="mb-6">
+        <SkeletonText width="70%" height="2rem" className="mb-2" />
+        <SkeletonText width="30%" height="1rem" />
+      </div>
+      <hr className="mb-6 border-gray-200" />
+
+      <div className="flex w-full justify-between">
+        {/* Left Column */}
+        <div className="w-[800px]">
+          {/* Event Image */}
+          <div className="relative w-[830px] mb-6">
+            <SkeletonImage className="w-full h-[390px]" />
+            <div className="absolute bottom-0 left-4 w-20 h-20 bg-gray-200 rounded-sm animate-pulse"></div>
+          </div>
+
+          {/* Event Time/Location */}
+          <div className="space-y-2 ml-28 my-3">
+            <div className="flex items-center gap-2">
+              <SkeletonText width="1.25rem" height="1.25rem" />
+              <SkeletonText width="8rem" />
+            </div>
+            <div className="flex items-center gap-2">
+              <SkeletonText width="1.25rem" height="1.25rem" />
+              <SkeletonText width="12rem" />
+            </div>
+          </div>
+
+          {/* Event Description */}
+          <div className="lg:col-span-2 p-4 space-y-6">
+            <div>
+              <SkeletonText width="40%" height="1.5rem" className="mb-3" />
+              <div className="space-y-2">
+                <SkeletonText width="100%" />
+                <SkeletonText width="90%" />
+                <SkeletonText width="95%" />
+                <SkeletonText width="85%" />
+              </div>
+            </div>
+
+            {/* Event Info */}
+            <div className="bg-gray-50 p-5 rounded-lg">
+              <SkeletonText width="40%" height="1.5rem" className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <SkeletonText width="1.25rem" height="1.25rem" />
+                    <div>
+                      <SkeletonText width="5rem" height="0.875rem" className="mb-1" />
+                      <SkeletonText width="10rem" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="flex flex-col items-center w-[450px]">
+          <div className="space-y-6 w-full">
+            {/* Countdown Timer */}
+            <div className="w-full bg-gray-200 p-5 rounded animate-pulse">
+              <SkeletonText width="60%" height="1.25rem" className="mx-auto mb-4" />
+              <div className="grid grid-cols-4 gap-2 text-center">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-white p-3 rounded-md shadow-sm">
+                    <SkeletonText width="2rem" height="2rem" className="mx-auto mb-1" />
+                    <SkeletonText width="3rem" height="0.75rem" className="mx-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* QR Code */}
+            <div className="w-full bg-white border border-gray-200 p-5 rounded shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <SkeletonImage className="w-[100px] h-[100px]" />
+                </div>
+                <div className="flex-1">
+                  <SkeletonText width="60%" height="1rem" className="mb-2" />
+                  <SkeletonText width="90%" height="0.75rem" className="mb-3" />
+                  <div className="flex gap-2">
+                    <SkeletonText width="5rem" height="1.75rem" className="rounded-full" />
+                    <SkeletonText width="4rem" height="1.75rem" className="rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Organizer Info */}
+            <div className="bg-white border border-gray-200 p-5 rounded shadow-sm">
+              <SkeletonText width="60%" height="1.5rem" className="mb-4" />
+              <div className="flex items-center gap-4 mb-4">
+                <SkeletonAvatar size="4rem" />
+                <div>
+                  <SkeletonText width="8rem" height="1.25rem" className="mb-1" />
+                  <SkeletonText width="5rem" height="0.875rem" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <SkeletonText width="1rem" height="1rem" />
+                    <div>
+                      <SkeletonText width="5rem" height="0.875rem" className="mb-1" />
+                      <SkeletonText width="10rem" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Register Button */}
+            <SkeletonText width="100%" height="3rem" className="rounded" />
+
+            {/* Metadata */}
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <SkeletonText width="0.875rem" height="0.875rem" />
+                  <SkeletonText width="12rem" height="0.875rem" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
 export default function ViewEventDetails() {
   const token = Cookies.get("token");
   const { state } = useLocation();
   const event = state?.event;
+  const [isLoading, setIsLoading] = useState(true);
   const eventUrl = window.location.href;
   const value = window.location.href;
   const [copied, setCopied] = useState(false);
@@ -30,107 +189,140 @@ export default function ViewEventDetails() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [cancelled, setCancelled] = useState(false);
+  const userID = Cookies.get("userId");
   const getInitial = (name = "") => name.charAt(0).toUpperCase();
-  const [feedBackForm, setFeedBackForm] = useState({
-    rating: 1,
-    comment: "",
-  });
+    const [feedBackForm, setFeedBackForm] = useState({
+      rating: 1,
+      comment: "",
+    });
+  const [jion, setJion] = useState(false);
 
-  useEffect(() => {
-        const fetchFeedbacks = async () => {
-
-            try {
-                const response = await axios.get(
-                    `http://localhost:8000/api/view_feedback/${event.id}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-                console.log("Feedbacks fetched:", response.data.feedbacks);
-                setFeedbacks(response.data.feedbacks);
-            } catch (error) {
-                console.error("Error fetching feedbacks:", error);
-            }
-        };
-        if(token && event?.id) {
-            fetchFeedbacks();
-        }
-    }, [event, token]);
-
-const handleAddFeedback = async (e) => {
-  e.preventDefault(); // Prevent form reload
-
-  try {
-    const response = await axios.post(
-      `http://localhost:8000/api/give_feedback/${event.id}`,
-      {
-        feedback_remarks: feedBackForm.comment,
-        rating: feedBackForm.rating , 
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    console.log("Feedback added:", response.data);
-    toast.success("Feedback submitted successfully!");
-
-    setFeedbacks([...feedbacks, response.data.feedback]);
-
-    // Reset the form
-    setFeedBackForm({ comment: "", rating: 0 });
-    setRating(0);
-    setHoverRating(0);
-    setShowFeedbackForm(false);
-  } catch (error) {
-    console.error("Error submitting feedback:", error);
-    toast.error("Failed to submit feedback.");
-  }
+  const handleStarClick = (star) => {
+  setFeedBackForm(prev => ({
+    ...prev,
+    rating: star
+  }));
 };
 
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [feedbackRes, joinedRes, userRes] = await Promise.all([
+        axios.get(`http://localhost:8000/api/view_feedback/${event.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`http://localhost:8000/api/joined_past_events`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`http://localhost:8000/api/view_all_students`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      console.log(feedbackRes.data.feedbacks)
+      const feedbacks = feedbackRes.data.feedbacks || [];
+      const users = userRes.data || [];
+      console.log(userRes.data)
+      // 🔁 Attach user name to each feedback
+      const feedbacksWithNames = feedbacks.map(fb => {
+        const user = users.find(u => u.id === fb.user_id);
+        return {
+          ...fb,
+          user_name: user ? user.name : "Unknown User",
+        };
+      });
+
+      setFeedbacks(feedbacksWithNames);
+
+      const hasJoined = joinedRes.data.events.some(
+        (joined) => joined.event_id === event.id && joined.user_id == userID
+      );
+
+      setJion(hasJoined);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setIsLoading(false);
+    }
+  };
+
+  if (token && event?.id) {
+    fetchData();
+  } else {
+    // Still show loading even without token/event for consistency
+    setTimeout(() => setIsLoading(false), 300);
+  }
+}, [event, token, userID]);
+
+  const handleAddFeedback = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/give_feedback/${event.id}`,
+        {
+          feedback_remarks: feedBackForm.comment,
+          rating: feedBackForm.rating,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const newFeedback = response.data.feedback;
+
+      if (newFeedback) {
+        setFeedbacks((prev) => [...prev, newFeedback]); // ✅ append new item
+      }
+
+      toast.success("Feedback submitted successfully!");
+      setFeedBackForm({ comment: "", rating: 0 });
+      setRating(0);
+      setHoverRating(0);
+      setShowFeedbackForm(false);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast.error("Failed to submit feedback.");
+    }
+  };
 
 
-    useEffect(() => {
+  useEffect(() => {
     if (!event || !event.event_date || !event.event_time) {
-        setTimeLeft(null);
-        return;
+      setTimeLeft(null);
+      return;
     }
 
-    // Parse event date and time as 24-hour format
     const [hours, minutes] = event.event_time.split(':');
     const eventDateTime = new Date(event.event_date);
     eventDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
 
     const updateTimeLeft = () => {
-        const now = new Date();
-        const diff = eventDateTime - now;
+      const now = new Date();
+      const diff = eventDateTime - now;
 
-        if (diff <= 0) {
-            setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-            return;
-        }
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
 
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((diff / 1000 / 60) % 60);
-        const seconds = Math.floor((diff / 1000) % 60);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
 
-        setTimeLeft({ days, hours, minutes, seconds });
+      setTimeLeft({ days, hours, minutes, seconds });
     };
 
     updateTimeLeft();
     const interval = setInterval(updateTimeLeft, 1000);
 
     return () => clearInterval(interval);
-    }, [event]);
+  }, [event]);
 
-    useEffect(() => {
-        if (!event?.event_date || !event?.status) return;
+  useEffect(() => {
+    if (!event?.event_date || !event?.status) return;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -141,16 +333,16 @@ const handleAddFeedback = async (e) => {
     let computedStatus;
 
     if (eventDate >= today) {
-        computedStatus = "upcoming";
+      computedStatus = "upcoming";
     } else {
-        computedStatus = "past";
+      computedStatus = "past";
     }
     setStatus(computedStatus);
 
     if (event.status === "cancelled") {
-        setCancelled(true);
+      setCancelled(true);
     }
-}, [event]);
+  }, [event]);
 
   const formatTime = (timeString) => {
     if (!timeString) return '';
@@ -171,6 +363,31 @@ const handleAddFeedback = async (e) => {
       return timeString;
     }
   };
+
+  function timeAgo(date) {
+  const now = new Date();
+  const seconds = Math.floor((now - new Date(date)) / 1000);
+
+  const intervals = {
+    year: 31536000,
+    month: 2592000,
+    week: 604800,
+    day: 86400,
+    hour: 3600,
+    minute: 60,
+    second: 1,
+  };
+
+  for (const key in intervals) {
+    const interval = Math.floor(seconds / intervals[key]);
+    if (interval > 0) {
+      return `${interval} ${key}${interval !== 1 ? 's' : ''} ago`;
+    }
+  }
+
+  return "just now";
+}
+
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
@@ -195,7 +412,6 @@ const handleAddFeedback = async (e) => {
           },
         }
       );
-      console.log("Register successful:", response.data);
       toast.success("Successfully registered for the event!");
     } catch (error) {
       console.error("Error connecting with alumni:", error);
@@ -204,11 +420,6 @@ const handleAddFeedback = async (e) => {
       );
     }
   };
-
-  if (!event)
-    return (
-      <div className="text-center py-10 text-gray-600">No event found</div>
-    );
 
   return (
     <section className="px-20 py-5 bg-gray-50 min-h-screen">
@@ -220,7 +431,12 @@ const handleAddFeedback = async (e) => {
         Back to Events
       </button>
 
-      {status === "upcoming" ? (
+       {isLoading ? (
+      <EventDetailsSkeleton />
+    ) : !event ? (
+      <div className="text-center py-10 text-gray-600">No event found</div>
+    ) : (
+      status === "upcoming" ? (
         <div className="rounded p-7 border shadow-lg bg-white">
           <h1 className="font-semibold text-3xl mb-2 mt-[-10px]">
             {event.event_title}
@@ -605,12 +821,14 @@ const handleAddFeedback = async (e) => {
                       <h2 className="text-xl font-semibold">
                         Feedback ({feedbacks.length})
                       </h2>
-                      <button
+                      {jion &&( 
+                        <button
                         onClick={() => setShowFeedbackForm(!showFeedbackForm)}
                         className="bg-denim text-white px-4 py-2 rounded hover:bg-denim-dark transition"
-                      >
-                        {showFeedbackForm ? "Cancel" : "Add Feedback"}
-                      </button>
+                        >
+                          {showFeedbackForm ? "Cancel" : "Add Feedback"}
+                        </button>)
+                      }
                     </div>
 
                     {showFeedbackForm && (
@@ -619,7 +837,7 @@ const handleAddFeedback = async (e) => {
                           Share Your Experience
                         </h3>
                         <form onSubmit={handleAddFeedback}>
-                          <div className="mb-4">
+                            <div className="mb-4">
                             <label className="block text-gray-700 mb-2">
                               Your Rating
                             </label>
@@ -628,13 +846,13 @@ const handleAddFeedback = async (e) => {
                                 <FaStar
                                   key={star}
                                   className={`cursor-pointer text-2xl ${
-                                    (hoverRating || rating) >= star
+                                    (hoverRating || feedBackForm.rating) >= star
                                       ? "text-yellow-500"
                                       : "text-gray-300"
                                   }`}
                                   onMouseEnter={() => setHoverRating(star)}
                                   onMouseLeave={() => setHoverRating(0)}
-                                  onClick={() => setRating(star)}
+                                  onClick={() => handleStarClick(star)}
                                 />
                               ))}
                             </div>
@@ -684,7 +902,7 @@ const handleAddFeedback = async (e) => {
                                   <FaUser className="text-gray-500" />
                                 </div>
                                 <div>
-                                  <h4 className="font-medium">{fb.user}</h4>
+                                  <h4 className="font-medium">{fb.user_name}</h4>
                                   <div className="flex items-center">
                                     {[...Array(5)].map((_, i) => (
                                       <FaStar
@@ -700,10 +918,10 @@ const handleAddFeedback = async (e) => {
                                 </div>
                               </div>
                               <span className="text-sm text-gray-500">
-                                {new Date(fb.date).toLocaleDateString()}
+                                {timeAgo(fb.created_at)}
                               </span>
                             </div>
-                            <p className="mt-3 text-gray-700">{fb.comment}</p>
+                            <p className="mt-3 text-gray-700">{fb.feedback_remarks}</p>
                           </div>
                         ))}
                       </div>
@@ -971,8 +1189,10 @@ const handleAddFeedback = async (e) => {
           </div>
           
         </div>
-      )}
-      {/* Toast notifications container */}
+      )
+      
+    )}
+    {/* Toast notifications container */}
       <ToastContainer
         position="top-center"
         autoClose={3000}
