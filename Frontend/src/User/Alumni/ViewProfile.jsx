@@ -89,6 +89,31 @@ export default function ViewProfile() {
     setFilteredForum(filtered);
   };
 
+  const handleRegister = async (eventId) => {
+    if (!token) {
+      toast.error("Please login to register for events");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/register_for_event/${eventId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Register successful:", response.data);
+      toast.success("Successfully registered for the event!");
+    } catch (error) {
+      console.error("Error registering for event:", error);
+      toast.error(error.response?.data?.message || "Failed to register for the event");
+    }
+  };
+
   const handleConnect = async (alumniId) => {
     if (!token) {
       console.error("User not authenticated");
@@ -512,6 +537,13 @@ export default function ViewProfile() {
                           </p>
                         )}
                       </div>
+                      <div className="flex justify-end items-start flex-0">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleConnect(connection.id)}}
+                          className="border border-denim text-denim px-4 py-1 rounded-md ml-auto hover:bg-white hover:text-blue-900 transition-colors">
+                          Connect
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -544,41 +576,64 @@ export default function ViewProfile() {
                   description={searchTerm ? "Try a different search term" : "You haven't organized any events yet. Create your first event to bring alumni together."}
                 />
               ) : (
-                <div className="flex flex-col gap-4">
-                  {filteredEvents.map((event) => (
-                    <div
-                      key={event.id}
-                      onClick={() => navigate("/viewEventDetails", { state: { event } })}
-                      className="cursor-pointer flex gap-4 border-b pb-4 w-full hover:bg-gray-50 py-4 rounded transition-colors"
-                    >
-                      <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                        {event.photo ? (
-                          <img
-                            src={event.photo}
-                            alt={event.event_title}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <img
-                            src={fallbackImage}
-                            alt={event.event_title}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h1 className="text-lg font-bold mb-2">{event.event_title}</h1>
-                        <p className="text-gray-600 mb-2 line-clamp-2">{event.description}</p>
-                        <div className="text-sm text-gray-500 space-y-1">
-                          <p className="flex items-center gap-2"><LuCalendarDays className="text-denim"/> {event.event_date} at {event.event_time}</p>
-                          <p className="flex items-center gap-2"><GrLocationPin className="text-denim"/> {event.location}</p>
-                          <p className="flex items-center gap-2"><FiUsers className="text-denim"/> {event.attendeeCount} attendees</p>
-                          <p className="flex items-center gap-2"><GoGoal className="text-denim"/> {event.event_mode === 'physical' ? 'In-person' : 'Virtual'}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex flex-col gap-6">
+  {filteredEvents.map((event) => (
+    <div
+      key={event.id}
+      className="flex gap-6 border rounded-lg p-4 w-full hover:shadow-md transition-all cursor-pointer"
+    >
+      {/* Event Image */}
+      <div className="w-48 h-48 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+        <img
+          src={event.photo || fallbackImage}
+          alt={event.event_title}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    
+      {/* Event Details */}
+      <div className="flex-1 flex flex-col">
+        <div 
+          onClick={() => navigate("/viewEventDetails", { state: { event } })}
+          className="flex-1"
+        >
+          <h1 className="text-xl font-bold mb-1 text-gray-800">{event.event_title}</h1>
+          <p className="text-gray-600 mb-2 line-clamp-2">{event.description}</p>
+          
+          <div className="flex justify-between">
+            <div className="text-sm text-gray-600 space-y-2">
+                  <div className="flex items-center gap-2">
+                  <LuCalendarDays className="text-denim w-4 h-4" />
+                  <span>{new Date(event.event_date).toLocaleDateString()} at {event.event_time}</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <GrLocationPin className="text-denim w-4 h-4" />
+                  <span>{event.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiUsers className="text-denim w-4 h-4" />
+                  <span>{event.attendeeCount} attendees</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <GoGoal className="text-denim w-4 h-4" />
+                  <span>{event.event_mode === 'physical' ? 'In-person' : 'Virtual'}</span>
+                </div>
+            </div>
+            {/* Register Button */}
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={(e) => { e.stopPropagation(); handleRegister(event.id)}}
+                className="bg-white border-denim h-10 items-center flex mt-auto border hover:bg-denim-dark text-denim px-4 py-1 rounded-md transition-colors"
+              >
+                Register Now
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
               )}
             </div>
           )}
