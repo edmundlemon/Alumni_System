@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Connection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ConnectionController extends Controller
 {
@@ -115,13 +116,18 @@ class ConnectionController extends Controller
         // Assuming you have a way to get the authenticated user
         // and the connection belongs to that user
         //
+        Log::channel('auth_activity')->info('Connection edit request', [
+            'user_id' => Auth::guard('sanctum')->id(),
+            'connection_id' => $connection->id,
+            'request_data' => $request->all(),
+        ]);
+        // dd();
         $user = Auth::guard('sanctum')->user();
         if ($connection->accepting_user_id !== $user->id) {
             return response()->json([
                 'error' => 'You are not authorized to perform this action',
             ], 403);
         }
-        return response()->json($connection);
 
         $request->validate([
             'status' => 'required|string|in:accepted,accepted',
