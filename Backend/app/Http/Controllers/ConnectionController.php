@@ -130,7 +130,7 @@ class ConnectionController extends Controller
         }
 
         $request->validate([
-            'status' => 'required|string|in:accepted,accepted',
+            'status' => 'required|string|in:accepted,rejected',
         ]);
         $connection->status = $request->status;
         $connection->save();
