@@ -12,6 +12,7 @@ class Discussion extends Model
         'user_id',
         'subject',
         'content',
+        'photo',
     ];
     // protected $hidden = [
         // 'created_at',
