@@ -32,7 +32,7 @@ class EventController extends Controller
         //
         $request->validate([
             'event_title' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
             'location' => 'required|string|max:255',
             'event_date' => 'required|date_format:Y-m-d|after:tomorrow',
             'event_time' => 'required|date_format:H:i',
