@@ -92,8 +92,8 @@ export default function LoginPage({ initialForm = "login" }) {
         console.log(error);
         if (error) {
           setFormError({
-            id: "Invalid email or password",
-            password: "Invalid email or password",
+            id: "Invalid student id or password",
+            password: "Invalid student id or password",
           });
         }
       })

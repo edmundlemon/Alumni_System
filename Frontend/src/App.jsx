@@ -44,6 +44,7 @@ import Sidebar from "./Admin/Sidebar";
 import ScrollToTop from "./ScrollToTop";
 import FacultyTable from "./Admin/FalcultyTable";
 import MyProfile from "./User/MyProfile";
+import FAQ from "./User/footer/FAQ";
 
 // 🔒 Protected Routes
 function ProtectedRoute({ children }) {
@@ -107,6 +108,7 @@ function AppRoutes() {
         <Route path="/viewCreateEvent" element={<ProtectedRoute><ViewCreateEvent /></ProtectedRoute>} />
         <Route path="/editEvent" element={<ProtectedRoute><EditEvent /></ProtectedRoute>} />
         <Route path="/myProfile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+        <Route path="/FAQ" element={<ProtectedRoute><FAQ /></ProtectedRoute>} />
 
         {/* Protected Admin Routes */}
         <Route element={<ProtectedAdminRoute />}>

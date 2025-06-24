@@ -3,8 +3,10 @@ import { FiInstagram } from "react-icons/fi";
 import { FaYoutube } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { FaAngleDown } from "react-icons/fa6";
+import { useNavigate } from 'react-router-dom';
 
 export default function Footer() {
+    const navigate = useNavigate();
     return(
         <section className="px-20 pt-10 border-t bg-gray-100 ">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-10">
@@ -23,24 +25,24 @@ export default function Footer() {
                 </div>
                 <ul className="space-y-2">
                     <li className="font-[1000] text-xl text-gray-500">About </li>
-                    <li className="text-gray-500 text-base font-thin pt-1">About MMU</li>
-                    <li className="text-gray-500 text-base font-thin">Mission & Vision</li>
-                    <li className="text-gray-500 text-base font-thin">Alumni Association</li>
-                    <li className="text-gray-500 text-base font-thin">Leadership</li>
+                    <li className="text-gray-500 text-base font-thin pt-1 cursor-pointer">About MMU</li>
+                    <li className="text-gray-500 text-base font-thin cursor-pointer">Mission & Vision</li>
+                    <li className="text-gray-500 text-base font-thin cursor-pointer">Alumni Association</li>
+                    <li className="text-gray-500 text-base font-thin cursor-pointer">Leadership</li>
                 </ul>
                 <ul className="space-y-2">
                     <li className="font-[1000] text-xl text-gray-500">Quick Link</li>
-                    <li className="text-gray-500 text-base font-thin pt-1">Login</li>
-                    <li className="text-gray-500 text-base font-thin">Event</li>
-                    <li className="text-gray-500 text-base font-thin">Forum</li>
-                    <li className="text-gray-500 text-base font-thin">Donation</li>
+                    <li onClick={()=> navigate("/userLogin")} className="text-gray-500 text-base font-thin pt-1 cursor-pointer">Login</li>
+                    <li onClick={()=> navigate("/eventMainPage")} className="text-gray-500 text-base font-thin cursor-pointer">Event</li>
+                    <li onClick={()=> navigate("/forumMainPage")} className="text-gray-500 text-base font-thin cursor-pointer">Forum</li>
+                    <li onClick={()=> navigate("/donationMainPage")} className="text-gray-500 text-base font-thin cursor-pointer">Donation</li>
                 </ul>
                 <ul className="space-y-2">
-                    <li className="font-[1000] text-xl text-gray-500">Term of Use</li>
-                    <li className="text-gray-500 text-base font-thin pt-1">Privacy Policy</li>
-                    <li className="text-gray-500 text-base font-thin">Terms of Service</li>
-                    <li className="text-gray-500 text-base font-thin">Contact Us</li>
-                    <li className="text-gray-500 text-base font-thin">FAQ</li>
+                    <li className="font-[1000] text-xl text-gray-500 cursor-pointer">Term of Use</li>
+                    <li onClick={()=> navigate("/policy")} className="text-gray-500 text-base font-thin pt-1 ">Privacy Policy</li>
+                    <li onClick={()=> navigate("/termAndCondition")} className="text-gray-500 text-base font-thin cursor-pointer">Terms of Service</li>
+                    <li onClick={()=> navigate("/contactUs")} className="text-gray-500 text-base font-thin cursor-pointer">Contact Us</li>
+                    <li onClick={()=> navigate("/FAQ")} className="text-gray-500 text-base font-thin cursor-pointer">FAQ</li>
                 </ul>
                 <ul className="space-y-2">
                     <li className="font-[1000] text-xl text-gray-500">Contact Us</li>
