@@ -243,7 +243,7 @@ export default function ViewDonateDetails() {
 
         <div className="flex-1 relative">
           <img
-            src={dnt.image ? dnt.image : fallbackImage}
+            src={dnt.photo ? dnt.photo : fallbackImage}
             alt={`${dnt.name} visual`}
             className="object-cover w-full h-72 lg:h-full"
           />
