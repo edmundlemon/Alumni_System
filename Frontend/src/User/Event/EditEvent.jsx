@@ -110,6 +110,10 @@ export default function AddEvent() {
       "max_participant",
       formData.noLimit ? "" : formData.max_participant
     );
+     payload.append(
+      "_method",
+      "PUT"
+    );
     payload.append("location", formData.location);
     payload.append("user_id", user_id);
     if (formData.photo) {
@@ -134,7 +138,7 @@ export default function AddEvent() {
       );
       console.log("Event created successfully:", response.data);
       alert("Event created successfully!");
-      navigate("/user/event");
+      navigate("/viewCreateEvent");
     } catch (error) {
       console.error("Full error:", error);
 

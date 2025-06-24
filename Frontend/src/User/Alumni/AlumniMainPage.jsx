@@ -292,9 +292,9 @@ export default function AlumniMainPage() {
                   {/* Profile Picture or Initials */}
                   <div className='w-full bg-blue-900 h-32 rounded-lg relative'>
                     <div className="w-24 h-24 mb-4 absolute bottom-[-50px] left-4 bg-white rounded-full flex items-center justify-center shadow-lg">
-                      {alumni.profile_picture ? (
+                      {alumni.image ? (
                         <img
-                          src={alumni.profile_picture}
+                          src={alumni.image}
                           alt="profile"
                           className="w-full h-full object-cover rounded-full border-4 border-blue-200 shadow-sm"
                         />

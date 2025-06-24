@@ -167,12 +167,6 @@ export default function EventTable() {
           <button onClick={handleExport} className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
             <BiExport size={16} /> Export
           </button>
-          <button
-            className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs"
-            onClick={() => setShowAddEvent(true)}
-          >
-            <FaPlus size={10} /> <span>Add Event</span>
-          </button>
         </div>
       </div>
 

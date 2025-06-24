@@ -1218,39 +1218,44 @@ export default function ForumMainPage() {
                 </form>
               )}
 
-              {selectedPost && selectedPost.post && selectedPost.post.comments||selectedPost.comments.length === 0  ? (
-                  <div className="py-6 text-center text-gray-500">
-                    No comments yet. Be the first to comment!
-                  </div>
-                ) : (
-                  selectedPost && selectedPost.post && selectedPost.post.comments||selectedPost.comments.map((comment, i) => {
-                    console.log("Comment:", comment);
-                    const user = userMap[comment.user_id];
-                    return (
-                      <div
-                        key={i}
-                        className="flex gap-3 mt-2 py-4 border-b border-gray-200"
-                      >
-                        <div className="w-11 h-11 rounded-full bg-gray-600 flex items-center justify-center font-bold">
-                          {getInitial(user?.name)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-lg">
-                                {user ? user.name : "Unknown User"}
-                              </span>
-                              <span className="text-gray-400 text-sm">
-                                · {getTimeAgo(comment.created_at)}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-lg">{comment.comment_content}</p>
-                        </div>
+              {(
+                (selectedPost && selectedPost.post && Array.isArray(selectedPost.post.comments) && selectedPost.post.comments.length === 0) ||
+                (selectedPost && !selectedPost.post && Array.isArray(selectedPost.comments) && selectedPost.comments.length === 0)
+              ) ? (
+                <div className="py-6 text-center text-gray-500">
+                  No comments yet. Be the first to comment!
+                </div>
+              ) : (
+                ((selectedPost && selectedPost.post && Array.isArray(selectedPost.post.comments) && selectedPost.post.comments.length > 0
+                  ? selectedPost.post.comments
+                  : (selectedPost && Array.isArray(selectedPost.comments) ? selectedPost.comments : [])
+                ).map((comment, i) => {
+                  const user = userMap[comment.user_id];
+                  return (
+                    <div
+                      key={i}
+                      className="flex gap-3 mt-2 py-4 border-b border-gray-200"
+                    >
+                      <div className="w-11 h-11 rounded-full bg-gray-600 flex items-center justify-center font-bold">
+                        {getInitial(user?.name)}
                       </div>
-                    );
-                  })
-                )}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-lg">
+                              {user ? user.name : "Unknown User"}
+                            </span>
+                            <span className="text-gray-400 text-sm">
+                              · {getTimeAgo(comment.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-lg">{comment.comment_content}</p>
+                      </div>
+                    </div>
+                  );
+                }))
+              )}
             </div>
           </div>
         )}

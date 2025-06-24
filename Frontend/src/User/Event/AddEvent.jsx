@@ -31,7 +31,7 @@ export default function AddEvent() {
 
   const eventTypeOptions = [
     { value: "Physical", label: "Physical" },
-    { value: "Vitual", label: "Vitual" },
+    { value: "Virtual", label: "Virtual" },
     { value: "Hybrid", label: "Hybrid" },
   ];
 
@@ -124,6 +124,7 @@ export default function AddEvent() {
       );
       console.log("Event created successfully:", response.data);
       toast.success("Event created successfully!");
+      navigate("/viewCreateEvent");
       setErrors({}); // Clear errors on success
     } catch (error) {
       console.error("Full error:", error);
