@@ -274,66 +274,45 @@ export default function ForumMainPage() {
 };
 
   const submitPost = async (e) => {
-    e.preventDefault(); // prevent default form submission behavior
+  e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("subject", postForm.subject);
-    formData.append("content", postForm.content);
+  const formData = new FormData();
+  formData.append("subject", postForm.subject);
+  formData.append("content", postForm.content);
 
-    if (postForm.photo) {
-      formData.append("photo", postForm.photo);
-       try {
-      const response = await axios.post(
-        "http://localhost:8000/api/create_discussion",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-           "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      toast.success("Post submitted successfully!");
+  // Add photo only if it exists
+  if (postForm.photo) {
+    formData.append("photo", postForm.photo);
+  }
 
-      // Prepend new post to existing posts list
-      const newPost = response.data.discussion;
-      setPosts((prev) => [newPost, ...prev])
-      setFilteredEvents((prev) => [newPost, ...prev]);
-      // Optionally reset form  
-      setPostForm({ subject: "", content: "", photo: null });
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = null;
-    } catch (error) {
-      console.error("Error submitting post:", error);
-      toast.error("Failed to submit post.");
-    }
-    };
+  try {
+    const response = await axios.post(
+      "http://localhost:8000/api/create_discussion",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    
+    toast.success("Post submitted successfully!");
 
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/create_discussion",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-           "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      toast.success("Post submitted successfully!");
-
-      // Prepend new post to existing posts list
-      const newPost = response.data.discussion;
-      setFilteredEvents((prev) => [newPost, ...prev]);
-      // Optionally reset form  
-      setPostForm({ subject: "", content: "", photo: null });
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = null;
-    } catch (error) {
-      console.error("Error submitting post:", error);
-      toast.error("Failed to submit post.");
-    }
-  };
+    const newPost = response.data.discussion;
+    setPosts((prev) => [newPost, ...prev]);
+    setFilteredEvents((prev) => [newPost, ...prev]);
+    setOwnPost((prev) =>  [newPost, ...prev]);
+    // Reset form
+    setPostForm({ subject: "", content: "", photo: null });
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = null;
+    
+  } catch (error) {
+    console.error("Error submitting post:", error);
+    toast.error("Failed to submit post.");
+  }
+};
 
 
   useEffect(() => {
@@ -840,7 +819,17 @@ export default function ForumMainPage() {
 
                             <p>{post.subject}</p>
                             <div className="text-gray-800 text-base pt-3 pb-1">{post.content}</div>
-
+                            {post.photo && (
+                                <div className="mt-3 mb-5 group">
+                                  <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                    <img 
+                                      src={post.photo} 
+                                      alt="Post content" 
+                                      className="w-full h-auto max-h-96 object-cover cursor-pointer"
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             <div className="flex items-center gap-2 mt-2">
                               <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
                                 <FaRegHeart size={15} />
@@ -1016,6 +1005,17 @@ export default function ForumMainPage() {
                                   <div className="text-gray-800 text-base pt-3 pb-1">
                                     {post.content}
                                   </div>
+                                   {post.photo && (
+                                  <div className="mt-3 mb-5 group">
+                                    <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                      <img 
+                                        src={post.photo} 
+                                        alt="Post content" 
+                                        className="w-full h-auto max-h-96 object-cover cursor-pointer"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                                   <div className="flex items-center gap-2 mt-2">
                                     <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
                                       <FaRegHeart size={15} />
@@ -1075,6 +1075,17 @@ export default function ForumMainPage() {
                                 <div className="text-gray-800 text-base pt-3 pb-1">
                                   {post.content}
                                 </div>
+                                 {post.photo && (
+                                <div className="mt-3 mb-5 group">
+                                  <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                    <img 
+                                      src={post.photo} 
+                                      alt="Post content" 
+                                      className="w-full h-auto max-h-96 object-cover cursor-pointer"
+                                    />
+                                  </div>
+                                </div>
+                              )}
                                 <div className="flex items-center gap-2 mt-2">
                                   <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
                                     <FaRegHeart size={15} />
@@ -1118,6 +1129,17 @@ export default function ForumMainPage() {
               <div className="text-gray-800 text-lg pt-3 pb-1">
                 {selectedPost && selectedPost.post && selectedPost.post.content ||selectedPost.content}
               </div>
+               {(selectedPost?.post?.photo || selectedPost?.photo) && (
+                  <div className="mt-3 mb-5 group">
+                    <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                      <img 
+                        src={selectedPost?.post?.photo || selectedPost?.photo} 
+                        alt="Post content" 
+                        className="w-full h-auto max-h-96 object-cover cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                )}
               <div className="flex items-center gap-2 mt-2">
                 <div className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-2">
                   <FaRegHeart size={15} />

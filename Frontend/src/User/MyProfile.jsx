@@ -667,6 +667,17 @@ export default function MyProfile() {
                     >
                       <h1 className="text-lg font-bold mb-2">{post.subject}</h1>
                       <p className="text-gray-700 mb-3 line-clamp-3">{post.content}</p>
+                       {post.photo && (
+                                <div className="mt-3 mb-5 group">
+                                  <div className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                                    <img 
+                                      src={post.photo} 
+                                      alt="Post content" 
+                                      className="w-full h-auto max-h-96 object-cover cursor-pointer"
+                                    />
+                                  </div>
+                                </div>
+                              )}
                       <div className="flex gap-2 py-2 border-t items-center justify-between">
                         <div className="flex gap-4">
                           <p className="flex items-center text-sm gap-2 text-gray-600">
