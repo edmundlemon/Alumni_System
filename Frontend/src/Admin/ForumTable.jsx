@@ -68,21 +68,20 @@ export default function ForumTable() {
         }
       );
       console.log("Event deleted successfully");
-      toast.success("User deleted successfully");
+      toast.success("Forum deleted successfully");
       setForums((prevForums) =>
         prevForums.filter((forum) => forum.id !== ForumId)
       );
       setSelectForum((prevSelect) => prevSelect.filter((id) => id !== ForumId));
     } catch (error) {
-      console.error("Error deleting event:", error);
-      toast.error("Failed to cancel event");
+      console.error("Error deleting forum:", error);
+      toast.error("Failed to delete forum");
     }
   };
 
   const handleDeleteSelectedForums = async () => {
     if (selectForum.length === 0) return;
     try {
-      // Delete each user one by one
       await Promise.all(
         selectForum.map((ForumId) =>
           axios.delete(
@@ -97,15 +96,14 @@ export default function ForumTable() {
         )
       );
 
-      // Update local state after all deletions
       setForums((prevForums) =>
         prevForums.filter((forum) => !selectForum.includes(forum.id))
       );
       setSelectForum([]);
-      toast.success("Selected users deleted successfully");
+      toast.success("Selected forums deleted successfully");
     } catch (error) {
-      console.error("Error deleting selected users:", error);
-      toast.error("Failed to delete selected users");
+      console.error("Error deleting selected forums:", error);
+      toast.error("Failed to delete selected forums");
     }
   };
 
@@ -114,25 +112,44 @@ export default function ForumTable() {
     setShowForum(true);
   };
 
-  // Table columns for forums
+  // Fixed table columns to match actual forum object properties
   const columns = [
-    { key: "forumID", label: "Forum ID" },
-    { key: "Tittle", label: "tittle" },
-    { key: "comment", label: "comment" },
-    { key: "userID", label: "User ID" },
+    { key: "id", label: "Forum ID" },
+    { key: "subject", label: "Title" },
+    { key: "comments", label: "Comments" },
+    { key: "user_id", label: "User ID" },
     { key: "created_at", label: "Created At" },
     { key: "Action", label: "Action" },
   ];
 
   const filteredForums = forums.filter(
-    (user) =>
-      user.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.content?.toLowerCase().includes(searchTerm.toLowerCase())
+    (forum) =>
+      forum.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      forum.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Fixed sorting logic with proper handling for different data types
   const sortedForums = [...filteredForums].sort((a, b) => {
-    const aVal = a[sortCriteria.key];
-    const bVal = b[sortCriteria.key];
+    let aVal = a[sortCriteria.key];
+    let bVal = b[sortCriteria.key];
+
+    // Handle special cases for different data types
+    if (sortCriteria.key === "comments") {
+      aVal = a.comments?.length || 0;
+      bVal = b.comments?.length || 0;
+    } else if (sortCriteria.key === "created_at") {
+      aVal = new Date(a.created_at);
+      bVal = new Date(b.created_at);
+    } else if (sortCriteria.key === "id" || sortCriteria.key === "user_id") {
+      aVal = parseInt(aVal) || 0;
+      bVal = parseInt(bVal) || 0;
+    }
+
+    // Handle null/undefined values
+    if (aVal == null && bVal == null) return 0;
+    if (aVal == null) return sortCriteria.order === "asc" ? 1 : -1;
+    if (bVal == null) return sortCriteria.order === "asc" ? -1 : 1;
+
     if (aVal < bVal) return sortCriteria.order === "asc" ? -1 : 1;
     if (aVal > bVal) return sortCriteria.order === "asc" ? 1 : -1;
     return 0;
@@ -274,15 +291,24 @@ export default function ForumTable() {
               {columns.map((col, index) => (
                 <th
                   key={col.key}
-                  className={`p-2 border-b text-left cursor-pointer ${
+                  className={`p-2 border-b text-left cursor-pointer transition-colors ${
                     index === columns.length - 1 ? "rounded-tr-md" : ""
-                  }`}
+                  } ${sortCriteria.key === col.key ? "bg-blue-100" : ""}`}
                   onClick={() => col.key !== "Action" && handleSort(col.key)}
                 >
-                  <p className="flex items-center gap-2 capitalize">
+                  <div className="flex items-center gap-2 capitalize">
                     {col.label}
-                    {col.key !== "Action" && <BiSortAlt2 size={20} />}
-                  </p>
+                    {col.key !== "Action" && (
+                      <BiSortAlt2 
+                        size={20} 
+                        className={`transform transition-transform ${
+                          sortCriteria.key === col.key && sortCriteria.order === "desc" 
+                            ? "rotate-180" 
+                            : ""
+                        }`}
+                      />
+                    )}
+                  </div>
                 </th>
               ))}
             </tr>
@@ -320,13 +346,13 @@ export default function ForumTable() {
                     </td>
                     <td className="px-2 py-3 text-left">
                       <div className="line-clamp-1">
-                        {forum.subject && forum.subject.length > 5
+                        {forum.subject && forum.subject.length > 20
                           ? forum.subject.slice(0, 20) + "..."
                           : forum.subject}
                       </div>
                     </td>
                     <td className="px-2 py-3 text-left">
-                      {forum.comments.length}
+                      {forum.comments?.length || 0}
                     </td>
                     <td className="px-2 py-3 text-left">{forum.user_id}</td>
                     <td className="px-2 py-3 text-left">
@@ -336,14 +362,14 @@ export default function ForumTable() {
                     </td>
                     <td className="flex px-2 pt-3 gap-2">
                       <button
-                        className="p-1 rounded border border-gray-300 shadow"
+                        className="p-1 rounded border border-gray-300 shadow hover:bg-gray-100"
                         onClick={() => handleViewForum(forum)}
                       >
                         <FiEdit3 />
                       </button>
                       <button
                         onClick={() => handleDeleteForum(forum.id)}
-                        className="p-1 rounded border border-gray-300 shadow"
+                        className="p-1 rounded border border-gray-300 shadow hover:bg-gray-100"
                       >
                         <MdDeleteOutline />
                       </button>
@@ -403,7 +429,6 @@ export default function ForumTable() {
           </div>
         </div>
       )}
-      {/* Toast notifications container */}
       <ToastContainer
         position="top-right"
         autoClose={3000}

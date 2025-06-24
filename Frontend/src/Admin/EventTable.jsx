@@ -30,20 +30,23 @@ export default function EventTable() {
   const printRef = useRef();
   const itemsPerPage = 10;
 
+  // Extract fetchEvent function so it can be reused
+  const fetchEvent = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get("http://localhost:8000/api/view_all_events", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEvents(response.data.events);
+    } catch (error) {
+      console.error("Error Response:", error.response);
+      navigate("/403");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/api/view_all_events", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setEvents(response.data.events);
-      } catch (error) {
-        console.error("Error Response:", error.response);
-        navigate("/403");
-      } finally {
-        setIsLoading(false);
-      }
-    };
     if (token) fetchEvent();
   }, [token, navigate]);
 
@@ -57,7 +60,11 @@ export default function EventTable() {
         },
       });
       toast.success("Event deleted successfully");
-      setEvents((prev) => prev.filter((event) => event.id !== EventId));
+      
+      // Refetch data instead of manually removing from list
+      await fetchEvent();
+      
+      // Clear selection for the deleted event
       setSelectEvent((prev) => prev.filter((id) => id !== EventId));
     } catch (error) {
       console.error("Error deleting event:", error);
@@ -135,9 +142,37 @@ export default function EventTable() {
     event.host_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Improved sorting function
   const sortedEvent = [...filteredEvent].sort((a, b) => {
-    const aVal = a[sortCriteria.key];
-    const bVal = b[sortCriteria.key];
+    if (!sortCriteria.key) return 0;
+    
+    let aVal = a[sortCriteria.key];
+    let bVal = b[sortCriteria.key];
+    
+    // Handle null/undefined values
+    if (aVal == null && bVal == null) return 0;
+    if (aVal == null) return sortCriteria.order === "asc" ? 1 : -1;
+    if (bVal == null) return sortCriteria.order === "asc" ? -1 : 1;
+    
+    // Handle date sorting for created_at
+    if (sortCriteria.key === "created_at") {
+      aVal = new Date(aVal);
+      bVal = new Date(bVal);
+    }
+    
+    // Handle numeric sorting for id
+    if (sortCriteria.key === "id") {
+      aVal = Number(aVal);
+      bVal = Number(bVal);
+    }
+    
+    // Handle string sorting (case insensitive)
+    if (typeof aVal === "string" && typeof bVal === "string") {
+      aVal = aVal.toLowerCase();
+      bVal = bVal.toLowerCase();
+    }
+    
+    // Compare values
     if (aVal < bVal) return sortCriteria.order === "asc" ? -1 : 1;
     if (aVal > bVal) return sortCriteria.order === "asc" ? 1 : -1;
     return 0;
@@ -167,12 +202,6 @@ export default function EventTable() {
           <button onClick={handleExport} className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
             <BiExport size={16} /> Export
           </button>
-          <button
-            className="flex items-center gap-1 bg-[#1560bd] text-white px-6 py-2 rounded text-xs"
-            onClick={() => setShowAddEvent(true)}
-          >
-            <FaPlus size={10} /> <span>Add Event</span>
-          </button>
         </div>
       </div>
 
@@ -189,10 +218,21 @@ export default function EventTable() {
             {["id", "event_title", "host_name", "location", "created_at", "status", "Action"].map((key) => (
               <th
                 key={key}
-                className={`p-2 border-b text-left cursor-pointer ${key === "Action" ? "rounded-tr-md" : ""}`}
+                className={`p-2 border-b text-left cursor-pointer ${key === "Action" ? "rounded-tr-md cursor-default" : ""}`}
                 onClick={() => key !== "Action" && handleSort(key)}
               >
-                <p className="flex items-center gap-2 capitalize">{key.replace("_", " ")} <BiSortAlt2 size={20} /></p>
+                <p className="flex items-center gap-2 capitalize">
+                  {key.replace("_", " ")} 
+                  {key !== "Action" && (
+                    <BiSortAlt2 
+                      size={20} 
+                      className={sortCriteria.key === key ? 
+                        (sortCriteria.order === "asc" ? "text-blue-600" : "text-blue-600 rotate-180") : 
+                        "text-gray-400"
+                      }
+                    />
+                  )}
+                </p>
               </th>
             ))}
           </tr>

@@ -22,7 +22,7 @@ export default function DonationTable() {
   const [selectDonation, setSelectDonation] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortCriteria, setSortCriteria] = useState({ key: "", order: "asc" });
+  const [sortCriteria, setSortCriteria] = useState({ key: "created_at", order: "desc" });
   const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 10;
   const printRef = useRef();
@@ -31,7 +31,19 @@ export default function DonationTable() {
   const [showEditDonation, setShowEditDonation] = useState(false);
   const [selectedDonationId, setSelectedDonationId] = useState(null);
   const viewportHeight = window.innerHeight;
-  const [successAdd, setSuccessAdd] = useState(false)
+  const [successAdd, setSuccessAdd] = useState(false);
+
+  // Table headers configuration
+  const tableHeaders = [
+    { key: "id", label: "ID", sortable: true },
+    { key: "admin_id", label: "Admin ID", sortable: true },
+    { key: "donation_title", label: "Donation Title", sortable: true },
+    { key: "current_amount", label: "Raise", sortable: true },
+    { key: "target_amount", label: "Target", sortable: true },
+    { key: "created_at", label: "Created At", sortable: true },
+    { key: "status", label: "Status", sortable: true },
+    { key: "action", label: "Action", sortable: false }
+  ];
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -62,11 +74,11 @@ export default function DonationTable() {
   }, [token, navigate]);
 
   useEffect(() => {
-  if (successAdd) {
-    RefreshPage();
-    setSuccessAdd(false); 
-  }
-}, [successAdd]);
+    if (successAdd) {
+      RefreshPage();
+      setSuccessAdd(false); 
+    }
+  }, [successAdd]);
 
   const handleDeleteDonation = async (DoantionId) => {
     try {
@@ -86,26 +98,25 @@ export default function DonationTable() {
   };
 
   const handleDeleteSelectedDonation = async () => {
-  if (selectDonation.length === 0) return;
+    if (selectDonation.length === 0) return;
 
-  try {
-    await Promise.all(
-      selectDonation.map((donationId) =>
-        axios.delete(
-          `http://localhost:8000/api/cancel_donation_post/${donationId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+    try {
+      await Promise.all(
+        selectDonation.map((donationId) =>
+          axios.delete(
+            `http://localhost:8000/api/cancel_donation_post/${donationId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          )
         )
-      )
-    );
+      );
 
-    // Update state correctly
-      RefreshPage()
-      setSelectDonation([]); // fix here
+      RefreshPage();
+      setSelectDonation([]);
       toast.success("Selected donations deleted successfully");
     } catch (error) {
       console.error("Error deleting selected donations:", error);
@@ -113,27 +124,25 @@ export default function DonationTable() {
     }
   };
 
-const RefreshPage = async () => {
+  const RefreshPage = async () => {
     try {
-        const response = await axios.get(
-          "http://localhost:8000/api/view_all_donation_posts",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setDonations(response.data.donation_posts);
-        console.log(response.data.donation_posts);
-      } catch (error) {
-        console.error("Error fetching donations:", error);
-        navigate("/403");
-      } finally {
-        setIsLoading(false);
-      }
+      const response = await axios.get(
+        "http://localhost:8000/api/view_all_donation_posts",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setDonations(response.data.donation_posts);
+      console.log(response.data.donation_posts);
+    } catch (error) {
+      console.error("Error fetching donations:", error);
+      navigate("/403");
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-
 
   const handleViewDonation = (donation) => {
     setSelectedDonationId(donation);
@@ -148,12 +157,47 @@ const RefreshPage = async () => {
       donation.status?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Enhanced sorting function
   const sortedDonations = [...filteredDonations].sort((a, b) => {
+    if (!sortCriteria.key) return 0;
+
     const aValue = a[sortCriteria.key];
     const bValue = b[sortCriteria.key];
-    if (aValue < bValue) return sortCriteria.order === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortCriteria.order === "asc" ? 1 : -1;
-    return 0;
+
+    // Handle null/undefined values
+    if (aValue == null && bValue == null) return 0;
+    if (aValue == null) return sortCriteria.order === "asc" ? 1 : -1;
+    if (bValue == null) return sortCriteria.order === "asc" ? -1 : 1;
+
+    // Handle different data types
+    let comparison = 0;
+
+    switch (sortCriteria.key) {
+      case "id":
+      case "admin_id":
+      case "current_amount":
+      case "target_amount":
+        // Numeric comparison
+        comparison = Number(aValue) - Number(bValue);
+        break;
+      
+      case "created_at":
+        // Date comparison
+        comparison = new Date(aValue).getTime() - new Date(bValue).getTime();
+        break;
+      
+      case "donation_title":
+      case "status":
+        // String comparison (case-insensitive)
+        comparison = String(aValue).toLowerCase().localeCompare(String(bValue).toLowerCase());
+        break;
+      
+      default:
+        // Default string comparison
+        comparison = String(aValue).toLowerCase().localeCompare(String(bValue).toLowerCase());
+    }
+
+    return sortCriteria.order === "asc" ? comparison : -comparison;
   });
 
   const totalPages = Math.ceil(sortedDonations.length / itemsPerPage);
@@ -172,7 +216,12 @@ const RefreshPage = async () => {
     );
   };
 
+  // Updated handleSort function
   const handleSort = (key) => {
+    // Don't sort if key is not sortable
+    const header = tableHeaders.find(h => h.key === key);
+    if (!header || !header.sortable) return;
+
     setSortCriteria((prev) => ({
       key,
       order: prev.key === key && prev.order === "asc" ? "desc" : "asc",
@@ -183,56 +232,55 @@ const RefreshPage = async () => {
     setCurrentPage(newPage);
   };
 
- const handleExport = async () => {
-  const { jsPDF } = await import("jspdf");
-  const autoTable = (await import("jspdf-autotable")).default;
+  const handleExport = async () => {
+    const { jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
 
-  const pdf = new jsPDF({
-    orientation: "landscape",
-    unit: "pt",
-    format: "a4",
-  });
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "pt",
+      format: "a4",
+    });
 
-  pdf.setFontSize(18);
-  pdf.text("Donations Report", 40, 40);
-  pdf.setFontSize(12);
-  pdf.setTextColor(100);
+    pdf.setFontSize(18);
+    pdf.text("Donations Report", 40, 40);
+    pdf.setFontSize(12);
+    pdf.setTextColor(100);
 
-  const headers = [["ID", "Admin ID", "Title", "Raised", "Target", "Status", "Created At"]];
+    const headers = [["ID", "Admin ID", "Title", "Raised", "Target", "Status", "Created At"]];
 
-  const data = donations.map((donation) => [
-    donation.id,
-    donation.admin_id,
-    donation.donation_title,
-    `RM ${donation.current_amount.toFixed(2)}`,
-    `RM ${donation.target_amount.toFixed(2)}`,
-    donation.status === "completed" ? "Closed" : donation.status,
-    new Date(donation.created_at).toLocaleDateString(),
-  ]);
+    const data = donations.map((donation) => [
+      donation.id,
+      donation.admin_id,
+      donation.donation_title,
+      `RM ${donation.current_amount.toFixed(2)}`,
+      `RM ${donation.target_amount.toFixed(2)}`,
+      donation.status === "completed" ? "Closed" : donation.status,
+      new Date(donation.created_at).toLocaleDateString(),
+    ]);
 
-  autoTable(pdf, {
-    head: headers,
-    body: data,
-    startY: 60,
-    styles: { fontSize: 10, cellPadding: 5 },
-    headStyles: {
-      fillColor: [21, 96, 189],
-      textColor: [255, 255, 255],
-      halign: "center",
-    },
-    columnStyles: {
-      3: { halign: "right" },
-      4: { halign: "right" },
-    },
-  });
+    autoTable(pdf, {
+      head: headers,
+      body: data,
+      startY: 60,
+      styles: { fontSize: 10, cellPadding: 5 },
+      headStyles: {
+        fillColor: [21, 96, 189],
+        textColor: [255, 255, 255],
+        halign: "center",
+      },
+      columnStyles: {
+        3: { halign: "right" },
+        4: { halign: "right" },
+      },
+    });
 
-  const dateStr = new Date().toLocaleString();
-  pdf.setFontSize(10);
-  pdf.text(`Generated on: ${dateStr}`, 40, pdf.internal.pageSize.getHeight() - 30);
+    const dateStr = new Date().toLocaleString();
+    pdf.setFontSize(10);
+    pdf.text(`Generated on: ${dateStr}`, 40, pdf.internal.pageSize.getHeight() - 30);
 
-  pdf.save("donations_report.pdf");
-};
-
+    pdf.save("donations_report.pdf");
+  };
 
   return (
     <div
@@ -258,7 +306,7 @@ const RefreshPage = async () => {
           <button 
             onClick={handleDeleteSelectedDonation}
             className="flex items-center gap-1 border-2 border-gray-100 px-2 py-2 rounded text-xs">
-            <AiOutlineStop  size={16} />
+            <AiOutlineStop size={16} />
             Cancel
           </button>
           <button
@@ -292,26 +340,30 @@ const RefreshPage = async () => {
                   }
                 />
               </th>
-              {[
-                "id",
-                "admin_id",
-                "donation_title",
-                "Raise",
-                "Target",
-                "created_at",
-                "status",
-                "Action",
-              ].map((key) => (
+              {tableHeaders.map((header, index) => (
                 <th
-                  key={key}
-                  className={`p-2 border-b text-left cursor-pointer ${
-                    key === "Action" ? "rounded-tr-md" : ""
+                  key={header.key}
+                  className={`p-2 border-b text-left ${
+                    header.sortable ? "cursor-pointer" : ""
+                  } ${
+                    index === tableHeaders.length - 1 ? "rounded-tr-md" : ""
                   }`}
-                  onClick={() => handleSort(key)}
+                  onClick={() => header.sortable && handleSort(header.key)}
                 >
                   <p className="flex items-center gap-2 capitalize">
-                    {key.replace("_", " ")}
-                    {key !== "Action" && <BiSortAlt2 size={20} />}
+                    {header.label}
+                    {header.sortable && (
+                      <BiSortAlt2 
+                        size={20} 
+                        className={
+                          sortCriteria.key === header.key 
+                            ? sortCriteria.order === "asc" 
+                              ? "text-blue-600 transform rotate-180" 
+                              : "text-blue-600"
+                            : "text-gray-400"
+                        }
+                      />
+                    )}
                   </p>
                 </th>
               ))}
@@ -324,7 +376,7 @@ const RefreshPage = async () => {
                     <td className="p-2 text-center">
                       <Skeleton circle height={16} width={16} />
                     </td>
-                    {[...Array(6)].map((_, j) => (
+                    {[...Array(8)].map((_, j) => (
                       <td key={j} className="px-2 py-3 text-left">
                         <Skeleton height={10} width="80%" />
                       </td>
@@ -351,46 +403,40 @@ const RefreshPage = async () => {
                       {donation.donation_title}
                     </td>
                     <td className="px-2 py-3 text-left">
-                      {donation.current_amount}
+                      RM {Number(donation.current_amount).toFixed(2)}
                     </td>
                     <td className="px-2 py-3 text-left">
-                      {donation.target_amount}
+                      RM {Number(donation.target_amount).toFixed(2)}
                     </td>
                     <td className="px-2 py-3 text-left">
                       {new Date(donation.created_at).toLocaleDateString()}
                     </td>
-
-                    {donation.status === "completed" ? (
-                      <td>
-                        <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">
+                    <td className="px-2 py-3 text-left">
+                      {donation.status === "completed" ? (
+                        <span className="text-red-500 bg-red-50 px-2 py-1 rounded-md text-sm">
                           {donation.status}
                         </span>
-                      </td>
-                    ) : (
-                      donation.status === "cancelled" ? (
-                      <td>
-                        <span className="text-red-500 bg-red-50 px-2 rounded-md text-sm">
+                      ) : donation.status === "cancelled" ? (
+                        <span className="text-red-500 bg-red-50 px-2 py-1 rounded-md text-sm">
                           {donation.status}
                         </span>
-                      </td>
-                    ) : (
-                      <td>
-                        <span className="text-green-600 bg-green-50 px-2 rounded-md text-sm">
+                      ) : (
+                        <span className="text-green-600 bg-green-50 px-2 py-1 rounded-md text-sm">
                           {donation.status}
                         </span>
-                      </td>
-                    ))}
+                      )}
+                    </td>
                     <td className="flex px-2 pt-3 gap-2">
                       <button
-                        className="p-1 rounded border border-gray-300 shadow"
+                        className="p-1 rounded border border-gray-300 shadow hover:bg-gray-50"
                         onClick={() => handleViewDonation(donation)}
                       >
                         <FiEdit3 />
                       </button>
                       <button 
                         onClick={() => handleDeleteDonation(donation.id)}
-                        className="p-1 rounded border border-gray-300 shadow">
-                        <AiOutlineStop  />
+                        className="p-1 rounded border border-gray-300 shadow hover:bg-gray-50">
+                        <AiOutlineStop />
                       </button>
                     </td>
                   </tr>
@@ -435,31 +481,36 @@ const RefreshPage = async () => {
           </button>
         </div>
       </div>
+
       {showAddDonation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-end p-4">
           <div
-            className="bg-[#F8FAFC] rounded-lg p-6 w-[50%] "
-            style={{ height: `${viewportHeight-30}px` }}
+            className="bg-[#F8FAFC] rounded-lg p-6 w-[50%]"
+            style={{ height: `${viewportHeight - 30}px` }}
           >
-            <AddDonation onClose={() => {setShowAddDonation(false)}} passMessage = {() => {setSuccessAdd(true)}} />
+            <AddDonation 
+              onClose={() => {setShowAddDonation(false)}} 
+              passMessage={() => {setSuccessAdd(true)}} 
+            />
           </div>
         </div>
       )}
+      
       {showEditDonation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50  flex items-center justify-end p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-end p-4">
           <div
-            className="bg-[#F8FAFC] rounded-lg p-6 w-[50%] "
+            className="bg-[#F8FAFC] rounded-lg p-6 w-[50%]"
             style={{ height: `${viewportHeight - 30}px` }}
           >
             <EditDonation
               onClose={() => setShowEditDonation(false)}
               donation={selectedDonationId}
-              passMessage = {() => {setSuccessAdd(true)}}
+              passMessage={() => {setSuccessAdd(true)}}
             />
           </div>
         </div>
       )}
-      {/* Toast notifications container */}
+
       <ToastContainer
         position="top-right"
         autoClose={3000}

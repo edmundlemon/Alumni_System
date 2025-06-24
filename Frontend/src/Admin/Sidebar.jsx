@@ -39,8 +39,12 @@ const Sidebar = () => {
     { name: "Donation", link: "/donationTable", icon: BiDonateHeart },
     { name: "Forum", link: "/forumTable", icon: MdOutlineMessage },
     { name: "Major", link: "/majorTable", icon: MdStorage },
-    { name: "Falcuty", link: "/facultyTable", icon: TbBrandDatabricks    },
-    { name: "User Portal", link: userToken ? "/forumMainPage" :"/userLogin", icon: IoMdBrowsers  },
+    { name: "Faculty", link: "/facultyTable", icon: TbBrandDatabricks },
+    {
+      name: "User Portal",
+      link: userToken ? "/forumMainPage" : "/userLogin",
+      icon: IoMdBrowsers,
+    },
   ];
 
   // Find the menu whose link matches the current path
@@ -49,33 +53,31 @@ const Sidebar = () => {
     "Dashboard";
 
   const handleLogout = () => {
-  setLoggingOut(true); // Start loading
-  axios
-    .post("http://localhost:8000/api/admin_logout", null, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-    .catch((error) => {
-      console.error("Logout error:", error);
-      Cookies.remove("adminToken");
-      navigate("/adminLogin");
-      if (error.response && error.response.status === 401) {
-        console.warn("Token invalid or already logged out.");
-      } else {
-        alert("Logout failed, please try again.");
-        return; // Don't proceed to navigate
-      }
-    })
-    .finally(() => {
-      setLoggingOut(false); // Stop loading
-    });
+    setLoggingOut(true); // Start loading
+    axios
+      .post("http://localhost:8000/api/admin_logout", null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+        Cookies.remove("adminToken");
+        navigate("/adminLogin");
+        if (error.response && error.response.status === 401) {
+          console.warn("Token invalid or already logged out.");
+        } else {
+          alert("Logout failed, please try again.");
+          return; // Don't proceed to navigate
+        }
+      })
+      .finally(() => {
+        setLoggingOut(false); // Stop loading
+      });
     Cookies.remove("adminToken");
     navigate("/adminLogin");
-};
-
-
+  };
 
   const profileMenus = [
     { name: "Settings", link: "/settings", icon: HiOutlineCog },

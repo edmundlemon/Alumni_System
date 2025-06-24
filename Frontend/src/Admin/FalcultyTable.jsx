@@ -240,7 +240,7 @@ export default function FacultyTable() {
              onClick={() => setShowAddFaculty(true)}
           >
             <FaPlus size={10} />
-            <span>Add Faculty</span>
+            <span>Add Falculty</span>
           </button>
         </div>
       </div>
