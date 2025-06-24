@@ -86,8 +86,6 @@ class DiscussionTest extends TestCase
                             'discussion_id',
                             'user_id',
                             'comment_content',
-                            // 'created_at',
-                            // 'updated_at'
                         ],
                     ],
                 ] 
@@ -109,8 +107,6 @@ class DiscussionTest extends TestCase
                             'user_id',
                             'subject',
                             'content',
-                            // 'created_at',
-                            // 'updated_at',
                             'comments'
                         ],
                     ],

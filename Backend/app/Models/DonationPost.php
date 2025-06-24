@@ -16,6 +16,7 @@ class DonationPost extends Model
         'admin_id',
         'end_date',
         'status',
+        'photo',
     ];
     // protected $with = ['user', 'donations'];
     protected $appends = [
